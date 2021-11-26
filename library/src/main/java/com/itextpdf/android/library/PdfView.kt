@@ -27,6 +27,8 @@ open class PdfView(context: Context, attrs: AttributeSet?) : FrameLayout(context
         pdfImageView = findViewById(R.id.imageViewPdf)
 
 //        a.recycle() // recycle for re-use (required)
+
+
     }
 
     fun set(file: File, pageIndex: Int = 0) {
