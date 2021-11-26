@@ -11,32 +11,32 @@ import android.widget.ImageView
 import java.io.File
 
 
-open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
+open class PdfView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
-    val thumbnailImageView: ImageView
+    val pdfImageView: ImageView
 
     init {
         val inflater = LayoutInflater.from(context)
-        inflater.inflate(R.layout.view_pdf_thumbnail, this, true)
+        inflater.inflate(R.layout.view_pdf, this, true)
 
 //        val a = context.obtainStyledAttributes(
 //            attrs,
 //            R.styleable.TextInputView, 0, 0
 //        )
 
-        thumbnailImageView = findViewById(R.id.imageViewThumbnail)
+        pdfImageView = findViewById(R.id.imageViewPdf)
 
 //        a.recycle() // recycle for re-use (required)
     }
 
-    fun set(file: File, index: Int = 0) {
+    fun set(file: File, pageIndex: Int = 0) {
 
         post {
             // create a new renderer
             val renderer =
                 PdfRenderer(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY))
 
-            val page = renderer.openPage(index)
+            val page = renderer.openPage(pageIndex)
 
             val bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888)
             // say we render for showing on the screen
@@ -46,7 +46,7 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
             // close the renderer
             renderer.close()
 
-            thumbnailImageView.setImageBitmap(bitmap)
+            pdfImageView.setImageBitmap(bitmap)
         }
     }
 }

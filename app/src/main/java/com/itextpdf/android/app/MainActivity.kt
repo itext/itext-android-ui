@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
             val paragraph = Paragraph("Test paragraph")
             paragraph.setFontSize(50f)
             document.add(paragraph)
+
             document.close()
             pdf.close()
         } catch (e: Exception) {

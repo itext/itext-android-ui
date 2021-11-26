@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.itextpdf.android.library.PdfThumbnailView
+    <com.itextpdf.android.library.PdfView
         android:id="@+id/thumbnail"
         android:layout_width="150dp"
         android:layout_height="220dp"
