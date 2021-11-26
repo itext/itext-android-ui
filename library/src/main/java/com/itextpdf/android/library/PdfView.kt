@@ -43,6 +43,7 @@ open class PdfView(context: Context, attrs: AttributeSet?) : FrameLayout(context
             page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
             page.close()
 
+
             // close the renderer
             renderer.close()
 
