@@ -8,15 +8,17 @@ import com.itextpdf.android.library.Constants
 import com.itextpdf.android.library.pdfDocumentReader
 import com.itextpdf.android.library.pdfDocumentWriter
 import com.itextpdf.kernel.geom.Rectangle
-import com.itextpdf.kernel.pdf.canvas.PdfCanvas
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfReader
+import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.pdf.canvas.parser.EventType
 import com.itextpdf.kernel.pdf.canvas.parser.PdfDocumentContentParser
 import com.itextpdf.kernel.pdf.canvas.parser.data.IEventData
 import com.itextpdf.kernel.pdf.canvas.parser.data.TextRenderInfo
 import com.itextpdf.kernel.pdf.canvas.parser.listener.IEventListener
-import com.itextpdf.layout.Canvas
 import com.itextpdf.layout.Document
 import com.itextpdf.layout.element.Paragraph
+import java.io.FileNotFoundException
 import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
@@ -108,7 +110,7 @@ class MainActivity : AppCompatActivity() {
                                     "x1: ${descentStart.get(0)}, y1: ${descentStart.get(1)}, " +
                                     "x2: ${descentEnd.get(0)}, y2: ${descentEnd.get(1)}"
                         )
-                        
+
                         val rectangle =
                             Rectangle(x1, y1, textRenderInfo.unscaledWidth, abs(y1 - y2))
                         Log.i(
@@ -129,17 +131,33 @@ class MainActivity : AppCompatActivity() {
 
             binding.thumbnail.setOnClickListener {
 
-//                val pdf = pdfDocumentWriter(fileName)
-//                val page = pdf?.firstPage
-//                val pdfCanvas =
-//                    PdfCanvas(page?.newContentStreamAfter(), page?.resources, page?.document)
-//                val canvas = Canvas(pdfCanvas, pdf, rect)
-//                canvas.add(Paragraph("SECURED").setFontSize(25f))
-//
-//                pdf?.close()
+                val newName = "new.pdf"
+                val new = try {
+                    val readFile = getFileStreamPath(fileName).absoluteFile
+                    val output = openFileOutput(newName, MODE_PRIVATE)
+                    PdfDocument(PdfReader(readFile), PdfWriter(output))
+                } catch (e: FileNotFoundException) {
+                    e.printStackTrace()
+                    null
+                }
+
+                val newDoc = Document(new)
+                val r = rect
+
+                if (new != null && r != null) {
+
+                    val p = Paragraph("EDITED")
+                    p.setFontSize(50f)
+                    p.setFixedPosition(r.left, r.bottom - r.height, r.width)
+                    newDoc.add(p)
+
+                    new.close()
+                    newDoc.close()
+
+                    val file = getFileStreamPath(newName).absoluteFile
+                    binding.thumbnail.set(file)
+                }
             }
-
-
         }
 
         val file = getFileStreamPath(fileName).absoluteFile

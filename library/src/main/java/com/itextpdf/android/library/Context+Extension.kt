@@ -28,3 +28,15 @@ fun Context.pdfDocumentReader(fileName: String): PdfDocument? {
         null
     }
 }
+
+fun Context.pdfDocument(fileName: String, mode: Int = Context.MODE_PRIVATE): PdfDocument? {
+
+    return try {
+        val readFile = getFileStreamPath(fileName).absoluteFile
+        val output = openFileOutput(fileName, mode)
+        PdfDocument(PdfReader(readFile), PdfWriter(output))
+    } catch (e: FileNotFoundException) {
+        e.printStackTrace()
+        null
+    }
+}
