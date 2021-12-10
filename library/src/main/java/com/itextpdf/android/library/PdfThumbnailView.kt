@@ -11,7 +11,7 @@ import android.widget.ImageView
 import java.io.File
 
 
-open class PdfView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
+open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
     val pdfImageView: ImageView
 

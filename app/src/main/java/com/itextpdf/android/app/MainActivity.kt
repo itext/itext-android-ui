@@ -72,6 +72,8 @@ class MainActivity : AppCompatActivity() {
 //            val y: Float = pLayoutResult.getOccupiedArea().getBBox().getY()
 //            val x: Float = pLayoutResult.getOccupiedArea().getBBox().getX()
 
+
+
             val readPdf = pdfDocumentReader(fileName)
             val width = readPdf?.defaultPageSize?.width ?: 0f
             val height = readPdf?.defaultPageSize?.height ?: 0f
