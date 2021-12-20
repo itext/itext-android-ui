@@ -3,6 +3,7 @@ package com.itextpdf.android.library
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
+import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -37,19 +38,33 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
             // create a new renderer
             val renderer =
                 PdfRenderer(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY))
-
-            val page = renderer.openPage(pageIndex)
-
-            val bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888)
-            // say we render for showing on the screen
-            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-            page.close()
-
-
-            // close the renderer
-            renderer.close()
-
-            pdfImageView.setImageBitmap(bitmap)
+            setImageViewWithRenderer(renderer, pageIndex)
         }
+    }
+
+    fun set(uri: Uri, pageIndex: Int = 0) {
+
+        post {
+            val parcelFileDescriptor: ParcelFileDescriptor? =
+                context.contentResolver.openFileDescriptor(uri, "r")
+            if (parcelFileDescriptor != null) {
+                val renderer = PdfRenderer(parcelFileDescriptor)
+                setImageViewWithRenderer(renderer, pageIndex)
+            }
+        }
+    }
+
+    private fun setImageViewWithRenderer(renderer: PdfRenderer, pageIndex: Int) {
+        val page = renderer.openPage(pageIndex)
+
+        val bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888)
+        // say we render for showing on the screen
+        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+        page.close()
+
+        // close the renderer
+        renderer.close()
+
+        pdfImageView.setImageBitmap(bitmap)
     }
 }

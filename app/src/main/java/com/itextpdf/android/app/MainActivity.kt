@@ -1,5 +1,6 @@
 package com.itextpdf.android.app
 
+import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -20,6 +21,24 @@ import com.itextpdf.layout.Document
 import com.itextpdf.layout.element.Paragraph
 import java.io.FileNotFoundException
 import kotlin.math.abs
+import android.content.Intent
+import android.database.Cursor
+import android.net.Uri
+
+import androidx.core.app.ActivityCompat.startActivityForResult
+import android.provider.OpenableColumns
+import androidx.activity.result.contract.ActivityResultContracts
+import java.io.File
+import android.provider.MediaStore
+
+import android.content.ContentUris
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfRenderer
+import android.os.ParcelFileDescriptor
+
+import android.provider.DocumentsContract
+import java.io.FileDescriptor
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,12 +46,69 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val fileName = "test.pdf"
+        private const val PICK_PDF_CODE = 5
+    }
+
+    fun getPDFPath(uri: Uri?): String? {
+        val id = DocumentsContract.getDocumentId(uri)
+        val contentUri = ContentUris.withAppendedId(
+            Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id)
+        )
+        val projection = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = contentResolver.query(contentUri, projection, null, null, null)
+        val column_index = cursor!!.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        cursor.moveToFirst()
+        return cursor.getString(column_index)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // There are no request codes
+                val data: Intent? = result.data
+                // Get the Uri of the selected file
+                val uri: Uri? = data?.data
+                if (uri != null) {
+                    val uriString: String = uri.toString()
+                    val myFile = File(uriString)
+                    val path: String = myFile.absolutePath
+                    var displayName: String? = null
+
+                    // get filename
+                    if (uriString.startsWith("content://")) {
+                        var cursor: Cursor? = null
+                        try {
+                            cursor =
+                                contentResolver.query(uri, null, null, null, null)
+                            if (cursor != null && cursor.moveToFirst()) {
+                                displayName =
+                                    cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+                            }
+                        } finally {
+                            cursor?.close()
+                        }
+                    } else if (uriString.startsWith("file://")) {
+                        displayName = myFile.name
+                    }
+                    Log.i("#####", "file name: $displayName")
+
+
+                    //TODO: reads and prints content (line by line)
+//                    val selectedFilename = data.data //The uri with the location of the file
+//                    if (selectedFilename != null) {
+//                        contentResolver.openInputStream(selectedFilename)?.bufferedReader()?.forEachLine {
+//                            Log.i("#####", "filecontent: $it")€
+//                        }
+//                    }
+
+                    binding.thumbnail.set(uri)
+                }
+            }
+        }
 
         val pdf = pdfDocumentWriter(fileName)
         if (pdf != null) {
@@ -133,37 +209,41 @@ class MainActivity : AppCompatActivity() {
 
             binding.thumbnail.setOnClickListener {
 
-                val newName = "new.pdf"
-                val new = try {
-                    val readFile = getFileStreamPath(fileName).absoluteFile
-                    val output = openFileOutput(newName, MODE_PRIVATE)
-                    PdfDocument(PdfReader(readFile), PdfWriter(output))
-                } catch (e: FileNotFoundException) {
-                    e.printStackTrace()
-                    null
-                }
+                val intentPDF = Intent(Intent.ACTION_GET_CONTENT)
+                intentPDF.type = "application/pdf"
+                intentPDF.addCategory(Intent.CATEGORY_OPENABLE)
+                resultLauncher.launch(intentPDF)
 
-                val newDoc = Document(new)
-                val r = rect
-
-                if (new != null && r != null) {
-
-                    val p = Paragraph("EDITED")
-                    p.setFontSize(50f)
-                    p.setFixedPosition(r.left, r.bottom - r.height, r.width)
-                    newDoc.add(p)
-
-                    new.close()
-                    newDoc.close()
-
-                    val file = getFileStreamPath(newName).absoluteFile
-                    binding.thumbnail.set(file)
-                }
+//                val newName = "new.pdf"
+//                val new = try {
+//                    val readFile = getFileStreamPath(fileName).absoluteFile
+//                    val output = openFileOutput(newName, MODE_PRIVATE)
+//                    PdfDocument(PdfReader(readFile), PdfWriter(output))
+//                } catch (e: FileNotFoundException) {
+//                    e.printStackTrace()
+//                    null
+//                }
+//
+//                val newDoc = Document(new)
+//                val r = rect
+//
+//                if (new != null && r != null) {
+//
+//                    val p = Paragraph("EDITED")
+//                    p.setFontSize(50f)
+//                    p.setFixedPosition(r.left, r.bottom - r.height, r.width)
+//                    newDoc.add(p)
+//
+//                    new.close()
+//                    newDoc.close()
+//
+//                    val file = getFileStreamPath(newName).absoluteFile
+//                    binding.thumbnail.set(file)
+//                }
             }
         }
 
         val file = getFileStreamPath(fileName).absoluteFile
         binding.thumbnail.set(file)
-
     }
 }
