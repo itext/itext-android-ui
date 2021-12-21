@@ -37,6 +37,7 @@ import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 
 import android.provider.DocumentsContract
+import com.itextpdf.android.app.ui.PdfViewerActivity
 import java.io.FileDescriptor
 
 
@@ -44,27 +45,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    companion object {
-        private const val fileName = "test.pdf"
-        private const val PICK_PDF_CODE = 5
-    }
-
-    fun getPDFPath(uri: Uri?): String? {
-        val id = DocumentsContract.getDocumentId(uri)
-        val contentUri = ContentUris.withAppendedId(
-            Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id)
-        )
-        val projection = arrayOf(MediaStore.Images.Media.DATA)
-        val cursor = contentResolver.query(contentUri, projection, null, null, null)
-        val column_index = cursor!!.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-        cursor.moveToFirst()
-        return cursor.getString(column_index)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.btnShow.setOnClickListener {
+            PdfViewerActivity.launch(this)
+        }
 
         var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -245,5 +233,10 @@ class MainActivity : AppCompatActivity() {
 
         val file = getFileStreamPath(fileName).absoluteFile
         binding.thumbnail.set(file)
+    }
+
+    companion object {
+        private const val fileName = "test.pdf"
+        private const val PICK_PDF_CODE = 5
     }
 }

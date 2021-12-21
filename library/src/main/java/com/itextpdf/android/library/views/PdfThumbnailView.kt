@@ -1,4 +1,4 @@
-package com.itextpdf.android.library
+package com.itextpdf.android.library.views
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import android.widget.ImageView
+import com.itextpdf.android.library.R
 import java.io.File
 
 
