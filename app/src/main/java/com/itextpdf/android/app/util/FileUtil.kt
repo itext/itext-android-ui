@@ -11,8 +11,8 @@ class FileUtil {
             fromAssetPath: String?,
             toPath: String?
         ): Boolean {
-            var `in`: InputStream? = null
-            var out: OutputStream? = null
+            var `in`: InputStream?
+            var out: OutputStream?
             return try {
                 `in` = assetManager.open(fromAssetPath!!)
                 File(toPath).createNewFile()

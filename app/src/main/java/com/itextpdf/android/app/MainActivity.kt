@@ -9,11 +9,9 @@ import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,11 +23,13 @@ import com.itextpdf.android.app.util.FileUtil
 import com.itextpdf.android.library.views.PdfThumbnailView
 import java.io.File
 import java.io.IOException
+import android.view.*
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var resultLauncher : ActivityResultLauncher<Intent>
 
     /**
      * Render a page of a PDF into ImageView
@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setSupportActionBar(binding.mainToolbar)
         binding.rvPdfList.layoutManager = LinearLayoutManager(this)
 
         val pdfTitles = mutableListOf("sample_1", "sample_2", "sample_3", "sample_4")
@@ -75,7 +76,7 @@ class MainActivity : AppCompatActivity() {
             PdfViewerActivity.launch(this)
         }
 
-        var resultLauncher =
+        resultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
                     // There are no request codes
@@ -124,6 +125,28 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.action_open_pdf -> {
+            openPdfFromFiles()
+            true
+        }
+        else -> {
+            super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun openPdfFromFiles() {
+        val intentPDF = Intent(Intent.ACTION_GET_CONTENT)
+        intentPDF.type = "application/pdf"
+        intentPDF.addCategory(Intent.CATEGORY_OPENABLE)
+        resultLauncher.launch(intentPDF)
     }
 
     private fun setupTestThumbnailView() {
