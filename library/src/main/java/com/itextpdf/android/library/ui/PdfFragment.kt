@@ -7,6 +7,7 @@ import android.content.res.TypedArray
 import android.os.Bundle
 
 import android.content.Context
+import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,6 +21,7 @@ class PdfFragment: Fragment() {
 
     private lateinit var binding: FragmentPdfBinding
     var text = ""
+    var pdfUri: Uri? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentPdfBinding.inflate(inflater, container, false)
@@ -27,6 +29,10 @@ class PdfFragment: Fragment() {
         if (savedInstanceState != null) {
             // Restore last state
             text = savedInstanceState.getString("my_text") ?: ""
+        }
+
+        pdfUri?.let {
+            binding.testThumbnail.set(it)
         }
 
         return binding.root

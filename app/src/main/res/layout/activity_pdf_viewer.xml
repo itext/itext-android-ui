@@ -4,24 +4,23 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="20dp"
-        android:text="My pdf activity" />
-
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/pdf_fragment_container"
-        android:name="com.itextpdf.android.library.ui.PdfFragment"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="100dp"
-        android:background="@color/purple_200"
+        android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:my_string="PdfFragment: String from xml file -> use this way to disable/enable features" />
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- INFO: Use this to add the pdfFragment via xml (with options) -->
+<!--    <androidx.fragment.app.FragmentContainerView-->
+<!--        android:id="@+id/pdf_fragment_container"-->
+<!--        android:name="com.itextpdf.android.library.ui.PdfFragment"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="300dp"-->
+<!--        android:layout_marginTop="100dp"-->
+<!--        android:background="@color/purple_200"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintLeft_toLeftOf="parent"-->
+<!--        app:my_string="PdfFragment: String from xml file -> use this way to disable/enable features" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

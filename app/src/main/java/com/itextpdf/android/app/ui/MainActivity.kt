@@ -1,4 +1,4 @@
-package com.itextpdf.android.app
+package com.itextpdf.android.app.ui
 
 import android.app.Activity
 import android.content.Intent
@@ -16,40 +16,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.itextpdf.android.app.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
+import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
 import com.itextpdf.android.app.databinding.ActivityMainBinding
-import com.itextpdf.android.app.ui.PdfViewerActivity
 import com.itextpdf.android.app.util.FileUtil
 import com.itextpdf.android.library.views.PdfThumbnailView
 import java.io.File
 import java.io.IOException
 import android.view.*
+import com.itextpdf.android.app.R
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var resultLauncher : ActivityResultLauncher<Intent>
-
-    /**
-     * Render a page of a PDF into ImageView
-     * @param targetView
-     * @throws IOException
-     */
-    @Throws(IOException::class)
-    private fun loadPdf(title: String) {
-
-        //open file in assets
-        val fileDescriptor: ParcelFileDescriptor
-        val fileName = "$title.pdf"
-
-        // Create file object to read and write on
-        val file = File(cacheDir, fileName)
-        if (!file.exists()) {
-            val assetManager: AssetManager = assets
-            FileUtil.copyAsset(assetManager, fileName, file.absolutePath)
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,18 +43,18 @@ class MainActivity : AppCompatActivity() {
         val data = mutableListOf<PdfRecyclerItem>()
 
         pdfTitles.forEach { title ->
-            data.add(PdfItem(title, Uri.EMPTY) {
-                Toast.makeText(this, "$title clicked", Toast.LENGTH_SHORT).show()
-            })
-            loadPdf(title)
+            val path = loadPdf(title)
+            if (path != null) {
+                val uri = Uri.fromFile(File(path))
+
+                data.add(PdfItem(title, uri) {
+                    PdfViewerActivity.launch(this, uri, title)
+                })
+            }
         }
 
         val adapter = PdfAdapter(data)
         binding.rvPdfList.adapter = adapter
-
-        binding.btnShow.setOnClickListener {
-            PdfViewerActivity.launch(this)
-        }
 
         resultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -120,8 +100,7 @@ class MainActivity : AppCompatActivity() {
 //                        }
 //                    }
 
-                        // load selected pdf into thumbnail
-//                    binding.thumbnail.set(uri)
+                        PdfViewerActivity.launch(this, uri, displayName ?: "")
                     }
                 }
             }
@@ -140,6 +119,19 @@ class MainActivity : AppCompatActivity() {
         else -> {
             super.onOptionsItemSelected(item)
         }
+    }
+
+    @Throws(IOException::class)
+    private fun loadPdf(title: String): String? {
+        val fileName = "$title.pdf"
+
+        // Create file object to read and write on
+        val file = File(cacheDir, fileName)
+        if (!file.exists()) {
+            val assetManager: AssetManager = assets
+            FileUtil.copyAsset(assetManager, fileName, file.absolutePath)
+        }
+        return file.absolutePath
     }
 
     private fun openPdfFromFiles() {
@@ -321,32 +313,12 @@ class MainActivity : AppCompatActivity() {
         override fun bind(item: PdfRecyclerItem) {
             if (item is PdfItem) {
                 tvTitle.text = item.title
-                loadPdf(item.title, thumbnailView)
+                thumbnailView.set(item.pdfUri)
 
                 itemView.setOnClickListener {
                     item.action()
                 }
             }
-        }
-
-        /**
-         * Render a page of a PDF into ImageView
-         * @param targetView
-         * @throws IOException
-         */
-        @Throws(IOException::class)
-        private fun loadPdf(title: String, targetView: PdfThumbnailView) {
-            //open file in assets
-            val fileName = "$title.pdf"
-
-            // Create file object to read and write on
-            val file = File(targetView.context.cacheDir, fileName)
-            if (!file.exists()) {
-                val assetManager: AssetManager = targetView.context.assets
-                FileUtil.copyAsset(assetManager, fileName, file.absolutePath)
-            }
-
-            targetView.set(file)
         }
     }
 
