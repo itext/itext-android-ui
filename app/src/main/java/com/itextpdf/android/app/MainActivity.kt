@@ -1,67 +1,55 @@
 package com.itextpdf.android.app
 
 import android.app.Activity
-import android.os.Bundle
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import com.itextpdf.android.app.databinding.ActivityMainBinding
-import com.itextpdf.android.library.Constants
-import com.itextpdf.android.library.pdfDocumentReader
-import com.itextpdf.android.library.pdfDocumentWriter
-import com.itextpdf.kernel.geom.Rectangle
-import com.itextpdf.kernel.pdf.PdfDocument
-import com.itextpdf.kernel.pdf.PdfReader
-import com.itextpdf.kernel.pdf.PdfWriter
-import com.itextpdf.kernel.pdf.canvas.parser.EventType
-import com.itextpdf.kernel.pdf.canvas.parser.PdfDocumentContentParser
-import com.itextpdf.kernel.pdf.canvas.parser.data.IEventData
-import com.itextpdf.kernel.pdf.canvas.parser.data.TextRenderInfo
-import com.itextpdf.kernel.pdf.canvas.parser.listener.IEventListener
-import com.itextpdf.layout.Document
-import com.itextpdf.layout.element.Paragraph
-import java.io.FileNotFoundException
-import kotlin.math.abs
 import android.content.Intent
+import android.content.res.AssetManager
 import android.database.Cursor
 import android.net.Uri
-
-import androidx.core.app.ActivityCompat.startActivityForResult
-import android.provider.OpenableColumns
-import androidx.activity.result.contract.ActivityResultContracts
-import java.io.File
-import android.provider.MediaStore
-
-import android.content.ContentUris
-import android.graphics.Bitmap
-import android.graphics.pdf.PdfRenderer
+import android.os.Bundle
 import android.os.ParcelFileDescriptor
-
-import android.provider.DocumentsContract
+import android.provider.OpenableColumns
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
 import com.itextpdf.android.app.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
+import com.itextpdf.android.app.databinding.ActivityMainBinding
 import com.itextpdf.android.app.ui.PdfViewerActivity
+import com.itextpdf.android.app.util.FileUtil
 import com.itextpdf.android.library.views.PdfThumbnailView
-import java.io.FileDescriptor
-import java.io.Serializable
+import java.io.File
+import java.io.IOException
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
+    /**
+     * Render a page of a PDF into ImageView
+     * @param targetView
+     * @throws IOException
+     */
+    @Throws(IOException::class)
+    private fun loadPdf(title: String) {
+
+        //open file in assets
+        val fileDescriptor: ParcelFileDescriptor
+        val fileName = "$title.pdf"
+
+        // Create file object to read and write on
+        val file = File(cacheDir, fileName)
+        if (!file.exists()) {
+            val assetManager: AssetManager = assets
+            FileUtil.copyAsset(assetManager, fileName, file.absolutePath)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,13 +58,14 @@ class MainActivity : AppCompatActivity() {
 
         binding.rvPdfList.layoutManager = LinearLayoutManager(this)
 
-        val pdfTitles = mutableListOf("Pdf 1", "Pdf 2", "Pdf 3")
+        val pdfTitles = mutableListOf("sample_1", "sample_2", "sample_3", "sample_4")
         val data = mutableListOf<PdfRecyclerItem>()
 
         pdfTitles.forEach { title ->
             data.add(PdfItem(title, Uri.EMPTY) {
                 Toast.makeText(this, "$title clicked", Toast.LENGTH_SHORT).show()
             })
+            loadPdf(title)
         }
 
         val adapter = PdfAdapter(data)
@@ -309,12 +298,32 @@ class MainActivity : AppCompatActivity() {
         override fun bind(item: PdfRecyclerItem) {
             if (item is PdfItem) {
                 tvTitle.text = item.title
-//                thumbnailView.set(item.pdfUri)
+                loadPdf(item.title, thumbnailView)
 
                 itemView.setOnClickListener {
                     item.action()
                 }
             }
+        }
+
+        /**
+         * Render a page of a PDF into ImageView
+         * @param targetView
+         * @throws IOException
+         */
+        @Throws(IOException::class)
+        private fun loadPdf(title: String, targetView: PdfThumbnailView) {
+            //open file in assets
+            val fileName = "$title.pdf"
+
+            // Create file object to read and write on
+            val file = File(targetView.context.cacheDir, fileName)
+            if (!file.exists()) {
+                val assetManager: AssetManager = targetView.context.assets
+                FileUtil.copyAsset(assetManager, fileName, file.absolutePath)
+            }
+
+            targetView.set(file)
         }
     }
 
