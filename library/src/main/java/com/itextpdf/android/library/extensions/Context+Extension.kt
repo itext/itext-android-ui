@@ -1,11 +1,19 @@
-package com.itextpdf.android.library
+package com.itextpdf.android.library.extensions
 
 import android.content.Context
+import android.content.Intent
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfReader
 import com.itextpdf.kernel.pdf.PdfWriter
 import java.io.FileNotFoundException
 
+val selectPdfIntent: Intent
+    get() {
+        val intentPDF = Intent(Intent.ACTION_GET_CONTENT)
+        intentPDF.type = "application/pdf"
+        intentPDF.addCategory(Intent.CATEGORY_OPENABLE)
+        return intentPDF
+    }
 
 fun Context.pdfDocumentWriter(fileName: String, mode: Int = Context.MODE_PRIVATE): PdfDocument? {
 

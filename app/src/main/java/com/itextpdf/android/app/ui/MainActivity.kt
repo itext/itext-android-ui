@@ -1,35 +1,33 @@
 package com.itextpdf.android.app.ui
 
-import android.app.Activity
-import android.content.Intent
 import android.content.res.AssetManager
-import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
-import android.os.ParcelFileDescriptor
-import android.provider.OpenableColumns
-import android.util.Log
+import android.view.*
 import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
+import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityMainBinding
+import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
 import com.itextpdf.android.app.util.FileUtil
+import com.itextpdf.android.library.extensions.selectPdfIntent
+import com.itextpdf.android.library.extensions.registerPdfSelectionResult
 import com.itextpdf.android.library.views.PdfThumbnailView
 import java.io.File
 import java.io.IOException
-import android.view.*
-import com.itextpdf.android.app.R
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var resultLauncher : ActivityResultLauncher<Intent>
+
+    private val pdfSelectionResultLauncher = registerPdfSelectionResult { pdfUri, fileName ->
+        if (pdfUri != null) {
+            PdfViewerActivity.launch(this, pdfUri, fileName ?: "")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         val data = mutableListOf<PdfRecyclerItem>()
 
         pdfTitles.forEach { title ->
-            val path = loadPdf(title)
+            val path = loadPdfFromAssets(title)
             if (path != null) {
                 val uri = Uri.fromFile(File(path))
 
@@ -55,55 +53,6 @@ class MainActivity : AppCompatActivity() {
 
         val adapter = PdfAdapter(data)
         binding.rvPdfList.adapter = adapter
-
-        resultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    // There are no request codes
-                    val data: Intent? = result.data
-                    // Get the Uri of the selected file
-                    val uri: Uri? = data?.data
-                    if (uri != null) {
-                        val uriString: String = uri.toString()
-                        val myFile = File(uriString)
-                        val path: String = myFile.absolutePath
-                        var displayName: String? = null
-
-                        // get filename
-                        if (uriString.startsWith("content://")) {
-                            var cursor: Cursor? = null
-                            try {
-                                cursor =
-                                    contentResolver.query(uri, null, null, null, null)
-                                if (cursor != null && cursor.moveToFirst()) {
-                                    displayName =
-                                        cursor.getString(
-                                            cursor.getColumnIndexOrThrow(
-                                                OpenableColumns.DISPLAY_NAME
-                                            )
-                                        )
-                                }
-                            } finally {
-                                cursor?.close()
-                            }
-                        } else if (uriString.startsWith("file://")) {
-                            displayName = myFile.name
-                        }
-                        Log.i("#####", "file name: $displayName")
-
-
-                        //TODO: reads and prints content (line by line)
-//                    val selectedFilename = data.data //The uri with the location of the file
-//                    if (selectedFilename != null) {
-//                        contentResolver.openInputStream(selectedFilename)?.bufferedReader()?.forEachLine {
-//                            Log.i("#####", "filecontent: $it")€
-//                        }
-//                    }
-
-                        PdfViewerActivity.launch(this, uri, displayName ?: "")
-                    }
-                }
-            }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -113,7 +62,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_open_pdf -> {
-            openPdfFromFiles()
+            pdfSelectionResultLauncher.launch(selectPdfIntent)
             true
         }
         else -> {
@@ -122,7 +71,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Throws(IOException::class)
-    private fun loadPdf(title: String): String? {
+    private fun loadPdfFromAssets(title: String): String? {
         val fileName = "$title.pdf"
 
         // Create file object to read and write on
@@ -132,13 +81,6 @@ class MainActivity : AppCompatActivity() {
             FileUtil.copyAsset(assetManager, fileName, file.absolutePath)
         }
         return file.absolutePath
-    }
-
-    private fun openPdfFromFiles() {
-        val intentPDF = Intent(Intent.ACTION_GET_CONTENT)
-        intentPDF.type = "application/pdf"
-        intentPDF.addCategory(Intent.CATEGORY_OPENABLE)
-        resultLauncher.launch(intentPDF)
     }
 
     private fun setupTestThumbnailView() {
