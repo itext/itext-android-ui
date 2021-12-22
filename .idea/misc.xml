@@ -6,6 +6,7 @@
         <entry key="../../../../../../../layout/custom_preview.xml" value="0.33697916666666666" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="app/src/main/res/layout/activity_pdf_viewer.xml" value="0.5234375" />
+        <entry key="app/src/main/res/layout/recycler_item_pdf.xml" value="0.5234375" />
         <entry key="library/src/main/res/layout/fragment_pdf.xml" value="0.5234375" />
         <entry key="library/src/main/res/layout/view_pdf.xml" value="0.5244791666666667" />
         <entry key="library/src/main/res/layout/view_pdf_thumbnail.xml" value="0.25354609929078015" />
