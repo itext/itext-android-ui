@@ -36,16 +36,15 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.mainToolbar)
 
-        val pdfTitles = mutableListOf("sample_1", "sample_2", "sample_3", "sample_4")
         val data = mutableListOf<PdfRecyclerItem>()
 
-        pdfTitles.forEach { title ->
-            val path = loadPdfFromAssets(title)
+        pdfFileNames.forEachIndexed { i, fileName ->
+            val path = loadPdfFromAssets(fileName)
             if (path != null) {
                 val uri = Uri.fromFile(File(path))
 
-                data.add(PdfItem(title, uri) {
-                    PdfViewerActivity.launch(this, uri, title)
+                data.add(PdfItem(pdfTitles[i], fileName, pdfDescriptions[i], uri) {
+                    PdfViewerActivity.launch(this, uri, fileName)
                 })
             }
         }
@@ -72,9 +71,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Throws(IOException::class)
-    private fun loadPdfFromAssets(title: String): String? {
-        val fileName = "$title.pdf"
-
+    private fun loadPdfFromAssets(fileName: String): String? {
         // Create file object to read and write on
         val file = File(cacheDir, fileName)
         if (!file.exists()) {
@@ -84,8 +81,22 @@ class MainActivity : AppCompatActivity() {
         return file.absolutePath
     }
 
+    companion object {
+        private val pdfTitles = mutableListOf("Sample 1", "Sample 2", "Sample 3", "Sample 4")
+        private val pdfDescriptions = mutableListOf(
+            "Description for sample 1.",
+            "Description for sample 2.",
+            "Description for sample 3.",
+            "Description for sample 4."
+        )
+        private val pdfFileNames =
+            mutableListOf("sample_1.pdf", "sample_2.pdf", "sample_3.pdf", "sample_4.pdf")
+    }
+
     private data class PdfItem(
         val title: String,
+        val fileName: String,
+        val description: String,
         val pdfUri: Uri,
         val action: () -> Unit
     ) : PdfRecyclerItem {
@@ -103,15 +114,19 @@ class MainActivity : AppCompatActivity() {
 
     private abstract class PdfBaseViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         protected val tvTitle: TextView = view.findViewById(R.id.tvTitle)
+        protected val tvFileName: TextView = view.findViewById(R.id.tvFileName)
+        protected val tvDescription: TextView = view.findViewById(R.id.tvDescription)
         protected val thumbnailView: PdfThumbnailView = view.findViewById(R.id.thumbnail)
 
         abstract fun bind(item: PdfRecyclerItem)
     }
 
-    private class PdfViewHolder(view: View) : PdfBaseViewHolder(view) {
+    private class PdfViewHolder(val view: View) : PdfBaseViewHolder(view) {
         override fun bind(item: PdfRecyclerItem) {
             if (item is PdfItem) {
                 tvTitle.text = item.title
+                tvFileName.text = view.context.getString(R.string.filename, item.fileName)
+                tvDescription.text = item.description
                 thumbnailView.set(item.pdfUri)
 
                 itemView.setOnClickListener {

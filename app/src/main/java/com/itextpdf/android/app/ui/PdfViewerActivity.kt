@@ -19,12 +19,12 @@ class PdfViewerActivity : AppCompatActivity() {
         binding = ActivityPdfViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val title = intent.extras?.getString(EXTRA_PDF_TITLE) ?: ""
+        val fileName = intent.extras?.getString(EXTRA_PDF_TITLE) ?: ""
         val pdfUri = Uri.parse(intent.extras?.getString(EXTRA_PDF_URI) ?: "")
 
         // set fragment in code
         val fragment = PdfFragment()
-        fragment.text = title
+        fragment.text = getString(R.string.filename, fileName)
         fragment.pdfUri = pdfUri
         val fm = supportFragmentManager.beginTransaction()
         fm.replace(R.id.pdf_fragment_container, fragment)
@@ -35,10 +35,10 @@ class PdfViewerActivity : AppCompatActivity() {
         private const val EXTRA_PDF_URI = "EXTRA_PDF_URI"
         private const val EXTRA_PDF_TITLE = "EXTRA_PDF_TITLE"
 
-        fun launch(context: Context, uri: Uri, title: String) {
+        fun launch(context: Context, uri: Uri, fileName: String) {
             val intent = Intent(context, PdfViewerActivity::class.java)
             intent.putExtra(EXTRA_PDF_URI, uri.toString())
-            intent.putExtra(EXTRA_PDF_TITLE, title)
+            intent.putExtra(EXTRA_PDF_TITLE, fileName)
             context.startActivity(intent)
         }
     }
