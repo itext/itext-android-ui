@@ -14,14 +14,12 @@ import java.io.File
 fun AppCompatActivity.registerPdfSelectionResult(callback: (pdfUri: Uri?, fileName: String?) -> Unit): ActivityResultLauncher<Intent> {
     return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            // There are no request codes
             val data: Intent? = result.data
             // Get the Uri of the selected file
             val uri: Uri? = data?.data
             if (uri != null) {
                 val uriString: String = uri.toString()
                 val myFile = File(uriString)
-                val path: String = myFile.absolutePath
                 var displayName: String? = null
 
                 // get filename
@@ -44,7 +42,6 @@ fun AppCompatActivity.registerPdfSelectionResult(callback: (pdfUri: Uri?, fileNa
                 } else if (uriString.startsWith("file://")) {
                     displayName = myFile.name
                 }
-                Log.i("#####", "file name: $displayName")
 
 
                 //TODO: reads and prints content (line by line)

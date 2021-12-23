@@ -8,10 +8,12 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/mainToolbar"
+        style="@style/MainToolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
+        app:title="@string/appTitle"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
