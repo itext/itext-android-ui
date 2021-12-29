@@ -41,15 +41,6 @@ fun AppCompatActivity.registerPdfSelectionResult(callback: (pdfUri: Uri?, fileNa
             val uri: Uri? = data?.data
             if (uri != null) {
                 val fileName = getFileName(uri)
-
-                //TODO: reads and prints content (line by line)
-//                    val selectedFilename = data.data //The uri with the location of the file
-//                    if (selectedFilename != null) {
-//                        contentResolver.openInputStream(selectedFilename)?.bufferedReader()?.forEachLine {
-//                            Log.i("#####", "filecontent: $it")
-//                        }
-//                    }
-
                 callback(uri, fileName)
             } else {
                 callback(null, null)
