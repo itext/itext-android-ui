@@ -24,7 +24,7 @@ class PdfViewerActivity : AppCompatActivity() {
 
         // set fragment in code
         val fragment = PdfFragment()
-        fragment.text = getString(R.string.filename, fileName)
+        fragment.fileName = getString(R.string.filename, fileName)
         fragment.pdfUri = pdfUri
         val fm = supportFragmentManager.beginTransaction()
         fm.replace(R.id.pdf_fragment_container, fragment)

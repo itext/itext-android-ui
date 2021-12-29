@@ -8,8 +8,8 @@
         android:id="@+id/pdf_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 <!-- INFO: Use this to add the pdfFragment via xml (with options) -->
 <!--    <androidx.fragment.app.FragmentContainerView-->
@@ -19,6 +19,7 @@
 <!--        android:layout_height="match_parent"-->
 <!--        app:layout_constraintTop_toTopOf="parent"-->
 <!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:my_string="PdfFragment: String from xml file -> use this way to disable/enable features" />-->
+<!--        app:file_name="sample_1.pdf"-->
+<!--        app:file_uri="file:///data/user/0/com.itextpdf.android.app/cache/sample_1.pdf" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
