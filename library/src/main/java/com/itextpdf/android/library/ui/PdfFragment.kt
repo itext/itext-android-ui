@@ -16,14 +16,17 @@ import android.view.ViewGroup
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
 
-
+/**
+ * Fragment that can be used to display a pdf file. To pass the pdf file to the fragment set the uri
+ * to the pdf via the public variable pdfUri before committing the fragment in code.
+ */
 class PdfFragment: Fragment() {
 
     private lateinit var binding: FragmentPdfBinding
     var text = ""
     var pdfUri: Uri? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentPdfBinding.inflate(inflater, container, false)
 
         if (savedInstanceState != null) {
@@ -40,7 +43,6 @@ class PdfFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.v(TAG, "onViewCreated")
         binding.txtFragment.text = text
     }
 
