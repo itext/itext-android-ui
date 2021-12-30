@@ -50,33 +50,3 @@ fun AppCompatActivity.registerPdfSelectionResult(callback: (pdfUri: Uri?, fileNa
         }
     }
 }
-
-/**
- * Returns the fileName of the file at the given uri.
- *
- * @param uri   the uri of the file we want a fileName for
- * @return  the fileName if successful, null if not
- */
-fun AppCompatActivity.getFileName(uri: Uri): String? {
-    val uriString: String = uri.toString()
-    val pdfFile = File(uriString)
-    var fileName: String? = null
-
-    // get filename
-    if (uriString.startsWith("content://")) {
-        var cursor: Cursor? = null
-        try {
-            cursor =
-                contentResolver.query(uri, null, null, null, null)
-            if (cursor != null && cursor.moveToFirst()) {
-                fileName =
-                    cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-            }
-        } finally {
-            cursor?.close()
-        }
-    } else if (uriString.startsWith("file://")) {
-        fileName = pdfFile.name
-    }
-    return fileName
-}
