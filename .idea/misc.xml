@@ -10,6 +10,7 @@
         <entry key="app/src/main/res/layout/recycler_item_pdf.xml" value="0.5234375" />
         <entry key="app/src/main/res/menu/menu_main.xml" value="0.31145833333333334" />
         <entry key="app/src/main/res/xml/provider_paths.xml" value="0.3104166666666667" />
+        <entry key="library/src/main/res/drawable/border_background.xml" value="0.4648148148148148" />
         <entry key="library/src/main/res/layout/fragment_pdf.xml" value="0.25" />
         <entry key="library/src/main/res/layout/view_pdf.xml" value="0.5244791666666667" />
         <entry key="library/src/main/res/layout/view_pdf_thumbnail.xml" value="0.25354609929078015" />
