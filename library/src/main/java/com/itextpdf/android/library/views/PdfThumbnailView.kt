@@ -20,7 +20,7 @@ import java.io.File
  */
 open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
-    private val pdfImageView: ImageView
+    val pdfImageView: ImageView
 
     init {
         val inflater = LayoutInflater.from(context)

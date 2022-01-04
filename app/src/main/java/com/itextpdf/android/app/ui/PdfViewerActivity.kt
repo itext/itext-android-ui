@@ -7,7 +7,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityPdfViewerBinding
-import com.itextpdf.android.library.ui.PdfFragment
+import com.itextpdf.android.library.fragments.PdfFragment
 
 class PdfViewerActivity : AppCompatActivity() {
 
@@ -19,7 +19,7 @@ class PdfViewerActivity : AppCompatActivity() {
         binding = ActivityPdfViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val fileName = intent.extras?.getString(EXTRA_PDF_TITLE) ?: ""
+        val fileName = intent.extras?.getString(EXTRA_PDF_TITLE) ?: "-"
         val pdfUri = Uri.parse(intent.extras?.getString(EXTRA_PDF_URI) ?: "")
 
         // set fragment in code
@@ -43,7 +43,7 @@ class PdfViewerActivity : AppCompatActivity() {
          * @param uri       the uri to the pdf file
          * @param fileName  the name of the pdf file
          */
-        fun launch(context: Context, uri: Uri, fileName: String) {
+        fun launch(context: Context, uri: Uri, fileName: String? = null) {
             val intent = Intent(context, PdfViewerActivity::class.java)
             intent.putExtra(EXTRA_PDF_URI, uri.toString())
             intent.putExtra(EXTRA_PDF_TITLE, fileName)

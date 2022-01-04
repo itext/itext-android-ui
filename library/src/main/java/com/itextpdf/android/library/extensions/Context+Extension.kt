@@ -4,12 +4,8 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.provider.OpenableColumns
-import androidx.appcompat.app.AppCompatActivity
-import com.itextpdf.kernel.pdf.PdfDocument
-import com.itextpdf.kernel.pdf.PdfReader
-import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.android.library.Constants
 import java.io.File
-import java.io.FileNotFoundException
 
 /**
  * Returns the fileName of the file at the given uri.
@@ -23,7 +19,7 @@ fun Context.getFileName(uri: Uri): String? {
     var fileName: String? = null
 
     // get filename
-    if (uriString.startsWith("content://")) {
+    if (uriString.startsWith(Constants.CONTENT_PREFIX)) {
         var cursor: Cursor? = null
         try {
             cursor =
@@ -35,7 +31,7 @@ fun Context.getFileName(uri: Uri): String? {
         } finally {
             cursor?.close()
         }
-    } else if (uriString.startsWith("file://")) {
+    } else if (uriString.startsWith(Constants.FILE_PREFIX)) {
         fileName = pdfFile.name
     }
     return fileName
