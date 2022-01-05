@@ -8,16 +8,17 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ITextPDF">
+        android:theme="@style/Theme.ITextPDF"
+        android:fullBackupContent="true">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
+            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.PdfViewerActivity" />
     </application>
-
 </manifest>
