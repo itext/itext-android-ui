@@ -2,18 +2,15 @@ package com.itextpdf.android.library.extensions
 
 import android.app.Activity
 import android.content.Intent
-import android.database.Cursor
 import android.net.Uri
-import android.provider.OpenableColumns
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import java.io.File
 
 /**
  * An intent that can be used to select a pdf file with the phone's default file explorer.
  */
-val selectPdfIntent: Intent
+val AppCompatActivity.selectPdfIntent: Intent
     get() {
         val intentPDF = Intent(Intent.ACTION_GET_CONTENT)
         intentPDF.type = "application/pdf"

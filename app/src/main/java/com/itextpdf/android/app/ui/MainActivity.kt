@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
      */
     private val pdfSelectionResultLauncher = registerPdfSelectionResult { pdfUri, fileName ->
         if (pdfUri != null) {
-            PdfViewerActivity.launch(this, pdfUri, fileName ?: "")
+            PdfViewerActivity.launch(this, pdfUri, fileName)
         }
     }
 

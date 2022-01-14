@@ -1,4 +1,4 @@
-package com.itextpdf.android.library.ui
+package com.itextpdf.android.library.fragments
 
 import android.content.Context
 import android.content.res.TypedArray
@@ -18,10 +18,10 @@ import com.itextpdf.android.library.databinding.FragmentPdfBinding
  * to the pdf via the public variable pdfUri before committing the fragment in code or by setting
  * the attribute app:file_uri in xml.
  */
-class PdfFragment : Fragment() {
+open class PdfFragment : Fragment() {
 
     private lateinit var binding: FragmentPdfBinding
-    var fileName = ""
+    var fileName: String? = null
     var pdfUri: Uri? = null
 
     override fun onCreateView(
