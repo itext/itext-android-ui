@@ -5,7 +5,11 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.OpenableColumns
 import com.itextpdf.android.library.Constants
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfReader
+import com.itextpdf.kernel.pdf.PdfWriter
 import java.io.File
+import java.io.FileNotFoundException
 
 /**
  * Returns the fileName of the file at the given uri.

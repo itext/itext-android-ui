@@ -2,16 +2,22 @@ package com.itextpdf.android.library.fragments
 
 import android.content.Context
 import android.content.res.TypedArray
+import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Bundle
 import android.util.AttributeSet
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
+import com.itextpdf.android.library.pdfview.PdfReaderAdapter
+import com.itextpdf.android.library.pdfview.PdfViewModel
 
 /**
  * Fragment that can be used to display a pdf file. To pass the pdf file to the fragment set the uri
@@ -21,6 +27,8 @@ import com.itextpdf.android.library.databinding.FragmentPdfBinding
 open class PdfFragment : Fragment() {
 
     private lateinit var binding: FragmentPdfBinding
+    private lateinit var pdfReaderAdapter: PdfReaderAdapter
+    private lateinit var viewModel: PdfViewModel
     var fileName: String? = null
     var pdfUri: Uri? = null
 
@@ -41,7 +49,8 @@ open class PdfFragment : Fragment() {
         }
 
         pdfUri?.let {
-            binding.testThumbnail.set(it)
+            viewModel = ViewModelProvider(this).get(PdfViewModel::class.java)
+            setAdapter()
         }
 
         return binding.root
@@ -49,13 +58,19 @@ open class PdfFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.tvFileName.text = fileName
+//        binding.tvFileName.text = fileName
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(FILE_NAME, fileName)
         outState.putString(PDF_URI, pdfUri.toString())
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::viewModel.isInitialized)
+            viewModel.pdfRenderer?.close()
     }
 
     /**
@@ -79,6 +94,37 @@ open class PdfFragment : Fragment() {
             Log.v(TAG, "Pdf uri received : $attrUri")
         }
         a.recycle()
+    }
+
+    private fun setAdapter() {
+        pdfUri?.path?.let { pdfPath ->
+            if (::viewModel.isInitialized) {
+                binding.toolbar.title = fileName
+                viewModel.getPdfRenderer(pdfPath)
+                viewModel.pdfRenderer?.let {
+                    takeActionForPdfRendererNotNull(it)
+                } ?: run {
+                    takeActionForPdfRendererNull()
+                }
+            }
+        }
+    }
+
+    private fun takeActionForPdfRendererNotNull(pdfRenderer: PdfRenderer) {
+        val displayMetrics = DisplayMetrics()
+        requireActivity().windowManager.defaultDisplay.getMetrics(displayMetrics)
+        val width = displayMetrics.widthPixels
+        binding.rvPdfView.visibility = View.VISIBLE
+        binding.pdfWebView.visibility = View.GONE
+        binding.rvPdfView.layoutManager = LinearLayoutManager(requireContext())
+        pdfReaderAdapter = PdfReaderAdapter(pdfRenderer, width)
+        binding.rvPdfView.adapter = pdfReaderAdapter
+    }
+
+    private fun takeActionForPdfRendererNull() {
+        binding.rvPdfView.visibility = View.GONE
+        binding.pdfWebView.visibility = View.VISIBLE
+//        showPdfInWebView()
     }
 
     companion object {
