@@ -7,18 +7,21 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.AttributeSet
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
 import com.itextpdf.android.library.pdfview.PdfViewAdapter
 import com.itextpdf.android.library.pdfview.PdfViewModel
 
 import com.itextpdf.android.library.util.DisplaySizeUtil
+import com.itextpdf.android.library.R
+import androidx.appcompat.app.AppCompatActivity
+
+
+
 
 
 /**
@@ -40,6 +43,8 @@ open class PdfFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentPdfBinding.inflate(inflater, container, false)
+
+        setupToolbar()
 
         if (savedInstanceState != null) {
             // Restore last state
@@ -68,6 +73,31 @@ open class PdfFragment : Fragment() {
             viewModel.pdfRenderer?.close()
     }
 
+    private fun setupToolbar() {
+        setHasOptionsMenu(true)
+        if (::binding.isInitialized) {
+            (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbPdfFragment)
+            binding.tbPdfFragment.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+            binding.tbPdfFragment.setNavigationOnClickListener { requireActivity().onBackPressed() }
+            binding.tbPdfFragment.title = null
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_pdf_fragment, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.action_navigate_pdf -> {
+            Toast.makeText(requireContext(), "navigate", Toast.LENGTH_SHORT).show()
+            true
+        }
+        else -> {
+            super.onOptionsItemSelected(item)
+        }
+    }
+
     /**
      * Parse attributes during inflation from a view hierarchy into the
      * arguments we handle.
@@ -94,7 +124,6 @@ open class PdfFragment : Fragment() {
     private fun setAdapter() {
         pdfUri?.let { pdfUri ->
             if (::viewModel.isInitialized) {
-                binding.tbPdfFragment.title = fileName
                 viewModel.getPdfRenderer(pdfUri, requireContext())
                 viewModel.pdfRenderer?.let {
                     takeActionForPdfRendererNotNull(it)
