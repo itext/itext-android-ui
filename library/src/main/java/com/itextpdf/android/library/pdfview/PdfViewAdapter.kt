@@ -5,23 +5,22 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
-import com.itextpdf.android.library.pdfview.PdfReaderViewHolder
 
-class PdfReaderAdapter(
+class PdfViewAdapter(
     private val renderer: PdfRenderer,
     private val pageWidth: Int
-) : RecyclerView.Adapter<PdfReaderViewHolder>() {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PdfReaderViewHolder {
+) : RecyclerView.Adapter<PdfViewHolder>() {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PdfViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val view = inflater.inflate(R.layout.cell_pdf_page, parent, false)
-        return PdfReaderViewHolder(view, renderer, pageWidth)
+        return PdfViewHolder(view, renderer, pageWidth)
     }
 
     override fun getItemCount(): Int {
         return renderer.pageCount
     }
 
-    override fun onBindViewHolder(holder: PdfReaderViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: PdfViewHolder, position: Int) {
         holder.setPdfPage()
     }
 }

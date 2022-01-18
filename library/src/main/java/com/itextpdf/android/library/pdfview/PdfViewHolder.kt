@@ -6,7 +6,7 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.extensions.renderAndClose
 
-class PdfReaderViewHolder(itemView: View, private val pdfRenderer: PdfRenderer, private val pageWidth: Int) :
+class PdfViewHolder(itemView: View, private val pdfRenderer: PdfRenderer, private val pageWidth: Int) :
     RecyclerView.ViewHolder(itemView) {
 
     fun setPdfPage() {

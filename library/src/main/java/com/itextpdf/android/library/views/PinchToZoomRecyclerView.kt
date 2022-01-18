@@ -41,8 +41,8 @@ class PinchToZoomRecyclerView : RecyclerView {
 
     private fun setupDetectors() {
         if (!isInEditMode) {
-            mScaleDetector = ScaleGestureDetector(getContext(), ScaleListener())
-            gestureDetector = GestureDetector(getContext(), GestureListener())
+            mScaleDetector = ScaleGestureDetector(context, ScaleListener())
+            gestureDetector = GestureDetector(context, GestureListener())
         }
     }
 

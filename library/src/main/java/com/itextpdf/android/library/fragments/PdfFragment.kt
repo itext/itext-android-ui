@@ -6,7 +6,6 @@ import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Bundle
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -16,8 +15,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
-import com.itextpdf.android.library.pdfview.PdfReaderAdapter
+import com.itextpdf.android.library.pdfview.PdfViewAdapter
 import com.itextpdf.android.library.pdfview.PdfViewModel
+
+import com.itextpdf.android.library.util.DisplaySizeUtil
+
 
 /**
  * Fragment that can be used to display a pdf file. To pass the pdf file to the fragment set the uri
@@ -27,7 +29,7 @@ import com.itextpdf.android.library.pdfview.PdfViewModel
 open class PdfFragment : Fragment() {
 
     private lateinit var binding: FragmentPdfBinding
-    private lateinit var pdfReaderAdapter: PdfReaderAdapter
+    private lateinit var pdfViewAdapter: PdfViewAdapter
     private lateinit var viewModel: PdfViewModel
     var fileName: String? = null
     var pdfUri: Uri? = null
@@ -48,17 +50,10 @@ open class PdfFragment : Fragment() {
             }
         }
 
-        pdfUri?.let {
-            viewModel = ViewModelProvider(this).get(PdfViewModel::class.java)
-            setAdapter()
-        }
+        viewModel = ViewModelProvider(this).get(PdfViewModel::class.java)
+        setAdapter()
 
         return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-//        binding.tvFileName.text = fileName
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -97,34 +92,24 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setAdapter() {
-        pdfUri?.path?.let { pdfPath ->
+        pdfUri?.let { pdfUri ->
             if (::viewModel.isInitialized) {
-                binding.toolbar.title = fileName
-                viewModel.getPdfRenderer(pdfPath)
+                binding.tbPdfFragment.title = fileName
+                viewModel.getPdfRenderer(pdfUri, requireContext())
                 viewModel.pdfRenderer?.let {
                     takeActionForPdfRendererNotNull(it)
                 } ?: run {
-                    takeActionForPdfRendererNull()
+                    // TODO: handle error case
                 }
             }
         }
     }
 
     private fun takeActionForPdfRendererNotNull(pdfRenderer: PdfRenderer) {
-        val displayMetrics = DisplayMetrics()
-        requireActivity().windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val width = displayMetrics.widthPixels
-        binding.rvPdfView.visibility = View.VISIBLE
-        binding.pdfWebView.visibility = View.GONE
+        val width = DisplaySizeUtil.getScreenWidth(requireActivity())
         binding.rvPdfView.layoutManager = LinearLayoutManager(requireContext())
-        pdfReaderAdapter = PdfReaderAdapter(pdfRenderer, width)
-        binding.rvPdfView.adapter = pdfReaderAdapter
-    }
-
-    private fun takeActionForPdfRendererNull() {
-        binding.rvPdfView.visibility = View.GONE
-        binding.pdfWebView.visibility = View.VISIBLE
-//        showPdfInWebView()
+        pdfViewAdapter = PdfViewAdapter(pdfRenderer, width)
+        binding.rvPdfView.adapter = pdfViewAdapter
     }
 
     companion object {

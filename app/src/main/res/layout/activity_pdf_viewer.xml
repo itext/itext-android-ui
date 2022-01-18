@@ -14,7 +14,7 @@
 <!-- INFO: Use this to add the pdfFragment via xml (with options) -->
 <!--    <androidx.fragment.app.FragmentContainerView-->
 <!--        android:id="@+id/pdf_fragment_container"-->
-<!--        android:name="com.itextpdf.android.library.ui.PdfFragment"-->
+<!--        android:name="com.itextpdf.android.library.fragments.PdfFragment"-->
 <!--        android:layout_width="match_parent"-->
 <!--        android:layout_height="match_parent"-->
 <!--        app:layout_constraintTop_toTopOf="parent"-->

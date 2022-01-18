@@ -5,6 +5,7 @@
       <map>
         <entry key="../../../../../../../layout/custom_preview.xml" value="0.33697916666666666" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.25354609929078015" />
+        <entry key="app/src/main/res/layout/activity_pdf_viewer.xml" value="0.20380434782608695" />
         <entry key="library/src/main/res/layout/cell_pdf_page.xml" value="0.5234375" />
         <entry key="library/src/main/res/layout/fragment_pdf.xml" value="0.25455927051671734" />
         <entry key="library/src/main/res/layout/view_pdf.xml" value="0.18115942028985507" />

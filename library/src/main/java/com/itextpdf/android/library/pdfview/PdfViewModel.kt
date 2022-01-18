@@ -1,6 +1,8 @@
 package com.itextpdf.android.library.pdfview
 
+import android.content.Context
 import android.graphics.pdf.PdfRenderer
+import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -10,14 +12,13 @@ class PdfViewModel : ViewModel() {
 
     var pdfRenderer: PdfRenderer? = null
 
-    fun getPdfRenderer(filePath: String) {
+    fun getPdfRenderer(uri: Uri, context: Context) {
         try {
-            pdfRenderer = PdfRenderer(
-                ParcelFileDescriptor.open(
-                    File(filePath),
-                    ParcelFileDescriptor.MODE_READ_ONLY
-                )
-            )
+            val parcelFileDescriptor: ParcelFileDescriptor? =
+                context.contentResolver.openFileDescriptor(uri, "r")
+            if (parcelFileDescriptor != null) {
+                pdfRenderer = PdfRenderer(parcelFileDescriptor)
+            }
         } catch (exception: Exception) {
             throwExceptionForPdfRenderer(exception)
         }
