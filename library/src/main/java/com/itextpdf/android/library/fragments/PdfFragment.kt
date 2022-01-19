@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
@@ -124,16 +123,16 @@ open class PdfFragment : Fragment() {
 
     private fun setupPdfNavigation() {
         pdfUri?.let {
+            var adapter: PdfNavigationAdapter? = null
             // prepare pre-defined pdf files from the assets folder to display them in a recyclerView
             val data = mutableListOf<PdfPageRecyclerItem>()
             for (i in 0 until pdfViewAdapter.itemCount) {
                 data.add(PdfPageItem(it, i) {
-                    Toast.makeText(requireContext(), "page selected: ${i + 1}", Toast.LENGTH_SHORT)
-                        .show()
+                    adapter?.updateSelectedItem(i)
                 })
             }
 
-            val adapter = PdfNavigationAdapter(data)
+            adapter = PdfNavigationAdapter(data)
             binding.includedBottomSheetActions.rvPdfPages.adapter = adapter
             binding.includedBottomSheetActions.rvPdfPages.layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)

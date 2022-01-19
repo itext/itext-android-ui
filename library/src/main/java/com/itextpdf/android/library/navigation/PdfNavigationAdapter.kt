@@ -7,6 +7,8 @@ import com.itextpdf.android.library.navigation.PdfPageRecyclerItem.Companion.TYP
 
 class PdfNavigationAdapter(val data: List<PdfPageRecyclerItem>) :
     RecyclerView.Adapter<PdfNavigationViewHolder>() {
+    private var selectedPos = RecyclerView.NO_POSITION
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PdfNavigationViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
             viewType,
@@ -28,5 +30,12 @@ class PdfNavigationAdapter(val data: List<PdfPageRecyclerItem>) :
     override fun onBindViewHolder(holder: PdfNavigationViewHolder, position: Int) {
         val item = data[position]
         holder.bind(item)
+        holder.itemView.isSelected = selectedPos == position
+    }
+
+    fun updateSelectedItem(selectedIndex: Int) {
+        notifyItemChanged(selectedPos)
+        selectedPos = selectedIndex
+        notifyItemChanged(selectedPos)
     }
 }

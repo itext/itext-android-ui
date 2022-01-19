@@ -24,7 +24,7 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
 
     init {
         val inflater = LayoutInflater.from(context)
-        inflater.inflate(R.layout.view_pdf, this, true)
+        inflater.inflate(R.layout.view_pdf_thumbnail, this, true)
 
 //        val a = context.obtainStyledAttributes(
 //            attrs,
