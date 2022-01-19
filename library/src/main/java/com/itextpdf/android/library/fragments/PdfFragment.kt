@@ -8,19 +8,21 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.itextpdf.android.library.databinding.FragmentPdfBinding
-import com.itextpdf.android.library.pdfview.PdfViewAdapter
-import com.itextpdf.android.library.pdfview.PdfViewModel
-
-import com.itextpdf.android.library.util.DisplaySizeUtil
-import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
+import com.itextpdf.android.library.databinding.FragmentPdfBinding
+import com.itextpdf.android.library.navigation.PdfNavigationAdapter
+import com.itextpdf.android.library.navigation.PdfPageItem
+import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
+import com.itextpdf.android.library.pdfview.PdfViewAdapter
+import com.itextpdf.android.library.pdfview.PdfViewModel
+import com.itextpdf.android.library.util.DisplaySizeUtil
 
 
 /**
@@ -34,7 +36,7 @@ open class PdfFragment : Fragment() {
     private lateinit var pdfViewAdapter: PdfViewAdapter
     private lateinit var viewModel: PdfViewModel
 
-    private val actionsBottomSheet by lazy { binding.includeBottomSheetActions.bottomSheetActions }
+    private val actionsBottomSheet by lazy { binding.includedBottomSheetActions.bottomSheetActions }
     private lateinit var actionsBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     var fileName: String? = null
@@ -60,6 +62,8 @@ open class PdfFragment : Fragment() {
 
         viewModel = ViewModelProvider(this).get(PdfViewModel::class.java)
         setAdapter()
+
+        setupPdfNavigation()
 
         return binding.root
     }
@@ -99,8 +103,6 @@ open class PdfFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_navigate_pdf -> {
-//            val actionsBottomSheet = ActionsBottomSheet()
-//            actionsBottomSheet.show(requireActivity().supportFragmentManager, ActionsBottomSheet.TAG)
             toggleBottomSheetVisibility()
             true
         }
@@ -115,8 +117,27 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setBottomSheetVisibility(isVisible: Boolean) {
-        val updatedState = if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
+        val updatedState =
+            if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
         actionsBottomSheetBehavior.state = updatedState
+    }
+
+    private fun setupPdfNavigation() {
+        pdfUri?.let {
+            // prepare pre-defined pdf files from the assets folder to display them in a recyclerView
+            val data = mutableListOf<PdfPageRecyclerItem>()
+            for (i in 0 until pdfViewAdapter.itemCount) {
+                data.add(PdfPageItem(it, i) {
+                    Toast.makeText(requireContext(), "page selected: ${i + 1}", Toast.LENGTH_SHORT)
+                        .show()
+                })
+            }
+
+            val adapter = PdfNavigationAdapter(data)
+            binding.includedBottomSheetActions.rvPdfPages.adapter = adapter
+            binding.includedBottomSheetActions.rvPdfPages.layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        }
     }
 
     /**

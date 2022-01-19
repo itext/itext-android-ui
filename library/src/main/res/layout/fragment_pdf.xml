@@ -32,7 +32,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <include
-        android:id="@+id/includeBottomSheetActions"
+        android:id="@+id/includedBottomSheetActions"
         layout="@layout/bottom_sheet_actions" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

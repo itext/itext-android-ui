@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         val type: Int
 
         companion object {
-            const val TYPE_PDF = R.layout.recycler_item_pdf
+            const val TYPE_PDF = R.layout.recycler_item_pdf_selection
         }
     }
 

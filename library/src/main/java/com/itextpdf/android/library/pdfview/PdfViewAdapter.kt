@@ -12,7 +12,7 @@ class PdfViewAdapter(
 ) : RecyclerView.Adapter<PdfViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PdfViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val view = inflater.inflate(R.layout.cell_pdf_page, parent, false)
+        val view = inflater.inflate(R.layout.recycler_item_pdf_page, parent, false)
         return PdfViewHolder(view, renderer, pageWidth)
     }
 
