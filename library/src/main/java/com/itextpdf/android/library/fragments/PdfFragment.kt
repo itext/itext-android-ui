@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,6 +17,9 @@ import com.itextpdf.android.library.pdfview.PdfViewModel
 
 import com.itextpdf.android.library.util.DisplaySizeUtil
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 
 
@@ -31,6 +33,10 @@ open class PdfFragment : Fragment() {
     private lateinit var binding: FragmentPdfBinding
     private lateinit var pdfViewAdapter: PdfViewAdapter
     private lateinit var viewModel: PdfViewModel
+
+    private val actionsBottomSheet by lazy { binding.includeBottomSheetActions.bottomSheetActions }
+    private lateinit var actionsBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+
     var fileName: String? = null
     var pdfUri: Uri? = null
 
@@ -56,6 +62,12 @@ open class PdfFragment : Fragment() {
         setAdapter()
 
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        actionsBottomSheetBehavior = BottomSheetBehavior.from(actionsBottomSheet)
+        setBottomSheetVisibility(false)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -87,12 +99,24 @@ open class PdfFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_navigate_pdf -> {
-            Toast.makeText(requireContext(), "navigate", Toast.LENGTH_SHORT).show()
+//            val actionsBottomSheet = ActionsBottomSheet()
+//            actionsBottomSheet.show(requireActivity().supportFragmentManager, ActionsBottomSheet.TAG)
+            toggleBottomSheetVisibility()
             true
         }
         else -> {
             super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun toggleBottomSheetVisibility() {
+        // if bottom sheet is collapsed, set it to visible, if not set it to invisible
+        setBottomSheetVisibility(actionsBottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+    }
+
+    private fun setBottomSheetVisibility(isVisible: Boolean) {
+        val updatedState = if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
+        actionsBottomSheetBehavior.state = updatedState
     }
 
     /**
