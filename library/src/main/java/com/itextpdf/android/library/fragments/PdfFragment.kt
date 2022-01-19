@@ -17,11 +17,8 @@ import com.itextpdf.android.library.pdfview.PdfViewAdapter
 import com.itextpdf.android.library.pdfview.PdfViewModel
 
 import com.itextpdf.android.library.util.DisplaySizeUtil
-import com.itextpdf.android.library.R
 import androidx.appcompat.app.AppCompatActivity
-
-
-
+import com.itextpdf.android.library.R
 
 
 /**
@@ -77,7 +74,7 @@ open class PdfFragment : Fragment() {
         setHasOptionsMenu(true)
         if (::binding.isInitialized) {
             (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbPdfFragment)
-            binding.tbPdfFragment.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+            binding.tbPdfFragment.setNavigationIcon(R.drawable.abc_ic_ab_back_material)
             binding.tbPdfFragment.setNavigationOnClickListener { requireActivity().onBackPressed() }
             binding.tbPdfFragment.title = null
         }
