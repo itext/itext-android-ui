@@ -29,8 +29,11 @@ class PdfNavigationAdapter(val data: List<PdfPageRecyclerItem>) :
 
     override fun onBindViewHolder(holder: PdfNavigationViewHolder, position: Int) {
         val item = data[position]
+        val selected = selectedPos == position
+        
         holder.bind(item)
-        holder.itemView.isSelected = selectedPos == position
+        holder.itemView.isSelected = selected
+        holder.updateTextSize(selected)
     }
 
     fun updateSelectedItem(selectedIndex: Int) {

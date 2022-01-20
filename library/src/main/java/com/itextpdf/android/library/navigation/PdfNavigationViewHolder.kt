@@ -1,6 +1,8 @@
 package com.itextpdf.android.library.navigation
 
+import android.graphics.Typeface
 import android.net.Uri
+import android.util.TypedValue
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -19,6 +21,16 @@ class PdfNavigationViewHolder(val view: View) : PdfBaseNavigationViewHolder(view
             itemView.setOnClickListener {
                 item.action()
             }
+        }
+    }
+    
+    fun updateTextSize(selected: Boolean) {
+        if (selected) {
+            tvPageNumber.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            tvPageNumber.setTypeface(null, Typeface.BOLD)
+        } else {
+            tvPageNumber.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            tvPageNumber.setTypeface(null, Typeface.NORMAL)
         }
     }
 }

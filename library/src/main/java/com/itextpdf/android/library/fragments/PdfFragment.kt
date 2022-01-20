@@ -12,7 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
@@ -136,6 +138,14 @@ open class PdfFragment : Fragment() {
             binding.includedBottomSheetActions.rvPdfPages.adapter = adapter
             binding.includedBottomSheetActions.rvPdfPages.layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+            // make selection snappier as view holder can be reused
+            val itemAnimator: DefaultItemAnimator = object : DefaultItemAnimator() {
+                override fun canReuseUpdatedViewHolder(viewHolder: RecyclerView.ViewHolder): Boolean {
+                    return true
+                }
+            }
+            binding.includedBottomSheetActions.rvPdfPages.itemAnimator = itemAnimator
         }
     }
 
