@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem.Companion.TYPE_PDF_PAGE
 
-class PdfNavigationAdapter(val data: List<PdfPageRecyclerItem>) :
+class PdfNavigationAdapter(private val data: List<PdfPageRecyclerItem>) :
     RecyclerView.Adapter<PdfNavigationViewHolder>() {
     private var selectedPos = RecyclerView.NO_POSITION
 
@@ -30,7 +30,7 @@ class PdfNavigationAdapter(val data: List<PdfPageRecyclerItem>) :
     override fun onBindViewHolder(holder: PdfNavigationViewHolder, position: Int) {
         val item = data[position]
         val selected = selectedPos == position
-        
+
         holder.bind(item)
         holder.itemView.isSelected = selected
         holder.updateTextSize(selected)

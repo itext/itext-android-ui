@@ -37,6 +37,8 @@ open class PdfFragment : Fragment() {
     private lateinit var pdfViewAdapter: PdfViewAdapter
     private lateinit var viewModel: PdfViewModel
 
+    private lateinit var pdfNavigationAdapter: PdfNavigationAdapter
+
     private val actionsBottomSheet by lazy { binding.includedBottomSheetActions.bottomSheetActions }
     private lateinit var actionsBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
@@ -118,6 +120,9 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setBottomSheetVisibility(isVisible: Boolean) {
+        if (isVisible) {
+            pdfNavigationAdapter.updateSelectedItem(getCurrentlyVisibleItemPosition())
+        }
         val updatedState =
             if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
         actionsBottomSheetBehavior.state = updatedState
@@ -125,17 +130,17 @@ open class PdfFragment : Fragment() {
 
     private fun setupPdfNavigation() {
         pdfUri?.let {
-            var adapter: PdfNavigationAdapter? = null
             // prepare pre-defined pdf files from the assets folder to display them in a recyclerView
             val data = mutableListOf<PdfPageRecyclerItem>()
             for (i in 0 until pdfViewAdapter.itemCount) {
                 data.add(PdfPageItem(it, i) {
-                    adapter?.updateSelectedItem(i)
+                    pdfNavigationAdapter.updateSelectedItem(i)
+                    scrollToPage(i)
                 })
             }
 
-            adapter = PdfNavigationAdapter(data)
-            binding.includedBottomSheetActions.rvPdfPages.adapter = adapter
+            pdfNavigationAdapter = PdfNavigationAdapter(data)
+            binding.includedBottomSheetActions.rvPdfPages.adapter = pdfNavigationAdapter
             binding.includedBottomSheetActions.rvPdfPages.layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
@@ -147,6 +152,14 @@ open class PdfFragment : Fragment() {
             }
             binding.includedBottomSheetActions.rvPdfPages.itemAnimator = itemAnimator
         }
+    }
+
+    private fun scrollToPage(position: Int) {
+        (binding.rvPdfView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
+    }
+
+    private fun getCurrentlyVisibleItemPosition(): Int {
+        return (binding.rvPdfView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
     }
 
     /**
