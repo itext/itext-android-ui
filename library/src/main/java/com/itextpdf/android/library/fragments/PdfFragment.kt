@@ -121,7 +121,11 @@ open class PdfFragment : Fragment() {
 
     private fun setBottomSheetVisibility(isVisible: Boolean) {
         if (isVisible) {
-            pdfNavigationAdapter.updateSelectedItem(getCurrentlyVisibleItemPosition())
+            val position = getCurrentlyVisibleItemPosition()
+            pdfNavigationAdapter.updateSelectedItem(position)
+            (binding.includedBottomSheetActions.rvPdfPages.layoutManager as LinearLayoutManager).scrollToPosition(
+                position
+            )
         }
         val updatedState =
             if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
@@ -155,7 +159,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun scrollToPage(position: Int) {
-        (binding.rvPdfView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
+        (binding.rvPdfView.layoutManager as LinearLayoutManager).scrollToPosition(position)
     }
 
     private fun getCurrentlyVisibleItemPosition(): Int {
