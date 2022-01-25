@@ -18,21 +18,12 @@
             app:titleTextColor="@color/black" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.github.barteksc.pdfviewer.PDFView
+        android:id="@+id/pdfView"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:background="@color/light_grey"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <com.itextpdf.android.library.views.PinchToZoomRecyclerView
-            android:id="@+id/rvPdfView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/light_grey"
-            android:scrollbarSize="8dp"
-            android:scrollbarThumbVertical="@drawable/scroll_bar"
-            android:scrollbars="vertical" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_height="match_parent" />
 
     <include
         android:id="@+id/includedBottomSheetActions"

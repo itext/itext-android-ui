@@ -2,7 +2,6 @@ package com.itextpdf.android.library.fragments
 
 import android.content.Context
 import android.content.res.TypedArray
-import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Bundle
 import android.util.AttributeSet
@@ -11,19 +10,16 @@ import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
 import com.itextpdf.android.library.navigation.PdfNavigationAdapter
 import com.itextpdf.android.library.navigation.PdfPageItem
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
-import com.itextpdf.android.library.pdfview.PdfViewAdapter
-import com.itextpdf.android.library.pdfview.PdfViewModel
-import com.itextpdf.android.library.util.DisplaySizeUtil
 
 
 /**
@@ -31,11 +27,9 @@ import com.itextpdf.android.library.util.DisplaySizeUtil
  * to the pdf via the public variable pdfUri before committing the fragment in code or by setting
  * the attribute app:file_uri in xml.
  */
-open class PdfFragment : Fragment() {
+open class PdfFragment : Fragment(), OnLoadCompleteListener {
 
     private lateinit var binding: FragmentPdfBinding
-    private lateinit var pdfViewAdapter: PdfViewAdapter
-    private lateinit var viewModel: PdfViewModel
 
     private lateinit var pdfNavigationAdapter: PdfNavigationAdapter
 
@@ -63,10 +57,7 @@ open class PdfFragment : Fragment() {
             }
         }
 
-        viewModel = ViewModelProvider(this).get(PdfViewModel::class.java)
-        setAdapter()
-
-        setupPdfNavigation()
+        setupPdfView()
 
         return binding.root
     }
@@ -81,12 +72,6 @@ open class PdfFragment : Fragment() {
         super.onSaveInstanceState(outState)
         outState.putString(FILE_NAME, fileName)
         outState.putString(PDF_URI, pdfUri.toString())
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (::viewModel.isInitialized)
-            viewModel.pdfRenderer?.close()
     }
 
     private fun setupToolbar() {
@@ -136,7 +121,7 @@ open class PdfFragment : Fragment() {
         pdfUri?.let {
             // prepare pre-defined pdf files from the assets folder to display them in a recyclerView
             val data = mutableListOf<PdfPageRecyclerItem>()
-            for (i in 0 until pdfViewAdapter.itemCount) {
+            for (i in 0 until binding.pdfView.pageCount) {
                 data.add(PdfPageItem(it, i) {
                     pdfNavigationAdapter.updateSelectedItem(i)
                     scrollToPage(i)
@@ -159,11 +144,11 @@ open class PdfFragment : Fragment() {
     }
 
     private fun scrollToPage(position: Int) {
-        (binding.rvPdfView.layoutManager as LinearLayoutManager).scrollToPosition(position)
+        binding.pdfView.jumpTo(position)
     }
 
     private fun getCurrentlyVisibleItemPosition(): Int {
-        return (binding.rvPdfView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+        return binding.pdfView.currentPage
     }
 
     /**
@@ -189,24 +174,25 @@ open class PdfFragment : Fragment() {
         a.recycle()
     }
 
-    private fun setAdapter() {
+    private fun setupPdfView() {
+        //TODO: manually let the user set stuff like spacing and color
         pdfUri?.let { pdfUri ->
-            if (::viewModel.isInitialized) {
-                viewModel.getPdfRenderer(pdfUri, requireContext())
-                viewModel.pdfRenderer?.let {
-                    takeActionForPdfRendererNotNull(it)
-                } ?: run {
-                    // TODO: handle error case
-                }
-            }
+            binding.pdfView.fromUri(pdfUri)
+                .onLoad(this)
+//                .defaultPage(pageNumber)
+//                .onPageChange(this)
+//                .scrollHandle(DefaultScrollHandle(this))
+//                .onPageError(this)
+                .enableAnnotationRendering(true)
+                .spacing(10)
+                .load()
+
+//            binding.pdfView.setBackgroundColor(Color.LTGRAY)
         }
     }
 
-    private fun takeActionForPdfRendererNotNull(pdfRenderer: PdfRenderer) {
-        val width = DisplaySizeUtil.getScreenWidth(requireActivity())
-        binding.rvPdfView.layoutManager = LinearLayoutManager(requireContext())
-        pdfViewAdapter = PdfViewAdapter(pdfRenderer, width)
-        binding.rvPdfView.adapter = pdfViewAdapter
+    override fun loadComplete(nbPages: Int) {
+        setupPdfNavigation()
     }
 
     companion object {
