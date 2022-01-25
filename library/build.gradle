@@ -44,6 +44,7 @@ dependencies {
     implementation("com.itextpdf:kernel:7.1.17")
     // https://mvnrepository.com/artifact/com.itextpdf/layout
     implementation("com.itextpdf:layout:7.1.17")
+    implementation("com.itextpdf:io:7.1.17")
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
