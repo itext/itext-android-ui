@@ -1,14 +1,11 @@
 package com.itextpdf.android.library.views
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
-import android.widget.ImageView
+import com.github.barteksc.pdfviewer.PDFView
 import com.itextpdf.android.library.R
 import java.io.File
 
@@ -20,7 +17,7 @@ import java.io.File
  */
 open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
-    val pdfImageView: ImageView
+    val pdfThumbnailView: PDFView
 
     init {
         val inflater = LayoutInflater.from(context)
@@ -31,7 +28,7 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
 //            R.styleable.TextInputView, 0, 0
 //        )
 
-        pdfImageView = findViewById(R.id.imageViewPdf)
+        pdfThumbnailView = findViewById(R.id.pdfThumbnailView)
 
 //        a.recycle() // recycle for re-use (required)
     }
@@ -46,10 +43,7 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
     fun set(file: File, pageIndex: Int = 0) {
 
         post {
-            // create a new renderer
-            val renderer =
-                PdfRenderer(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY))
-            setImageViewWithRenderer(renderer, pageIndex)
+            pdfThumbnailView.fromFile(file).pages(pageIndex).load()
         }
     }
 
@@ -61,28 +55,8 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
      * @param pageIndex the index of the page that should be used as thumbnail. default: 0
      */
     fun set(uri: Uri, pageIndex: Int = 0) {
-
         post {
-            val parcelFileDescriptor: ParcelFileDescriptor? =
-                context.contentResolver.openFileDescriptor(uri, "r")
-            if (parcelFileDescriptor != null) {
-                val renderer = PdfRenderer(parcelFileDescriptor)
-                setImageViewWithRenderer(renderer, pageIndex)
-            }
+            pdfThumbnailView.fromUri(uri).pages(pageIndex).load()
         }
-    }
-
-    private fun setImageViewWithRenderer(renderer: PdfRenderer, pageIndex: Int) {
-        val page = renderer.openPage(pageIndex)
-
-        val bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888)
-        // say we render for showing on the screen
-        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-        page.close()
-
-        // close the renderer
-        renderer.close()
-
-        pdfImageView.setImageBitmap(bitmap)
     }
 }
