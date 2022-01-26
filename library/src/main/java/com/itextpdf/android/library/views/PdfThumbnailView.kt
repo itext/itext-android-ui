@@ -1,13 +1,17 @@
 package com.itextpdf.android.library.views
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
-import com.github.barteksc.pdfviewer.PDFView
+import android.widget.ImageView
 import com.itextpdf.android.library.R
+import com.shockwave.pdfium.PdfiumCore
 import java.io.File
+
 
 /**
  * View that easily allows to display a thumbnail for a pdf file by setting it as file or uri.
@@ -17,7 +21,7 @@ import java.io.File
  */
 open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
-    val pdfThumbnailView: PDFView
+    val pdfImageView: ImageView
 
     init {
         val inflater = LayoutInflater.from(context)
@@ -28,7 +32,7 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
 //            R.styleable.TextInputView, 0, 0
 //        )
 
-        pdfThumbnailView = findViewById(R.id.pdfThumbnailView)
+        pdfImageView = findViewById(R.id.pdfThumbnailView)
 
 //        a.recycle() // recycle for re-use (required)
     }
@@ -43,7 +47,9 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
     fun set(file: File, pageIndex: Int = 0) {
 
         post {
-            pdfThumbnailView.fromFile(file).pages(pageIndex).load()
+            val fileDescriptor: ParcelFileDescriptor =
+                ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+            setImageViewWithFileDescriptor(fileDescriptor, pageIndex)
         }
     }
 
@@ -55,8 +61,35 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
      * @param pageIndex the index of the page that should be used as thumbnail. default: 0
      */
     fun set(uri: Uri, pageIndex: Int = 0) {
+
         post {
-            pdfThumbnailView.fromUri(uri).pages(pageIndex).load()
+            val fileDescriptor: ParcelFileDescriptor? =
+                context.contentResolver.openFileDescriptor(uri, "r")
+            fileDescriptor?.let {
+                setImageViewWithFileDescriptor(fileDescriptor, pageIndex)
+            }
+        }
+    }
+
+    private fun setImageViewWithFileDescriptor(
+        fileDescriptor: ParcelFileDescriptor,
+        pageIndex: Int
+    ) {
+        val pdfiumCore = PdfiumCore(context)
+        try {
+            val pdfDocument = pdfiumCore.newDocument(fileDescriptor)
+            pdfiumCore.openPage(pdfDocument, pageIndex)
+
+            val width = pdfiumCore.getPageWidthPoint(pdfDocument, pageIndex)
+            val height = pdfiumCore.getPageHeightPoint(pdfDocument, pageIndex)
+
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+            pdfiumCore.renderPageBitmap(pdfDocument, bitmap, pageIndex, 0, 0, width, height, true)
+
+            pdfImageView.setImageBitmap(bitmap)
+            pdfiumCore.closeDocument(pdfDocument)
+        } catch (exception: Exception) {
+            exception.printStackTrace()
         }
     }
 }
