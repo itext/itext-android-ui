@@ -71,10 +71,12 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         lp.setMargins(0, 0, 0, 0)
         val tvlp =
             LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        tvlp.addRule(CENTER_IN_PARENT, TRUE)
+        tvlp.addRule(ALIGN_PARENT_TOP, TRUE)
+        tvlp.addRule(CENTER_HORIZONTAL, TRUE)
         addView(textView, tvlp)
         lp.addRule(align)
         pdfView.addView(this, lp)
+        textView.visibility = GONE
         this.pdfView = pdfView
     }
 
@@ -176,6 +178,7 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         }
         when (event.action) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                textView.visibility = VISIBLE
                 pdfView.stopFling()
                 viewHandler.removeCallbacks(hidePageScrollerRunnable)
                 currentPos = if (pdfView.isSwipeVertical) {
@@ -203,6 +206,7 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
                 return true
             }
             MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+                textView.visibility = GONE
                 hideDelayed()
                 pdfView.performPageSnap()
                 return true
