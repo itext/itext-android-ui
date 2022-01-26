@@ -20,6 +20,7 @@ import com.itextpdf.android.library.databinding.FragmentPdfBinding
 import com.itextpdf.android.library.navigation.PdfNavigationAdapter
 import com.itextpdf.android.library.navigation.PdfPageItem
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
+import com.itextpdf.android.library.views.CustomScrollHandle
 
 
 /**
@@ -181,7 +182,7 @@ open class PdfFragment : Fragment(), OnLoadCompleteListener {
                 .onLoad(this)
 //                .defaultPage(pageNumber)
 //                .onPageChange(this)
-//                .scrollHandle(DefaultScrollHandle(this))
+                .scrollHandle(CustomScrollHandle(requireContext()))
 //                .onPageError(this)
                 .enableAnnotationRendering(true)
                 .spacing(10)
