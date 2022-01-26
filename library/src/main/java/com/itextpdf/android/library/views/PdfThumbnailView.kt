@@ -32,7 +32,7 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
 //            R.styleable.TextInputView, 0, 0
 //        )
 
-        pdfImageView = findViewById(R.id.pdfThumbnailView)
+        pdfImageView = findViewById(R.id.imageViewPdf)
 
 //        a.recycle() // recycle for re-use (required)
     }
