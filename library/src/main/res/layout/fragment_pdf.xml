@@ -25,6 +25,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <ProgressBar
+        android:id="@+id/pdfLoadingIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/orange_700"
+        android:layout_gravity="center" />
+
     <include
         android:id="@+id/includedBottomSheetActions"
         layout="@layout/bottom_sheet_actions" />

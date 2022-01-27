@@ -7,13 +7,14 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
@@ -28,7 +29,7 @@ import com.itextpdf.android.library.views.CustomScrollHandle
  * to the pdf via the public variable pdfUri before committing the fragment in code or by setting
  * the attribute app:file_uri in xml.
  */
-open class PdfFragment : Fragment(), OnLoadCompleteListener {
+open class PdfFragment : Fragment() {
 
     private lateinit var binding: FragmentPdfBinding
 
@@ -36,6 +37,8 @@ open class PdfFragment : Fragment(), OnLoadCompleteListener {
 
     private val actionsBottomSheet by lazy { binding.includedBottomSheetActions.bottomSheetActions }
     private lateinit var actionsBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+
+    private var navViewSetupComplete = false
 
     var fileName: String? = null
     var pdfUri: Uri? = null
@@ -92,7 +95,8 @@ open class PdfFragment : Fragment(), OnLoadCompleteListener {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_navigate_pdf -> {
-            toggleBottomSheetVisibility()
+            if (navViewSetupComplete)
+                toggleBottomSheetVisibility()
             true
         }
         else -> {
@@ -141,6 +145,8 @@ open class PdfFragment : Fragment(), OnLoadCompleteListener {
                 }
             }
             binding.includedBottomSheetActions.rvPdfPages.itemAnimator = itemAnimator
+
+            navViewSetupComplete = true
         }
     }
 
@@ -178,22 +184,24 @@ open class PdfFragment : Fragment(), OnLoadCompleteListener {
     private fun setupPdfView() {
         //TODO: manually let the user set stuff like spacing and color
         pdfUri?.let { pdfUri ->
+            binding.pdfLoadingIndicator.visibility = VISIBLE
             binding.pdfView.fromUri(pdfUri)
-                .onLoad(this)
 //                .defaultPage(pageNumber)
 //                .onPageChange(this)
                 .scrollHandle(CustomScrollHandle(requireContext()))
-//                .onPageError(this)
+                .onPageError { page, t ->
+                    binding.pdfLoadingIndicator.visibility = GONE
+                }
+                .onLoad {
+                    setupPdfNavigation()
+                    binding.pdfLoadingIndicator.visibility = GONE
+                }
                 .enableAnnotationRendering(true)
                 .spacing(10)
                 .load()
 
 //            binding.pdfView.setBackgroundColor(Color.LTGRAY)
         }
-    }
-
-    override fun loadComplete(nbPages: Int) {
-        setupPdfNavigation()
     }
 
     companion object {
