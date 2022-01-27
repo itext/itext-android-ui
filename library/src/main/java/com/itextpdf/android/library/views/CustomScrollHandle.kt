@@ -15,7 +15,6 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.github.barteksc.pdfviewer.PDFView
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle
-import com.github.barteksc.pdfviewer.util.Util
 import com.itextpdf.android.library.R
 
 
@@ -43,9 +42,9 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         handleViewTouched = findViewById(R.id.handleViewTouched)
         handleViewNotTouched = findViewById(R.id.handleViewNotTouched)
 
-        visibility = INVISIBLE
         isHandleTouched(false)
         setTextSize(DEFAULT_TEXT_SIZE)
+        hide()
     }
 
     override fun setupLayout(pdfView: PDFView) {
@@ -55,8 +54,8 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         val background: Drawable?
         // determine handle position, default is right (when scrolling vertically) or bottom (when scrolling horizontally)
         if (pdfView.isSwipeVertical) {
-            width = HANDLE_SHORT
-            height = HANDLE_LONG
+            width = DEFAULT_HANDLE_SHORT_TOUCHED
+            height = DEFAULT_HANDLE_LONG
             if (inverted) { // left
                 align = ALIGN_PARENT_LEFT
 //                background =
@@ -67,8 +66,8 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
 //                    ContextCompat.getDrawable(context, R.drawable.scroll_bar)
             }
         } else {
-            width = HANDLE_LONG
-            height = HANDLE_SHORT
+            width = DEFAULT_HANDLE_LONG
+            height = DEFAULT_HANDLE_SHORT_TOUCHED
             if (inverted) { // top
                 align = ALIGN_PARENT_TOP
 //                background =
@@ -246,13 +245,14 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         } else {
             handleViewTouched.visibility = INVISIBLE
             handleViewNotTouched.visibility = VISIBLE
-            clPageIndicator.visibility = INVISIBLE
+            clPageIndicator.visibility = GONE
         }
     }
 
     companion object {
-        private const val HANDLE_LONG = 70
-        private const val HANDLE_SHORT = 20
+        private const val DEFAULT_HANDLE_LONG = 64
+        private const val DEFAULT_HANDLE_SHORT_TOUCHED = 16
+        private const val DEFAULT_HANDLE_SHORT_UNTOUCHED = 8
         private const val DEFAULT_TEXT_SIZE = 16
     }
 }
