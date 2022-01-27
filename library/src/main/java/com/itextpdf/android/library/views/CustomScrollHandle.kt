@@ -116,16 +116,20 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         if (java.lang.Float.isInfinite(pos) || java.lang.Float.isNaN(pos)) {
             return
         }
-        val pdfViewSize: Float = if (pdfView.isSwipeVertical) {
-            pdfView.height.toFloat()
+        val pdfViewSize: Float
+        val handleSize: Float
+        if (pdfView.isSwipeVertical) {
+            pdfViewSize = pdfView.height.toFloat()
+            handleSize = height.toFloat()
         } else {
-            pdfView.width.toFloat()
+            pdfViewSize = pdfView.width.toFloat()
+            handleSize = width.toFloat()
         }
         pos -= relativeHandleMiddle
         if (pos < 0) {
             pos = 0f
-        } else if (pos > pdfViewSize - Util.getDP(context, HANDLE_SHORT)) {
-            pos = pdfViewSize - Util.getDP(context, HANDLE_SHORT)
+        } else if (pos > pdfViewSize - handleSize) {
+            pos = pdfViewSize - handleSize
         }
         if (pdfView.isSwipeVertical) {
             y = pos
