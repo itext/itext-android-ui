@@ -2,17 +2,17 @@ package com.itextpdf.android.library.views
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
-import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.github.barteksc.pdfviewer.PDFView
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle
 import com.github.barteksc.pdfviewer.util.Util
@@ -23,12 +23,30 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
     RelativeLayout(context), ScrollHandle {
 
     lateinit var pdfView: PDFView
+    private val tvCurrentPage: TextView
+    private val clPageIndicator: ConstraintLayout
+    private val handleViewTouched: View
+    private val handleViewNotTouched: View
 
+    private var pageCount = 0
     private var relativeHandleMiddle = 0f
-    private var textView: TextView = TextView(context)
     private var currentPos = 0f
     private val viewHandler = Handler(Looper.getMainLooper())
     private val hidePageScrollerRunnable = Runnable { hide() }
+
+    init {
+        val inflater = LayoutInflater.from(context)
+        inflater.inflate(R.layout.custom_scroll_handle, this, true)
+
+        tvCurrentPage = findViewById(R.id.tvCurrentPage)
+        clPageIndicator = findViewById(R.id.clPageIndicator)
+        handleViewTouched = findViewById(R.id.handleViewTouched)
+        handleViewNotTouched = findViewById(R.id.handleViewNotTouched)
+
+        visibility = INVISIBLE
+        isHandleTouched(false)
+        setTextSize(DEFAULT_TEXT_SIZE)
+    }
 
     override fun setupLayout(pdfView: PDFView) {
         val align: Int
@@ -41,43 +59,43 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
             height = HANDLE_LONG
             if (inverted) { // left
                 align = ALIGN_PARENT_LEFT
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.scroll_bar)
+//                background =
+//                    ContextCompat.getDrawable(context, R.drawable.scroll_bar)
             } else { // right
                 align = ALIGN_PARENT_RIGHT
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.scroll_bar)
+//                background =
+//                    ContextCompat.getDrawable(context, R.drawable.scroll_bar)
             }
         } else {
             width = HANDLE_LONG
             height = HANDLE_SHORT
             if (inverted) { // top
                 align = ALIGN_PARENT_TOP
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.scroll_bar)
+//                background =
+//                    ContextCompat.getDrawable(context, R.drawable.scroll_bar)
             } else { // bottom
                 align = ALIGN_PARENT_BOTTOM
-                background =
-                    ContextCompat.getDrawable(context, R.drawable.scroll_bar)
+//                background =
+//                    ContextCompat.getDrawable(context, R.drawable.scroll_bar)
             }
         }
-        setBackground(background)
+//        setBackground(background)
 
-        val lp = LayoutParams(
-            Util.getDP(
-                context, width
-            ), Util.getDP(context, height)
-        )
-        lp.setMargins(0, 0, 0, 0)
-        val tvlp =
-            LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        tvlp.addRule(ALIGN_PARENT_TOP, TRUE)
-        tvlp.addRule(CENTER_HORIZONTAL, TRUE)
-        addView(textView, tvlp)
+//        val lp = LayoutParams(
+//            Util.getDP(
+//                context, width
+//            ), Util.getDP(context, height)
+//        )
+        val lp = LayoutParams(LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+
+//        lp.setMargins(0, 0, 0, 0)
+
         lp.addRule(align)
+
         pdfView.addView(this, lp)
-        textView.visibility = GONE
         this.pdfView = pdfView
+
+        pageCount = pdfView.pageCount
     }
 
     override fun destroyLayout() {
@@ -138,10 +156,11 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         viewHandler.postDelayed(hidePageScrollerRunnable, 1000)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun setPageNum(pageNum: Int) {
-        val text = pageNum.toString()
-        if (textView.text != text) {
-            textView.text = text
+        val currentPage = pageNum.toString()
+        if (tvCurrentPage.text != currentPage) {
+            tvCurrentPage.text = "$currentPage/$pageCount"
         }
     }
 
@@ -158,14 +177,14 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
     }
 
     fun setTextColor(color: Int) {
-        textView.setTextColor(color)
+        tvCurrentPage.setTextColor(color)
     }
 
     /**
      * @param size text size in dp
      */
     fun setTextSize(size: Int) {
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size.toFloat())
+        tvCurrentPage.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size.toFloat())
     }
 
     private val isPDFViewReady: Boolean
@@ -178,7 +197,7 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         }
         when (event.action) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
-                textView.visibility = VISIBLE
+                isHandleTouched(true)
                 pdfView.stopFling()
                 viewHandler.removeCallbacks(hidePageScrollerRunnable)
                 currentPos = if (pdfView.isSwipeVertical) {
@@ -206,7 +225,7 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
                 return true
             }
             MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
-                textView.visibility = GONE
+                isHandleTouched(false)
                 hideDelayed()
                 pdfView.performPageSnap()
                 return true
@@ -215,15 +234,21 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         return super.onTouchEvent(event)
     }
 
+    private fun isHandleTouched(isTouched: Boolean) {
+        if (isTouched) {
+            handleViewTouched.visibility = VISIBLE
+            handleViewNotTouched.visibility = INVISIBLE
+            clPageIndicator.visibility = VISIBLE
+        } else {
+            handleViewTouched.visibility = INVISIBLE
+            handleViewNotTouched.visibility = VISIBLE
+            clPageIndicator.visibility = INVISIBLE
+        }
+    }
+
     companion object {
         private const val HANDLE_LONG = 70
         private const val HANDLE_SHORT = 20
         private const val DEFAULT_TEXT_SIZE = 16
-    }
-
-    init {
-        visibility = INVISIBLE
-        setTextColor(Color.BLACK)
-        setTextSize(DEFAULT_TEXT_SIZE)
     }
 }
