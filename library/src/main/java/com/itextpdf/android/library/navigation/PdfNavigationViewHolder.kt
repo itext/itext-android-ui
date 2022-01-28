@@ -9,21 +9,23 @@ import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem.Companion.TYPE_PDF_PAGE
 import com.itextpdf.android.library.views.PdfThumbnailView
+import com.shockwave.pdfium.PdfDocument
+import com.shockwave.pdfium.PdfiumCore
 
-class PdfNavigationViewHolder(val view: View) : PdfBaseNavigationViewHolder(view) {
+class PdfNavigationViewHolder(view: View) : PdfBaseNavigationViewHolder(view) {
 
     override fun bind(item: PdfPageRecyclerItem) {
         if (item is PdfPageItem) {
             val pageNumber = item.pageIndex + 1
             tvPageNumber.text = "$pageNumber"
-            thumbnailView.set(item.pdfUri, item.pageIndex)
+            thumbnailView.setMultiple(item.pdfiumCore, item.pdfDocument, item.pageIndex)
 
             itemView.setOnClickListener {
                 item.action()
             }
         }
     }
-    
+
     fun updateTextSize(selected: Boolean) {
         if (selected) {
             tvPageNumber.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
@@ -48,7 +50,8 @@ abstract class PdfBaseNavigationViewHolder(view: View) : RecyclerView.ViewHolder
 }
 
 data class PdfPageItem(
-    val pdfUri: Uri,
+    val pdfiumCore: PdfiumCore,
+    val pdfDocument: PdfDocument,
     val pageIndex: Int,
     val action: () -> Unit
 ) : PdfPageRecyclerItem {

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.TypedArray
 import android.net.Uri
 import android.os.Bundle
+import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
@@ -22,6 +23,8 @@ import com.itextpdf.android.library.navigation.PdfNavigationAdapter
 import com.itextpdf.android.library.navigation.PdfPageItem
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
 import com.itextpdf.android.library.views.CustomScrollHandle
+import com.shockwave.pdfium.PdfDocument
+import com.shockwave.pdfium.PdfiumCore
 
 
 /**
@@ -43,12 +46,17 @@ open class PdfFragment : Fragment() {
     var fileName: String? = null
     var pdfUri: Uri? = null
 
+    private lateinit var pdfiumCore: PdfiumCore
+    private var navigationPdfDocument: PdfDocument? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentPdfBinding.inflate(inflater, container, false)
+
+        pdfiumCore = PdfiumCore(requireContext())
 
         setupToolbar()
 
@@ -63,7 +71,26 @@ open class PdfFragment : Fragment() {
 
         setupPdfView()
 
+        pdfUri?.let {
+            val fileDescriptor: ParcelFileDescriptor? =
+                requireContext().contentResolver.openFileDescriptor(it, "r")
+            if (fileDescriptor != null) {
+                try {
+                    navigationPdfDocument = pdfiumCore.newDocument(fileDescriptor)
+                } catch (exception: Exception) {
+                    exception.printStackTrace()
+                }
+            }
+        }
+
         return binding.root
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (navigationPdfDocument != null) {
+            pdfiumCore.closeDocument(navigationPdfDocument)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -123,11 +150,10 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setupPdfNavigation() {
-        pdfUri?.let {
-            // prepare pre-defined pdf files from the assets folder to display them in a recyclerView
+        navigationPdfDocument?.let {
             val data = mutableListOf<PdfPageRecyclerItem>()
             for (i in 0 until binding.pdfView.pageCount) {
-                data.add(PdfPageItem(it, i) {
+                data.add(PdfPageItem(pdfiumCore, it, i) {
                     pdfNavigationAdapter.updateSelectedItem(i)
                     scrollToPage(i)
                 })
