@@ -42,6 +42,8 @@ open class PdfFragment : Fragment() {
     private lateinit var actionsBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     private var navViewSetupComplete = false
+    private var navPageSelected = false
+    private var navViewOpen = false
 
     var fileName: String? = null
     var pdfUri: Uri? = null
@@ -138,15 +140,12 @@ open class PdfFragment : Fragment() {
 
     private fun setBottomSheetVisibility(isVisible: Boolean) {
         if (isVisible) {
-            val position = getCurrentlyVisibleItemPosition()
-            pdfNavigationAdapter.updateSelectedItem(position)
-            (binding.includedBottomSheetActions.rvPdfPages.layoutManager as LinearLayoutManager).scrollToPosition(
-                position
-            )
+            scrollNavViewToPage(getCurrentlyVisibleItemPosition())
         }
         val updatedState =
             if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
         actionsBottomSheetBehavior.state = updatedState
+        navViewOpen = isVisible
     }
 
     private fun setupPdfNavigation() {
@@ -154,8 +153,10 @@ open class PdfFragment : Fragment() {
             val data = mutableListOf<PdfPageRecyclerItem>()
             for (i in 0 until binding.pdfView.pageCount) {
                 data.add(PdfPageItem(pdfiumCore, it, i) {
-                    pdfNavigationAdapter.updateSelectedItem(i)
+                    navPageSelected = true
+                    scrollNavViewToPage(i)
                     scrollToPage(i)
+                    navPageSelected = false
                 })
             }
 
@@ -178,6 +179,13 @@ open class PdfFragment : Fragment() {
 
     private fun scrollToPage(position: Int) {
         binding.pdfView.jumpTo(position)
+    }
+
+    private fun scrollNavViewToPage(position: Int) {
+        pdfNavigationAdapter.updateSelectedItem(position)
+        (binding.includedBottomSheetActions.rvPdfPages.layoutManager as LinearLayoutManager).scrollToPosition(
+            position
+        )
     }
 
     private fun getCurrentlyVisibleItemPosition(): Int {
@@ -217,6 +225,12 @@ open class PdfFragment : Fragment() {
                 .scrollHandle(CustomScrollHandle(requireContext()))
                 .onPageError { page, t ->
                     binding.pdfLoadingIndicator.visibility = GONE
+                }
+                .onPageScroll { _, _ ->
+                    // if user scrolls, close the navView
+                    if (!navPageSelected && navViewOpen) {
+                        setBottomSheetVisibility(false)
+                    }
                 }
                 .onLoad {
                     setupPdfNavigation()
