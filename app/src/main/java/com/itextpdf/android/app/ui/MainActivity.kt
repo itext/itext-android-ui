@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
      */
     private val pdfSelectionResultLauncher = registerPdfSelectionResult { pdfUri, fileName ->
         if (pdfUri != null) {
-            PdfViewerActivity.launch(this, pdfUri, fileName)
+            PdfViewerActivity.launch(this, pdfUri, fileName, false)
         }
     }
 
@@ -47,7 +47,8 @@ class MainActivity : AppCompatActivity() {
             val uri = Uri.fromFile(File(path))
 
             data.add(PdfItem(pdfTitles[i], fileName, pdfDescriptions[i], uri) {
-                PdfViewerActivity.launch(this, uri, fileName)
+                // customise the view for the second pdf
+                PdfViewerActivity.launch(this, uri, fileName, i == 1)
             })
         }
 
@@ -104,7 +105,7 @@ class MainActivity : AppCompatActivity() {
          */
         private val pdfDescriptions = mutableListOf(
             "Description for sample 1.",
-            "Description for sample 2.",
+            "Sample 2 shows how the view can be customised.",
             "Description for sample 3.",
             "Description for sample 4."
         )

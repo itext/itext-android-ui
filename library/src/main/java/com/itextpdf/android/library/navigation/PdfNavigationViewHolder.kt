@@ -1,18 +1,23 @@
 package com.itextpdf.android.library.navigation
 
 import android.graphics.Typeface
-import android.net.Uri
+import android.graphics.drawable.DrawableContainer.DrawableContainerState
+import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem.Companion.TYPE_PDF_PAGE
+import com.itextpdf.android.library.util.DisplayUtil
 import com.itextpdf.android.library.views.PdfThumbnailView
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 
+
 class PdfNavigationViewHolder(view: View) : PdfBaseNavigationViewHolder(view) {
+
+    private val strokeWidth: Int = DisplayUtil.dpToPx(STROKE_WIDTH_IN_DP, itemView.context)
 
     override fun bind(item: PdfPageRecyclerItem) {
         if (item is PdfPageItem) {
@@ -34,6 +39,20 @@ class PdfNavigationViewHolder(view: View) : PdfBaseNavigationViewHolder(view) {
             tvPageNumber.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             tvPageNumber.setTypeface(null, Typeface.NORMAL)
         }
+    }
+
+    fun updateBorderColor(color: Int) {
+        val drawableContainerState =
+            thumbnailView.background.constantState as DrawableContainerState?
+        val children = drawableContainerState?.children
+        if (!children.isNullOrEmpty()) {
+            val selectedDrawable = children[0] as? GradientDrawable
+            selectedDrawable?.setStroke(strokeWidth, color)
+        }
+    }
+
+    companion object {
+        private const val STROKE_WIDTH_IN_DP = 1f
     }
 }
 

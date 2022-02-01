@@ -2,7 +2,12 @@ package com.itextpdf.android.library.views
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.BlendMode
+import android.graphics.BlendModeColorFilter
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.TypedValue
@@ -18,7 +23,13 @@ import com.github.barteksc.pdfviewer.scroll.ScrollHandle
 import com.itextpdf.android.library.R
 
 
-class CustomScrollHandle(context: Context, private val inverted: Boolean = false) :
+class CustomScrollHandle(
+    context: Context,
+    primaryColor: String?,
+    secondaryColor: String?,
+    private val showPageNumber: Boolean,
+    private val inverted: Boolean = false
+) :
     RelativeLayout(context), ScrollHandle {
 
     lateinit var pdfView: PDFView
@@ -42,9 +53,39 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         handleViewTouched = findViewById(R.id.handleViewTouched)
         handleViewNotTouched = findViewById(R.id.handleViewNotTouched)
 
+        if (primaryColor != null && secondaryColor != null) {
+            setColors(primaryColor, secondaryColor)
+        }
+
         isHandleTouched(false)
         setTextSize(DEFAULT_TEXT_SIZE)
         hide()
+    }
+
+    private fun setColors(primary: String, secondary: String) {
+        tvCurrentPage.setTextColor(Color.parseColor(primary))
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            handleViewTouched.background.colorFilter =
+                BlendModeColorFilter(Color.parseColor(primary), BlendMode.SRC_ATOP)
+            handleViewNotTouched.background.colorFilter =
+                BlendModeColorFilter(Color.parseColor(primary), BlendMode.SRC_ATOP)
+            clPageIndicator.background.colorFilter =
+                BlendModeColorFilter(Color.parseColor(secondary), BlendMode.SRC_ATOP)
+        } else {
+            handleViewTouched.background.setColorFilter(
+                Color.parseColor(primary),
+                PorterDuff.Mode.SRC_ATOP
+            )
+            handleViewNotTouched.background.setColorFilter(
+                Color.parseColor(primary),
+                PorterDuff.Mode.SRC_ATOP
+            )
+            clPageIndicator.background.setColorFilter(
+                Color.parseColor(primary),
+                PorterDuff.Mode.SRC_ATOP
+            )
+        }
     }
 
     override fun setupLayout(pdfView: PDFView) {
@@ -241,7 +282,9 @@ class CustomScrollHandle(context: Context, private val inverted: Boolean = false
         if (isTouched) {
             handleViewTouched.visibility = VISIBLE
             handleViewNotTouched.visibility = INVISIBLE
-            clPageIndicator.visibility = VISIBLE
+            if (showPageNumber) {
+                clPageIndicator.visibility = VISIBLE
+            }
         } else {
             handleViewTouched.visibility = INVISIBLE
             handleViewNotTouched.visibility = VISIBLE

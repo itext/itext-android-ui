@@ -2,7 +2,12 @@ package com.itextpdf.android.library.fragments
 
 import android.content.Context
 import android.content.res.TypedArray
+import android.graphics.BlendMode
+import android.graphics.BlendModeColorFilter
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
@@ -44,12 +49,22 @@ open class PdfFragment : Fragment() {
     private var navViewSetupComplete = false
     private var navPageSelected = false
     private var navViewOpen = false
-
-    var fileName: String? = null
-    var pdfUri: Uri? = null
+    private var currentPage = 0
 
     private lateinit var pdfiumCore: PdfiumCore
     private var navigationPdfDocument: PdfDocument? = null
+
+    var fileName: String? = null
+    var pdfUri: Uri? = null
+    var displayFileName = DEFAULT_DISPLAY_FILE_NAME
+    var pageSpacing = DEFAULT_PAGE_SPACING
+    var enableAnnotationRendering = DEFAULT_ENABLE_ANNOTATION_RENDERING
+    var enableDoubleTapZoom = DEFAULT_ENABLE_DOUBLE_TAP_ZOOM
+    var showScrollIndicator = DEFAULT_SHOW_SCROLL_INDICATOR
+    var showScrollIndicatorPageNumber = DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
+    var primaryColor: String? = DEFAULT_PRIMARY_COLOR
+    var secondaryColor: String? = DEFAULT_SECONDARY_COLOR
+    var backgroundColor: String? = DEFAULT_BACKGROUND_COLOR
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,11 +79,24 @@ open class PdfFragment : Fragment() {
 
         if (savedInstanceState != null) {
             // Restore last state
+            currentPage = savedInstanceState.getInt(CURRENT_PAGE)
             fileName = savedInstanceState.getString(FILE_NAME) ?: ""
             val storedUri = savedInstanceState.getString(PDF_URI)
             if (!storedUri.isNullOrEmpty()) {
                 pdfUri = Uri.parse(storedUri)
             }
+            displayFileName = savedInstanceState.getBoolean(DISPLAY_FILE_NAME)
+            pageSpacing = savedInstanceState.getInt(PAGE_SPACING)
+            enableAnnotationRendering = savedInstanceState.getBoolean(ENABLE_ANNOTATION_RENDERING)
+            enableDoubleTapZoom = savedInstanceState.getBoolean(ENABLE_DOUBLE_TAP_ZOOM)
+            showScrollIndicator = savedInstanceState.getBoolean(SHOW_SCROLL_INDICATOR)
+            showScrollIndicatorPageNumber =
+                savedInstanceState.getBoolean(SHOW_SCROLL_INDICATOR_PAGE_NUMBER)
+            primaryColor =
+                savedInstanceState.getString(PRIMARY_COLOR)
+            secondaryColor =
+                savedInstanceState.getString(SECONDARY_COLOR)
+            backgroundColor = savedInstanceState.getString(BACKGROUND_COLOR)
         }
 
         setupPdfView()
@@ -103,8 +131,18 @@ open class PdfFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        outState.putInt(CURRENT_PAGE, currentPage)
         outState.putString(FILE_NAME, fileName)
         outState.putString(PDF_URI, pdfUri.toString())
+        outState.putBoolean(DISPLAY_FILE_NAME, displayFileName)
+        outState.putInt(PAGE_SPACING, pageSpacing)
+        outState.putBoolean(ENABLE_ANNOTATION_RENDERING, enableAnnotationRendering)
+        outState.putBoolean(ENABLE_DOUBLE_TAP_ZOOM, enableDoubleTapZoom)
+        outState.putBoolean(SHOW_SCROLL_INDICATOR, showScrollIndicator)
+        outState.putBoolean(SHOW_SCROLL_INDICATOR_PAGE_NUMBER, showScrollIndicatorPageNumber)
+        outState.putString(PRIMARY_COLOR, primaryColor)
+        outState.putString(SECONDARY_COLOR, secondaryColor)
+        outState.putString(BACKGROUND_COLOR, backgroundColor)
     }
 
     private fun setupToolbar() {
@@ -113,7 +151,7 @@ open class PdfFragment : Fragment() {
             (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbPdfFragment)
             binding.tbPdfFragment.setNavigationIcon(R.drawable.abc_ic_ab_back_material)
             binding.tbPdfFragment.setNavigationOnClickListener { requireActivity().onBackPressed() }
-            binding.tbPdfFragment.title = null
+            binding.tbPdfFragment.title = if (displayFileName) fileName else null
         }
     }
 
@@ -160,7 +198,7 @@ open class PdfFragment : Fragment() {
                 })
             }
 
-            pdfNavigationAdapter = PdfNavigationAdapter(data)
+            pdfNavigationAdapter = PdfNavigationAdapter(data, primaryColor, secondaryColor)
             binding.includedBottomSheetActions.rvPdfPages.adapter = pdfNavigationAdapter
             binding.includedBottomSheetActions.rvPdfPages.layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -216,13 +254,23 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setupPdfView() {
-        //TODO: manually let the user set stuff like spacing and color
         pdfUri?.let { pdfUri ->
+            val scrollHandle =
+                if (showScrollIndicator) {
+                    CustomScrollHandle(
+                        requireContext(),
+                        primaryColor,
+                        secondaryColor,
+                        showScrollIndicatorPageNumber
+                    )
+                } else {
+                    null
+                }
+
             binding.pdfLoadingIndicator.visibility = VISIBLE
             binding.pdfView.fromUri(pdfUri)
-//                .defaultPage(pageNumber)
-//                .onPageChange(this)
-                .scrollHandle(CustomScrollHandle(requireContext()))
+                .defaultPage(currentPage)
+                .scrollHandle(scrollHandle)
                 .onPageError { page, t ->
                     binding.pdfLoadingIndicator.visibility = GONE
                 }
@@ -232,21 +280,58 @@ open class PdfFragment : Fragment() {
                         setBottomSheetVisibility(false)
                     }
                 }
+                .onPageChange { page, _ ->
+                    currentPage = page
+                }
                 .onLoad {
                     setupPdfNavigation()
                     binding.pdfLoadingIndicator.visibility = GONE
                 }
-                .enableAnnotationRendering(true)
-                .spacing(10)
+                .enableAnnotationRendering(enableAnnotationRendering)
+                .spacing(pageSpacing)
+                .enableDoubletap(enableDoubleTapZoom)
                 .load()
 
-//            binding.pdfView.setBackgroundColor(Color.LTGRAY)
+            if (backgroundColor != null) {
+                binding.pdfView.setBackgroundColor(Color.parseColor(backgroundColor))
+            }
+            if (primaryColor != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    binding.pdfLoadingIndicator.indeterminateDrawable.colorFilter =
+                        BlendModeColorFilter(Color.parseColor(primaryColor), BlendMode.SRC_ATOP)
+                } else {
+                    binding.pdfLoadingIndicator.indeterminateDrawable.setColorFilter(
+                        Color.parseColor(primaryColor),
+                        PorterDuff.Mode.SRC_ATOP
+                    )
+                }
+            }
         }
     }
 
     companion object {
         private const val TAG = "PdfFragment"
+        private const val CURRENT_PAGE = "CURRENT_PAGE"
         private const val FILE_NAME = "FILE_NAME"
         private const val PDF_URI = "PDF_URI"
+        private const val DISPLAY_FILE_NAME = "DISPLAY_FILE_NAME"
+        private const val PAGE_SPACING = "PAGE_SPACING"
+        private const val ENABLE_ANNOTATION_RENDERING = "ENABLE_ANNOTATION_RENDERING"
+        private const val ENABLE_DOUBLE_TAP_ZOOM = "ENABLE_DOUBLE_TAP_ZOOM"
+        private const val SHOW_SCROLL_INDICATOR = "SHOW_SCROLL_INDICATOR"
+        private const val SHOW_SCROLL_INDICATOR_PAGE_NUMBER = "SHOW_SCROLL_INDICATOR_PAGE_NUMBER"
+        private const val PRIMARY_COLOR = "PRIMARY_COLOR"
+        private const val SECONDARY_COLOR = "SECONDARY_COLOR"
+        private const val BACKGROUND_COLOR = "BACKGROUND_COLOR"
+
+        const val DEFAULT_DISPLAY_FILE_NAME = false
+        const val DEFAULT_PAGE_SPACING = 10
+        const val DEFAULT_ENABLE_ANNOTATION_RENDERING = true
+        const val DEFAULT_ENABLE_DOUBLE_TAP_ZOOM = true
+        const val DEFAULT_SHOW_SCROLL_INDICATOR = true
+        const val DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER = true
+        const val DEFAULT_PRIMARY_COLOR = "#FF9400"
+        const val DEFAULT_SECONDARY_COLOR = "#FFEFD8"
+        const val DEFAULT_BACKGROUND_COLOR = "#EAEAEA"
     }
 }
