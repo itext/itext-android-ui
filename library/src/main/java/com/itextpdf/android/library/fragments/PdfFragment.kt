@@ -39,32 +39,79 @@ import com.shockwave.pdfium.PdfiumCore
  */
 open class PdfFragment : Fragment() {
 
-    private lateinit var binding: FragmentPdfBinding
+    /**
+     * The name of the file that should be displayed
+     */
+    var fileName: String? = null
 
+    /**
+     * The uri of the pdf that should be displayed
+     */
+    var pdfUri: Uri? = null
+
+    /**
+     * A boolean flag that defines if the given file name should be displayed in the toolbar. Default: false
+     */
+    var displayFileName = DEFAULT_DISPLAY_FILE_NAME
+
+    /**
+     * The spacing in px between the pdf pages. Default: 20
+     */
+    var pageSpacing = DEFAULT_PAGE_SPACING
+
+    /**
+     * A boolean flag to enable/disable pdf thumbnail navigation view. Default: true
+     */
+    var enableThumbnailNavigationView = DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
+
+    /**
+     * A boolean flag to enable/disable annotation rendering. Default: true
+     */
+    var enableAnnotationRendering = DEFAULT_ENABLE_ANNOTATION_RENDERING
+
+    /**
+     * A boolean flag to enable/disable double tap to zoom. Default: true
+     */
+    var enableDoubleTapZoom = DEFAULT_ENABLE_DOUBLE_TAP_ZOOM
+
+    /**
+     * A boolean flag to enable/disable a scrolling indicator at the right of the page, that can be used fast scrolling. Default: true
+     */
+    var showScrollIndicator = DEFAULT_SHOW_SCROLL_INDICATOR
+
+    /**
+     * A boolean flag to enable/disable the page number while the scroll indicator is tabbed. Default: true
+     */
+    var showScrollIndicatorPageNumber = DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
+
+    /**
+     * A color string to set the primary color of the view (affects: scroll indicator, navigation thumbnails and loading indicator). Default: #FF9400
+     */
+    var primaryColor: String? = DEFAULT_PRIMARY_COLOR
+
+    /**
+     * A color string to set the secondary color of the view (affects: scroll indicator and navigation thumbnails). Default: #FFEFD8
+     */
+    var secondaryColor: String? = DEFAULT_SECONDARY_COLOR
+
+    /**
+     * A color string to set the background of the pdf view that will be visible between the pages if pageSpacing > 0. Default: #EAEAEA
+     */
+    var backgroundColor: String? = DEFAULT_BACKGROUND_COLOR
+
+    private lateinit var binding: FragmentPdfBinding
     private lateinit var pdfNavigationAdapter: PdfNavigationAdapter
 
     private val actionsBottomSheet by lazy { binding.includedBottomSheetActions.bottomSheetActions }
     private lateinit var actionsBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
+    private lateinit var pdfiumCore: PdfiumCore
+
+    private var navigationPdfDocument: PdfDocument? = null
     private var navViewSetupComplete = false
     private var navPageSelected = false
     private var navViewOpen = false
     private var currentPage = 0
-
-    private lateinit var pdfiumCore: PdfiumCore
-    private var navigationPdfDocument: PdfDocument? = null
-
-    var fileName: String? = null
-    var pdfUri: Uri? = null
-    var displayFileName = DEFAULT_DISPLAY_FILE_NAME
-    var pageSpacing = DEFAULT_PAGE_SPACING
-    var enableAnnotationRendering = DEFAULT_ENABLE_ANNOTATION_RENDERING
-    var enableDoubleTapZoom = DEFAULT_ENABLE_DOUBLE_TAP_ZOOM
-    var showScrollIndicator = DEFAULT_SHOW_SCROLL_INDICATOR
-    var showScrollIndicatorPageNumber = DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
-    var primaryColor: String? = DEFAULT_PRIMARY_COLOR
-    var secondaryColor: String? = DEFAULT_SECONDARY_COLOR
-    var backgroundColor: String? = DEFAULT_BACKGROUND_COLOR
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -87,6 +134,8 @@ open class PdfFragment : Fragment() {
             }
             displayFileName = savedInstanceState.getBoolean(DISPLAY_FILE_NAME)
             pageSpacing = savedInstanceState.getInt(PAGE_SPACING)
+            enableThumbnailNavigationView =
+                savedInstanceState.getBoolean(ENABLE_THUMBNAIL_NAVIGATION_VIEW)
             enableAnnotationRendering = savedInstanceState.getBoolean(ENABLE_ANNOTATION_RENDERING)
             enableDoubleTapZoom = savedInstanceState.getBoolean(ENABLE_DOUBLE_TAP_ZOOM)
             showScrollIndicator = savedInstanceState.getBoolean(SHOW_SCROLL_INDICATOR)
@@ -126,108 +175,7 @@ open class PdfFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         actionsBottomSheetBehavior = BottomSheetBehavior.from(actionsBottomSheet)
-        setBottomSheetVisibility(false)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt(CURRENT_PAGE, currentPage)
-        outState.putString(FILE_NAME, fileName)
-        outState.putString(PDF_URI, pdfUri.toString())
-        outState.putBoolean(DISPLAY_FILE_NAME, displayFileName)
-        outState.putInt(PAGE_SPACING, pageSpacing)
-        outState.putBoolean(ENABLE_ANNOTATION_RENDERING, enableAnnotationRendering)
-        outState.putBoolean(ENABLE_DOUBLE_TAP_ZOOM, enableDoubleTapZoom)
-        outState.putBoolean(SHOW_SCROLL_INDICATOR, showScrollIndicator)
-        outState.putBoolean(SHOW_SCROLL_INDICATOR_PAGE_NUMBER, showScrollIndicatorPageNumber)
-        outState.putString(PRIMARY_COLOR, primaryColor)
-        outState.putString(SECONDARY_COLOR, secondaryColor)
-        outState.putString(BACKGROUND_COLOR, backgroundColor)
-    }
-
-    private fun setupToolbar() {
-        setHasOptionsMenu(true)
-        if (::binding.isInitialized) {
-            (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbPdfFragment)
-            binding.tbPdfFragment.setNavigationIcon(R.drawable.abc_ic_ab_back_material)
-            binding.tbPdfFragment.setNavigationOnClickListener { requireActivity().onBackPressed() }
-            binding.tbPdfFragment.title = if (displayFileName) fileName else null
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_pdf_fragment, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        R.id.action_navigate_pdf -> {
-            if (navViewSetupComplete)
-                toggleBottomSheetVisibility()
-            true
-        }
-        else -> {
-            super.onOptionsItemSelected(item)
-        }
-    }
-
-    private fun toggleBottomSheetVisibility() {
-        // if bottom sheet is collapsed, set it to visible, if not set it to invisible
-        setBottomSheetVisibility(actionsBottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
-    }
-
-    private fun setBottomSheetVisibility(isVisible: Boolean) {
-        if (isVisible) {
-            scrollNavViewToPage(getCurrentlyVisibleItemPosition())
-        }
-        val updatedState =
-            if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
-        actionsBottomSheetBehavior.state = updatedState
-        navViewOpen = isVisible
-    }
-
-    private fun setupPdfNavigation() {
-        navigationPdfDocument?.let {
-            val data = mutableListOf<PdfPageRecyclerItem>()
-            for (i in 0 until binding.pdfView.pageCount) {
-                data.add(PdfPageItem(pdfiumCore, it, i) {
-                    navPageSelected = true
-                    scrollNavViewToPage(i)
-                    scrollToPage(i)
-                    navPageSelected = false
-                })
-            }
-
-            pdfNavigationAdapter = PdfNavigationAdapter(data, primaryColor, secondaryColor)
-            binding.includedBottomSheetActions.rvPdfPages.adapter = pdfNavigationAdapter
-            binding.includedBottomSheetActions.rvPdfPages.layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-
-            // make selection snappier as view holder can be reused
-            val itemAnimator: DefaultItemAnimator = object : DefaultItemAnimator() {
-                override fun canReuseUpdatedViewHolder(viewHolder: RecyclerView.ViewHolder): Boolean {
-                    return true
-                }
-            }
-            binding.includedBottomSheetActions.rvPdfPages.itemAnimator = itemAnimator
-
-            navViewSetupComplete = true
-        }
-    }
-
-    private fun scrollToPage(position: Int) {
-        binding.pdfView.jumpTo(position)
-    }
-
-    private fun scrollNavViewToPage(position: Int) {
-        pdfNavigationAdapter.updateSelectedItem(position)
-        (binding.includedBottomSheetActions.rvPdfPages.layoutManager as LinearLayoutManager).scrollToPosition(
-            position
-        )
-    }
-
-    private fun getCurrentlyVisibleItemPosition(): Int {
-        return binding.pdfView.currentPage
+        setThumbnailNavigationViewVisibility(false)
     }
 
     /**
@@ -251,6 +199,79 @@ open class PdfFragment : Fragment() {
             Log.v(TAG, "Pdf uri received : $attrUri")
         }
         a.recycle()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(CURRENT_PAGE, currentPage)
+        outState.putString(FILE_NAME, fileName)
+        outState.putString(PDF_URI, pdfUri.toString())
+        outState.putBoolean(DISPLAY_FILE_NAME, displayFileName)
+        outState.putInt(PAGE_SPACING, pageSpacing)
+        outState.putBoolean(ENABLE_THUMBNAIL_NAVIGATION_VIEW, enableThumbnailNavigationView)
+        outState.putBoolean(ENABLE_ANNOTATION_RENDERING, enableAnnotationRendering)
+        outState.putBoolean(ENABLE_DOUBLE_TAP_ZOOM, enableDoubleTapZoom)
+        outState.putBoolean(SHOW_SCROLL_INDICATOR, showScrollIndicator)
+        outState.putBoolean(SHOW_SCROLL_INDICATOR_PAGE_NUMBER, showScrollIndicatorPageNumber)
+        outState.putString(PRIMARY_COLOR, primaryColor)
+        outState.putString(SECONDARY_COLOR, secondaryColor)
+        outState.putString(BACKGROUND_COLOR, backgroundColor)
+    }
+
+    private fun setupToolbar() {
+        setHasOptionsMenu(true)
+        if (::binding.isInitialized) {
+            (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbPdfFragment)
+            binding.tbPdfFragment.setNavigationIcon(R.drawable.abc_ic_ab_back_material)
+            binding.tbPdfFragment.setNavigationOnClickListener { requireActivity().onBackPressed() }
+            binding.tbPdfFragment.title = if (displayFileName) fileName else null
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_pdf_fragment, menu)
+        menu.getItem(0).isVisible = enableThumbnailNavigationView
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.action_navigate_pdf -> {
+            if (navViewSetupComplete)
+                toggleThumbnailNavigationViewVisibility()
+            true
+        }
+        else -> {
+            super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun setupThumbnailNavigationView() {
+        navigationPdfDocument?.let {
+            val data = mutableListOf<PdfPageRecyclerItem>()
+            for (i in 0 until binding.pdfView.pageCount) {
+                data.add(PdfPageItem(pdfiumCore, it, i) {
+                    navPageSelected = true
+                    scrollThumbnailNavigationViewToPage(i)
+                    scrollToPage(i)
+                    navPageSelected = false
+                })
+            }
+
+            pdfNavigationAdapter = PdfNavigationAdapter(data, primaryColor, secondaryColor)
+            binding.includedBottomSheetActions.rvPdfPages.adapter = pdfNavigationAdapter
+            binding.includedBottomSheetActions.rvPdfPages.layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+            // make selection snappier as view holder can be reused
+            val itemAnimator: DefaultItemAnimator = object : DefaultItemAnimator() {
+                override fun canReuseUpdatedViewHolder(viewHolder: RecyclerView.ViewHolder): Boolean {
+                    return true
+                }
+            }
+            binding.includedBottomSheetActions.rvPdfPages.itemAnimator = itemAnimator
+
+            navViewSetupComplete = true
+        }
     }
 
     private fun setupPdfView() {
@@ -277,14 +298,14 @@ open class PdfFragment : Fragment() {
                 .onPageScroll { _, _ ->
                     // if user scrolls, close the navView
                     if (!navPageSelected && navViewOpen) {
-                        setBottomSheetVisibility(false)
+                        setThumbnailNavigationViewVisibility(false)
                     }
                 }
                 .onPageChange { page, _ ->
                     currentPage = page
                 }
                 .onLoad {
-                    setupPdfNavigation()
+                    setupThumbnailNavigationView()
                     binding.pdfLoadingIndicator.visibility = GONE
                 }
                 .enableAnnotationRendering(enableAnnotationRendering)
@@ -309,6 +330,60 @@ open class PdfFragment : Fragment() {
         }
     }
 
+    /**
+     * Toggles the visibility state of the thumbnail navigation view
+     */
+    open fun toggleThumbnailNavigationViewVisibility() {
+        // if bottom sheet is collapsed, set it to visible, if not set it to invisible
+        setThumbnailNavigationViewVisibility(actionsBottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+    }
+
+    /**
+     * Sets the visibility state of the thumbnail navigation view
+     *
+     * @param isVisible True when the view should be visible, false if it shouldn't.
+     */
+    open fun setThumbnailNavigationViewVisibility(isVisible: Boolean) {
+        if (isVisible) {
+            scrollThumbnailNavigationViewToPage(getCurrentItemPosition())
+        }
+        val updatedState =
+            if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
+        actionsBottomSheetBehavior.state = updatedState
+        navViewOpen = isVisible
+    }
+
+    /**
+     * Scrolls the pdf view to the given position.
+     *
+     * @param position  the index of the page this function should scroll to.
+     * @param withAnimation boolean flag to define if scrolling should happen with or without animation.
+     */
+    open fun scrollToPage(position: Int, withAnimation: Boolean = false) {
+        binding.pdfView.jumpTo(position, withAnimation)
+    }
+
+    /**
+     * Scrolls the thumbnail navigation view to the given position
+     *
+     * @param position  the index of the page this function should scroll to.
+     */
+    open fun scrollThumbnailNavigationViewToPage(position: Int) {
+        pdfNavigationAdapter.updateSelectedItem(position)
+        (binding.includedBottomSheetActions.rvPdfPages.layoutManager as LinearLayoutManager).scrollToPosition(
+            position
+        )
+    }
+
+    /**
+     * Returns the index of the currently visible page
+     *
+     * @return  the index of the visible page
+     */
+    open fun getCurrentItemPosition(): Int {
+        return binding.pdfView.currentPage
+    }
+
     companion object {
         private const val TAG = "PdfFragment"
         private const val CURRENT_PAGE = "CURRENT_PAGE"
@@ -316,6 +391,7 @@ open class PdfFragment : Fragment() {
         private const val PDF_URI = "PDF_URI"
         private const val DISPLAY_FILE_NAME = "DISPLAY_FILE_NAME"
         private const val PAGE_SPACING = "PAGE_SPACING"
+        private const val ENABLE_THUMBNAIL_NAVIGATION_VIEW = "ENABLE_THUMBNAIL_NAVIGATION_VIEW"
         private const val ENABLE_ANNOTATION_RENDERING = "ENABLE_ANNOTATION_RENDERING"
         private const val ENABLE_DOUBLE_TAP_ZOOM = "ENABLE_DOUBLE_TAP_ZOOM"
         private const val SHOW_SCROLL_INDICATOR = "SHOW_SCROLL_INDICATOR"
@@ -326,6 +402,7 @@ open class PdfFragment : Fragment() {
 
         const val DEFAULT_DISPLAY_FILE_NAME = false
         const val DEFAULT_PAGE_SPACING = 10
+        const val DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW = true
         const val DEFAULT_ENABLE_ANNOTATION_RENDERING = true
         const val DEFAULT_ENABLE_DOUBLE_TAP_ZOOM = true
         const val DEFAULT_SHOW_SCROLL_INDICATOR = true

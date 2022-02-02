@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
      */
     private val pdfSelectionResultLauncher = registerPdfSelectionResult { pdfUri, fileName ->
         if (pdfUri != null) {
-            PdfViewerActivity.launch(this, pdfUri, fileName, false)
+            PdfViewerActivity.launch(this, pdfUri, fileName, null)
         }
     }
 
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
             data.add(PdfItem(pdfTitles[i], fileName, pdfDescriptions[i], uri) {
                 // customise the view for the second pdf
-                PdfViewerActivity.launch(this, uri, fileName, i == 1)
+                PdfViewerActivity.launch(this, uri, fileName, i)
             })
         }
 
@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity() {
          * The pre-defined descriptions of the pdf files that are stored in the assets folder.
          */
         private val pdfDescriptions = mutableListOf(
-            "Description for sample 1.",
+            "Sample 1 shows the view without an option to open the thumbnail navigation view.",
             "Sample 2 shows how the view can be customised.",
             "Description for sample 3.",
             "Description for sample 4."
