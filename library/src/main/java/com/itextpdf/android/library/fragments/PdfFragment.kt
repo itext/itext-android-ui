@@ -184,19 +184,46 @@ open class PdfFragment : Fragment() {
      */
     override fun onInflate(context: Context, attrs: AttributeSet, savedInstanceState: Bundle?) {
         super.onInflate(context, attrs, savedInstanceState)
-        Log.v(TAG, "onInflate called")
 
         // get the attributes data set via xml
         val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.PdfFragment)
-        val attrFileName = a.getText(R.styleable.PdfFragment_file_name)
-        if (attrFileName != null) {
-            fileName = attrFileName.toString()
-            Log.v(TAG, "Filename received : $attrFileName")
+        a.getText(R.styleable.PdfFragment_file_name)?.let {
+            fileName = it.toString()
         }
-        val attrUri = a.getText(R.styleable.PdfFragment_file_uri)
-        if (attrUri != null) {
-            pdfUri = Uri.parse(attrUri.toString())
-            Log.v(TAG, "Pdf uri received : $attrUri")
+        a.getText(R.styleable.PdfFragment_file_uri)?.let {
+            pdfUri = Uri.parse(it.toString())
+        }
+        displayFileName =
+            a.getBoolean(R.styleable.PdfFragment_display_file_name, DEFAULT_DISPLAY_FILE_NAME)
+        pageSpacing = a.getInteger(R.styleable.PdfFragment_page_spacing, DEFAULT_PAGE_SPACING)
+        enableThumbnailNavigationView = a.getBoolean(
+            R.styleable.PdfFragment_enable_thumbnail_navigation_view,
+            DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
+        )
+        enableAnnotationRendering = a.getBoolean(
+            R.styleable.PdfFragment_enable_annotation_rendering,
+            DEFAULT_ENABLE_ANNOTATION_RENDERING
+        )
+        enableDoubleTapZoom = a.getBoolean(
+            R.styleable.PdfFragment_enable_double_tap_zoom,
+            DEFAULT_ENABLE_DOUBLE_TAP_ZOOM
+        )
+        showScrollIndicator = a.getBoolean(
+            R.styleable.PdfFragment_show_scroll_indicator,
+            DEFAULT_SHOW_SCROLL_INDICATOR
+        )
+        showScrollIndicatorPageNumber = a.getBoolean(
+            R.styleable.PdfFragment_show_scroll_indicator_page_number,
+            DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
+        )
+        a.getText(R.styleable.PdfFragment_primary_color)?.let {
+            primaryColor = it.toString()
+        }
+        a.getText(R.styleable.PdfFragment_secondary_color)?.let {
+            secondaryColor = it.toString()
+        }
+        a.getText(R.styleable.PdfFragment_background_color)?.let {
+            backgroundColor = it.toString()
         }
         a.recycle()
     }

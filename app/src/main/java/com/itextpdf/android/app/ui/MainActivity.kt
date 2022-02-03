@@ -104,10 +104,10 @@ class MainActivity : AppCompatActivity() {
          * The pre-defined descriptions of the pdf files that are stored in the assets folder.
          */
         private val pdfDescriptions = mutableListOf(
-            "Sample 1 shows the view without an option to open the thumbnail navigation view.",
-            "Sample 2 shows how the view can be customised.",
-            "Description for sample 3.",
-            "Description for sample 4."
+            "Sample 1 shows a the pdf view that was customised within the xml file.",
+            "Sample 2 shows a the pdf view that was customised within the code.",
+            "Sample 3 shows the pdf view with it's default settings.",
+            "Sample 4 shows the view without an option to open the thumbnail navigation view."
         )
 
         /**

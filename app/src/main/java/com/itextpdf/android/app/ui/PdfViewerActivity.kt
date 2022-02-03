@@ -23,27 +23,31 @@ class PdfViewerActivity : AppCompatActivity() {
         val pdfUri = Uri.parse(intent.extras?.getString(EXTRA_PDF_URI) ?: "")
         val pdfIndex = intent.extras?.getInt(EXTRA_PDF_INDEX) ?: -1
 
-        // set fragment in code
-        if (savedInstanceState == null) {
-            val fragment = PdfFragment()
-            fragment.pdfUri = pdfUri
-            fragment.fileName = fileName
-            // set some settings for demonstration
-            if (pdfIndex == 0) {
-                fragment.enableThumbnailNavigationView = false
+        // for pdf with index 0 use the params set within the xml file, for the other pdfs, replace the fragment
+        if (pdfIndex != 0) {
+            // set fragment in code
+            if (savedInstanceState == null) {
+                val fragment = PdfFragment()
+                fragment.pdfUri = pdfUri
+                fragment.fileName = fileName
+
+                // set some settings for demonstration
+                if (pdfIndex == 1) {
+                    fragment.displayFileName = true
+                    fragment.pageSpacing = 100
+                    fragment.enableAnnotationRendering = false
+                    fragment.enableDoubleTapZoom = false
+                    fragment.primaryColor = "#295819"
+                    fragment.secondaryColor = "#950178"
+                    fragment.backgroundColor = "#119191"
+                } else if (pdfIndex == 3) {
+                    fragment.enableThumbnailNavigationView = false
+                }
+
+                val fm = supportFragmentManager.beginTransaction()
+                fm.replace(R.id.pdf_fragment_container, fragment)
+                fm.commit()
             }
-            if (pdfIndex == 1) {
-                fragment.displayFileName = true
-                fragment.pageSpacing = 100
-                fragment.enableAnnotationRendering = false
-                fragment.enableDoubleTapZoom = false
-                fragment.primaryColor = "#295819"
-                fragment.secondaryColor = "#950178"
-                fragment.backgroundColor = "#119191"
-            }
-            val fm = supportFragmentManager.beginTransaction()
-            fm.replace(R.id.pdf_fragment_container, fragment)
-            fm.commit()
         }
     }
 
