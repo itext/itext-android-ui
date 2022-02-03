@@ -7,6 +7,14 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem.Companion.TYPE_PDF_PAGE
 
+/**
+ * Adapter class for the pdf thumbnail navigation
+ *
+ * @property data   a list of page items
+ *
+ * @param primaryColorString    the primary color that is used for highlighting selected elements. optional
+ * @param secondaryColorString  the secondary color that is used for highlighting selected elements. optional
+ */
 class PdfNavigationAdapter(
     private val data: List<PdfPageRecyclerItem>,
     primaryColorString: String?,
@@ -66,6 +74,11 @@ class PdfNavigationAdapter(
         }
     }
 
+    /**
+     * Updates the selection
+     *
+     * @param selectedIndex the index of the newly selected item
+     */
     fun updateSelectedItem(selectedIndex: Int) {
         notifyItemChanged(selectedPos)
         selectedPos = selectedIndex

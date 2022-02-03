@@ -23,6 +23,9 @@ import java.lang.Integer.min
  */
 open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
+    /**
+     * The image view that is used tho display the thumbnail of the pdf page.
+     */
     val pdfImageView: ImageView
 
     init {
@@ -61,7 +64,7 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
      * a pageIndex, it is possible to define which page of the pdf file should be used for the thumbnail.
      * After rendering the created pdfDocument is closed again.
      *
-     * @param uri      the uri of the pdf file
+     * @param uri       the uri of the pdf file
      * @param pageIndex the index of the page that should be used as thumbnail. default: 0
      */
     fun set(uri: Uri, pageIndex: Int = 0) {
@@ -92,6 +95,15 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
         }
     }
 
+    /**
+     * Creates a new instance of the pdfiumCore and uses the fileDescriptor to create a new pdfDocument.
+     * Gets the desired page from the pdfDocument and renders it with the help of the pdfiumCore.
+     * The resulting bitmap is loaded into the pdfImageView.
+     * After rendering the created pdfDocument is closed again.
+     *
+     * @param fileDescriptor    the fileDescriptor needed to create the pdfDocument
+     * @param pageIndex         the index of the page that should be used as a thumbnail.
+     */
     private fun setImageViewWithFileDescriptor(
         fileDescriptor: ParcelFileDescriptor,
         pageIndex: Int
@@ -106,6 +118,17 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
         }
     }
 
+    /**
+     * Gets the desired page from the pdfDocument and renders it with the help of the pdfiumCore.
+     * The resulting bitmap is loaded into the pdfImageView.
+     * After rendering the pdfDocument is not closed. This makes it possible to render multiple pages
+     * of the same pdfDocument more efficiently.
+     * Make sure to manually close the document after rendering to avoid memory issues.
+     *
+     * @param pdfiumCore    the pdfiumCore object used for the rendering
+     * @param pdfDocument   the pdfDocument from which a specific page should be rendered
+     * @param pageIndex     the index of the page that should be used as a thumbnail.
+     */
     private fun setImageViewWithPdfDocument(
         pdfiumCore: PdfiumCore,
         pdfDocument: PdfDocument,

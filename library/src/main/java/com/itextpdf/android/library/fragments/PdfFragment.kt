@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
-import android.util.Log
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -27,7 +26,7 @@ import com.itextpdf.android.library.databinding.FragmentPdfBinding
 import com.itextpdf.android.library.navigation.PdfNavigationAdapter
 import com.itextpdf.android.library.navigation.PdfPageItem
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
-import com.itextpdf.android.library.views.CustomScrollHandle
+import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 
@@ -305,7 +304,7 @@ open class PdfFragment : Fragment() {
         pdfUri?.let { pdfUri ->
             val scrollHandle =
                 if (showScrollIndicator) {
-                    CustomScrollHandle(
+                    PdfViewScrollHandle(
                         requireContext(),
                         primaryColor,
                         secondaryColor,

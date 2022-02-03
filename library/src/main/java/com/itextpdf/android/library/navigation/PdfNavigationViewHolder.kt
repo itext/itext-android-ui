@@ -15,6 +15,11 @@ import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 
 
+/**
+ * The view holder for an item in the pdf navigation view.
+ *
+ * @param view  the view
+ */
 class PdfNavigationViewHolder(view: View) : PdfBaseNavigationViewHolder(view) {
 
     private val strokeWidth: Int = DisplayUtil.dpToPx(STROKE_WIDTH_IN_DP, itemView.context)
@@ -31,6 +36,11 @@ class PdfNavigationViewHolder(view: View) : PdfBaseNavigationViewHolder(view) {
         }
     }
 
+    /**
+     * Updates the text size of the view based on the selection state
+     *
+     * @param selected  boolean flag whether the item is selected or not
+     */
     fun updateTextSize(selected: Boolean) {
         if (selected) {
             tvPageNumber.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
@@ -41,6 +51,11 @@ class PdfNavigationViewHolder(view: View) : PdfBaseNavigationViewHolder(view) {
         }
     }
 
+    /**
+     * Updates the border color of the item
+     *
+     * @param color the color int that should be used for the border
+     */
     fun updateBorderColor(color: Int) {
         val drawableContainerState =
             thumbnailView.background.constantState as DrawableContainerState?
@@ -57,7 +72,7 @@ class PdfNavigationViewHolder(view: View) : PdfBaseNavigationViewHolder(view) {
 }
 
 /**
- * Base class of a viewHolder for displaying pdf page in a recyclerView.
+ * Base class of a viewHolder for displaying pdf thumbnail in a recyclerView.
  *
  * @param view  the view class required by the viewHolder
  */
@@ -68,6 +83,14 @@ abstract class PdfBaseNavigationViewHolder(view: View) : RecyclerView.ViewHolder
     abstract fun bind(item: PdfPageRecyclerItem)
 }
 
+/**
+ * The data class holding all the data required for the pdf navigation
+ *
+ * @property pdfiumCore required for rendering the pdf page that needs to be displayed as a thumbnail
+ * @property pdfDocument    the pdfDocument that contains the page that should be rendered
+ * @property pageIndex  the index of the page within the pdfDocument
+ * @property action the action that should happen when the item is clicked
+ */
 data class PdfPageItem(
     val pdfiumCore: PdfiumCore,
     val pdfDocument: PdfDocument,

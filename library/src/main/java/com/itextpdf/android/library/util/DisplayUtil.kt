@@ -7,6 +7,13 @@ import kotlin.math.roundToInt
 
 class DisplayUtil {
     companion object {
+        /**
+         * Converts dp to pixels.
+         *
+         * @param dp    the dp value that should be converted to pixels
+         * @param context   the context that is used to get the displayMetrics
+         * @return  the passed dp value converted to pixels
+         */
         fun dpToPx(dp: Float, context: Context): Int {
             return TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,

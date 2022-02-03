@@ -23,11 +23,11 @@ import com.github.barteksc.pdfviewer.scroll.ScrollHandle
 import com.itextpdf.android.library.R
 
 
-class CustomScrollHandle(
+class PdfViewScrollHandle(
     context: Context,
-    primaryColor: String?,
-    secondaryColor: String?,
-    private val showPageNumber: Boolean,
+    primaryColor: String? = null,
+    secondaryColor: String? = null,
+    private val showPageNumber: Boolean = true,
     private val inverted: Boolean = false
 ) :
     RelativeLayout(context), ScrollHandle {
@@ -43,6 +43,8 @@ class CustomScrollHandle(
     private var currentPos = 0f
     private val viewHandler = Handler(Looper.getMainLooper())
     private val hidePageScrollerRunnable = Runnable { hide() }
+
+    constructor(context: Context) : this(context, null, null, true, false)
 
     init {
         val inflater = LayoutInflater.from(context)
