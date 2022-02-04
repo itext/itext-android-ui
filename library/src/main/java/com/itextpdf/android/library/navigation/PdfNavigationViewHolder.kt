@@ -20,11 +20,13 @@ import com.shockwave.pdfium.PdfiumCore
  *
  * @param view  the view
  */
-class PdfNavigationViewHolder(view: View) : PdfBaseNavigationViewHolder(view) {
+class PdfNavigationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+    private val tvPageNumber: TextView = view.findViewById(R.id.tvPageNumber)
+    private val thumbnailView: PdfThumbnailView = view.findViewById(R.id.pageThumbnail)
     private val strokeWidth: Int = DisplayUtil.dpToPx(STROKE_WIDTH_IN_DP, itemView.context)
 
-    override fun bind(item: PdfPageRecyclerItem) {
+    fun bind(item: PdfPageRecyclerItem) {
         if (item is PdfPageItem) {
             val pageNumber = item.pageIndex + 1
             tvPageNumber.text = "$pageNumber"
@@ -69,18 +71,6 @@ class PdfNavigationViewHolder(view: View) : PdfBaseNavigationViewHolder(view) {
     companion object {
         private const val STROKE_WIDTH_IN_DP = 1f
     }
-}
-
-/**
- * Base class of a viewHolder for displaying pdf thumbnail in a recyclerView.
- *
- * @param view  the view class required by the viewHolder
- */
-abstract class PdfBaseNavigationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    protected val tvPageNumber: TextView = view.findViewById(R.id.tvPageNumber)
-    protected val thumbnailView: PdfThumbnailView = view.findViewById(R.id.pageThumbnail)
-
-    abstract fun bind(item: PdfPageRecyclerItem)
 }
 
 /**
