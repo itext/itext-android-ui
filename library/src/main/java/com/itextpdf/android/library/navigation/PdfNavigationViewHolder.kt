@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
-import com.itextpdf.android.library.navigation.PdfPageRecyclerItem.Companion.TYPE_PDF_PAGE
 import com.itextpdf.android.library.util.DisplayUtil
 import com.itextpdf.android.library.views.PdfThumbnailView
 import com.shockwave.pdfium.PdfDocument
@@ -27,14 +26,12 @@ class PdfNavigationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     private val strokeWidth: Int = DisplayUtil.dpToPx(STROKE_WIDTH_IN_DP, itemView.context)
 
     fun bind(item: PdfPageRecyclerItem) {
-        if (item is PdfPageItem) {
-            val pageNumber = item.pageIndex + 1
-            tvPageNumber.text = "$pageNumber"
-            thumbnailView.setMultiple(item.pdfiumCore, item.pdfDocument, item.pageIndex)
+        val pageNumber = item.pageIndex + 1
+        tvPageNumber.text = "$pageNumber"
+        thumbnailView.setMultiple(item.pdfiumCore, item.pdfDocument, item.pageIndex)
 
-            itemView.setOnClickListener {
-                item.action()
-            }
+        itemView.setOnClickListener {
+            item.action()
         }
     }
 
@@ -81,24 +78,9 @@ class PdfNavigationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
  * @property pageIndex  the index of the page within the pdfDocument
  * @property action the action that should happen when the item is clicked
  */
-data class PdfPageItem(
+data class PdfPageRecyclerItem(
     val pdfiumCore: PdfiumCore,
     val pdfDocument: PdfDocument,
     val pageIndex: Int,
     val action: () -> Unit
-) : PdfPageRecyclerItem {
-    override val type: Int
-        get() = TYPE_PDF_PAGE
-}
-
-/**
- * Interface that is used to define the type of the item, which in turn is used to specify the layout
- * of the item.
- */
-interface PdfPageRecyclerItem {
-    val type: Int
-
-    companion object {
-        val TYPE_PDF_PAGE = R.layout.recycler_item_navigation_pdf_page
-    }
-}
+)

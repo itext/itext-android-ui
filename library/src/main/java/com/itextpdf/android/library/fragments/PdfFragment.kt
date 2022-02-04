@@ -24,7 +24,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
 import com.itextpdf.android.library.navigation.PdfNavigationAdapter
-import com.itextpdf.android.library.navigation.PdfPageItem
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.shockwave.pdfium.PdfDocument
@@ -285,7 +284,7 @@ open class PdfFragment : Fragment() {
         navigationPdfDocument?.let {
             val data = mutableListOf<PdfPageRecyclerItem>()
             for (i in 0 until binding.pdfView.pageCount) {
-                data.add(PdfPageItem(pdfiumCore, it, i) {
+                data.add(PdfPageRecyclerItem(pdfiumCore, it, i) {
                     navPageSelected = true
                     scrollThumbnailNavigationViewToPage(i)
                     scrollToPage(i)
