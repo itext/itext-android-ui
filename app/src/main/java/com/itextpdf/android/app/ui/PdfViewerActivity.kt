@@ -19,34 +19,54 @@ class PdfViewerActivity : AppCompatActivity() {
         binding = ActivityPdfViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val fileName = intent.extras?.getString(EXTRA_PDF_TITLE) ?: ""
-        val pdfUri = Uri.parse(intent.extras?.getString(EXTRA_PDF_URI) ?: "")
-        val pdfIndex = intent.extras?.getInt(EXTRA_PDF_INDEX) ?: -1
+        intent?.extras?.let { extras ->
+            val pdfUriString = extras.getString(EXTRA_PDF_URI)
+            if (!pdfUriString.isNullOrEmpty()) {
 
-        // for pdf with index 0 use the params set within the xml file, for the other pdfs, replace the fragment
-        if (pdfIndex != 0) {
-            // set fragment in code
-            if (savedInstanceState == null) {
-                val fragment = PdfFragment()
-                fragment.pdfUri = pdfUri
-                fragment.fileName = fileName
+                val pdfUri = Uri.parse(pdfUriString)
+                val fileName = extras.getString(EXTRA_PDF_TITLE)
+                val pdfIndex = extras.getInt(EXTRA_PDF_INDEX, -1)
 
-                // set some settings for demonstration
-                if (pdfIndex == 1) {
-                    fragment.displayFileName = true
-                    fragment.pageSpacing = 100
-                    fragment.enableAnnotationRendering = false
-                    fragment.enableDoubleTapZoom = false
-                    fragment.primaryColor = "#295819"
-                    fragment.secondaryColor = "#950178"
-                    fragment.backgroundColor = "#119191"
-                } else if (pdfIndex == 3) {
-                    fragment.enableThumbnailNavigationView = false
+                // for pdf with index 0 (Sample 1) use the params set within the xml file, for the other pdfs, replace the fragment
+                if (pdfIndex != 0) {
+                    // set fragment in code
+                    if (savedInstanceState == null) {
+                        val fragment: PdfFragment
+                        // setup the fragment with different settings based on the index of the selected pdf
+                        when (pdfIndex) {
+                            1 -> { // Sample 2
+                                fragment = PdfFragment.newInstance(
+                                    pdfUri = pdfUri,
+                                    fileName = fileName,
+                                    displayFileName = true,
+                                    pageSpacing = 100,
+                                    enableAnnotationRendering = false,
+                                    enableDoubleTapZoom = false,
+                                    primaryColor = "#295819",
+                                    secondaryColor = "#950178",
+                                    backgroundColor = "#119191"
+                                )
+                            }
+                            3 -> { // Sample 4
+                                fragment = PdfFragment.newInstance(
+                                    pdfUri = pdfUri,
+                                    fileName = fileName,
+                                    enableThumbnailNavigationView = false
+                                )
+                            }
+                            else -> { // Sample 3 and pdfs from file explorer
+                                fragment = PdfFragment.newInstance(
+                                    pdfUri = pdfUri,
+                                    fileName = fileName
+                                )
+                            }
+                        }
+
+                        val fm = supportFragmentManager.beginTransaction()
+                        fm.replace(R.id.pdf_fragment_container, fragment)
+                        fm.commit()
+                    }
                 }
-
-                val fm = supportFragmentManager.beginTransaction()
-                fm.replace(R.id.pdf_fragment_container, fragment)
-                fm.commit()
             }
         }
     }
@@ -65,7 +85,7 @@ class PdfViewerActivity : AppCompatActivity() {
          * @param fileName  the name of the pdf file
          * @param pdfIndex  the index of the pdf file within the list
          */
-        fun launch(context: Context, uri: Uri, fileName: String?, pdfIndex: Int?) {
+        fun launch(context: Context, uri: Uri, fileName: String?, pdfIndex: Int? = null) {
             val intent = Intent(context, PdfViewerActivity::class.java)
             intent.putExtra(EXTRA_PDF_URI, uri.toString())
             intent.putExtra(EXTRA_PDF_TITLE, fileName)
