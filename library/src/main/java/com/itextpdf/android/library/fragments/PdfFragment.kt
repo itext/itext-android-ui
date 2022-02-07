@@ -24,7 +24,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
 import com.itextpdf.android.library.navigation.PdfNavigationAdapter
-import com.itextpdf.android.library.navigation.PdfPageItem
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.shockwave.pdfium.PdfDocument
@@ -39,64 +38,64 @@ import com.shockwave.pdfium.PdfiumCore
 open class PdfFragment : Fragment() {
 
     /**
-     * The name of the file that should be displayed
-     */
-    var fileName: String? = null
-
-    /**
      * The uri of the pdf that should be displayed
      */
-    var pdfUri: Uri? = null
+    private var pdfUri: Uri? = null
+
+    /**
+     * The name of the file that should be displayed
+     */
+    private var fileName: String? = null
 
     /**
      * A boolean flag that defines if the given file name should be displayed in the toolbar. Default: false
      */
-    var displayFileName = DEFAULT_DISPLAY_FILE_NAME
+    private var displayFileName = DEFAULT_DISPLAY_FILE_NAME
 
     /**
      * The spacing in px between the pdf pages. Default: 20
      */
-    var pageSpacing = DEFAULT_PAGE_SPACING
+    private var pageSpacing = DEFAULT_PAGE_SPACING
 
     /**
      * A boolean flag to enable/disable pdf thumbnail navigation view. Default: true
      */
-    var enableThumbnailNavigationView = DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
+    private var enableThumbnailNavigationView = DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
 
     /**
      * A boolean flag to enable/disable annotation rendering. Default: true
      */
-    var enableAnnotationRendering = DEFAULT_ENABLE_ANNOTATION_RENDERING
+    private var enableAnnotationRendering = DEFAULT_ENABLE_ANNOTATION_RENDERING
 
     /**
      * A boolean flag to enable/disable double tap to zoom. Default: true
      */
-    var enableDoubleTapZoom = DEFAULT_ENABLE_DOUBLE_TAP_ZOOM
+    private var enableDoubleTapZoom = DEFAULT_ENABLE_DOUBLE_TAP_ZOOM
 
     /**
      * A boolean flag to enable/disable a scrolling indicator at the right of the page, that can be used fast scrolling. Default: true
      */
-    var showScrollIndicator = DEFAULT_SHOW_SCROLL_INDICATOR
+    private var showScrollIndicator = DEFAULT_SHOW_SCROLL_INDICATOR
 
     /**
      * A boolean flag to enable/disable the page number while the scroll indicator is tabbed. Default: true
      */
-    var showScrollIndicatorPageNumber = DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
+    private var showScrollIndicatorPageNumber = DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
 
     /**
      * A color string to set the primary color of the view (affects: scroll indicator, navigation thumbnails and loading indicator). Default: #FF9400
      */
-    var primaryColor: String? = DEFAULT_PRIMARY_COLOR
+    private var primaryColor: String? = DEFAULT_PRIMARY_COLOR
 
     /**
      * A color string to set the secondary color of the view (affects: scroll indicator and navigation thumbnails). Default: #FFEFD8
      */
-    var secondaryColor: String? = DEFAULT_SECONDARY_COLOR
+    private var secondaryColor: String? = DEFAULT_SECONDARY_COLOR
 
     /**
      * A color string to set the background of the pdf view that will be visible between the pages if pageSpacing > 0. Default: #EAEAEA
      */
-    var backgroundColor: String? = DEFAULT_BACKGROUND_COLOR
+    private var backgroundColor: String? = DEFAULT_BACKGROUND_COLOR
 
     private lateinit var binding: FragmentPdfBinding
     private lateinit var pdfNavigationAdapter: PdfNavigationAdapter
@@ -118,35 +117,13 @@ open class PdfFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentPdfBinding.inflate(inflater, container, false)
-
         pdfiumCore = PdfiumCore(requireContext())
 
+        // set the parameter from the savedInstanceState, or if it's null, from the arguments
+        setParamsFromBundle(savedInstanceState ?: arguments)
+        currentPage = savedInstanceState?.getInt(CURRENT_PAGE) ?: 0
+
         setupToolbar()
-
-        if (savedInstanceState != null) {
-            // Restore last state
-            currentPage = savedInstanceState.getInt(CURRENT_PAGE)
-            fileName = savedInstanceState.getString(FILE_NAME) ?: ""
-            val storedUri = savedInstanceState.getString(PDF_URI)
-            if (!storedUri.isNullOrEmpty()) {
-                pdfUri = Uri.parse(storedUri)
-            }
-            displayFileName = savedInstanceState.getBoolean(DISPLAY_FILE_NAME)
-            pageSpacing = savedInstanceState.getInt(PAGE_SPACING)
-            enableThumbnailNavigationView =
-                savedInstanceState.getBoolean(ENABLE_THUMBNAIL_NAVIGATION_VIEW)
-            enableAnnotationRendering = savedInstanceState.getBoolean(ENABLE_ANNOTATION_RENDERING)
-            enableDoubleTapZoom = savedInstanceState.getBoolean(ENABLE_DOUBLE_TAP_ZOOM)
-            showScrollIndicator = savedInstanceState.getBoolean(SHOW_SCROLL_INDICATOR)
-            showScrollIndicatorPageNumber =
-                savedInstanceState.getBoolean(SHOW_SCROLL_INDICATOR_PAGE_NUMBER)
-            primaryColor =
-                savedInstanceState.getString(PRIMARY_COLOR)
-            secondaryColor =
-                savedInstanceState.getString(SECONDARY_COLOR)
-            backgroundColor = savedInstanceState.getString(BACKGROUND_COLOR)
-        }
-
         setupPdfView()
 
         pdfUri?.let {
@@ -162,6 +139,38 @@ open class PdfFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    private fun setParamsFromBundle(bundle: Bundle?) {
+        if (bundle != null) {
+            val storedUri = bundle.getString(PDF_URI)
+            if (!storedUri.isNullOrEmpty()) {
+                pdfUri = Uri.parse(storedUri)
+            }
+            fileName = bundle.getString(FILE_NAME) ?: ""
+            displayFileName = bundle.getBoolean(DISPLAY_FILE_NAME, DEFAULT_DISPLAY_FILE_NAME)
+            pageSpacing = bundle.getInt(PAGE_SPACING, DEFAULT_PAGE_SPACING)
+            enableThumbnailNavigationView = bundle.getBoolean(
+                ENABLE_THUMBNAIL_NAVIGATION_VIEW,
+                DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
+            )
+            enableAnnotationRendering =
+                bundle.getBoolean(
+                    ENABLE_ANNOTATION_RENDERING,
+                    DEFAULT_ENABLE_ANNOTATION_RENDERING
+                )
+            enableDoubleTapZoom =
+                bundle.getBoolean(ENABLE_DOUBLE_TAP_ZOOM, DEFAULT_ENABLE_DOUBLE_TAP_ZOOM)
+            showScrollIndicator =
+                bundle.getBoolean(SHOW_SCROLL_INDICATOR, DEFAULT_SHOW_SCROLL_INDICATOR)
+            showScrollIndicatorPageNumber = bundle.getBoolean(
+                SHOW_SCROLL_INDICATOR_PAGE_NUMBER,
+                DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
+            )
+            primaryColor = bundle.getString(PRIMARY_COLOR) ?: DEFAULT_PRIMARY_COLOR
+            secondaryColor = bundle.getString(SECONDARY_COLOR) ?: DEFAULT_SECONDARY_COLOR
+            backgroundColor = bundle.getString(BACKGROUND_COLOR) ?: DEFAULT_BACKGROUND_COLOR
+        }
     }
 
     override fun onDestroy() {
@@ -186,11 +195,11 @@ open class PdfFragment : Fragment() {
 
         // get the attributes data set via xml
         val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.PdfFragment)
-        a.getText(R.styleable.PdfFragment_file_name)?.let {
-            fileName = it.toString()
-        }
         a.getText(R.styleable.PdfFragment_file_uri)?.let {
             pdfUri = Uri.parse(it.toString())
+        }
+        a.getText(R.styleable.PdfFragment_file_name)?.let {
+            fileName = it.toString()
         }
         displayFileName =
             a.getBoolean(R.styleable.PdfFragment_display_file_name, DEFAULT_DISPLAY_FILE_NAME)
@@ -230,8 +239,8 @@ open class PdfFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(CURRENT_PAGE, currentPage)
-        outState.putString(FILE_NAME, fileName)
         outState.putString(PDF_URI, pdfUri.toString())
+        outState.putString(FILE_NAME, fileName)
         outState.putBoolean(DISPLAY_FILE_NAME, displayFileName)
         outState.putInt(PAGE_SPACING, pageSpacing)
         outState.putBoolean(ENABLE_THUMBNAIL_NAVIGATION_VIEW, enableThumbnailNavigationView)
@@ -275,7 +284,7 @@ open class PdfFragment : Fragment() {
         navigationPdfDocument?.let {
             val data = mutableListOf<PdfPageRecyclerItem>()
             for (i in 0 until binding.pdfView.pageCount) {
-                data.add(PdfPageItem(pdfiumCore, it, i) {
+                data.add(PdfPageRecyclerItem(pdfiumCore, it, i) {
                     navPageSelected = true
                     scrollThumbnailNavigationViewToPage(i)
                     scrollToPage(i)
@@ -436,5 +445,63 @@ open class PdfFragment : Fragment() {
         const val DEFAULT_PRIMARY_COLOR = "#FF9400"
         const val DEFAULT_SECONDARY_COLOR = "#FFEFD8"
         const val DEFAULT_BACKGROUND_COLOR = "#EAEAEA"
+
+        /**
+         * Static class to create a new instance of the PdfFragment with the given settings
+         *
+         * @param pdfUri    The uri of the pdf that should be displayed. This is the only required param
+         * @param fileName  The name of the file that should be displayed
+         * @param displayFileName   A boolean flag that defines if the given file name should be displayed in the toolbar. Default: false
+         * @param pageSpacing   The spacing in px between the pdf pages. Default: 20
+         * @param enableThumbnailNavigationView A boolean flag to enable/disable pdf thumbnail navigation view. Default: true
+         * @param enableAnnotationRendering A boolean flag to enable/disable annotation rendering. Default: true
+         * @param enableDoubleTapZoom   A boolean flag to enable/disable double tap to zoom. Default: true
+         * @param showScrollIndicator   A boolean flag to enable/disable a scrolling indicator at the right of the page, that can be used fast scrolling. Default: true
+         * @param showScrollIndicatorPageNumber A boolean flag to enable/disable the page number while the scroll indicator is tabbed. Default: true
+         * @param primaryColor  A color string to set the primary color of the view (affects: scroll indicator, navigation thumbnails and loading indicator). Default: #FF9400
+         * @param secondaryColor    A color string to set the secondary color of the view (affects: scroll indicator and navigation thumbnails). Default: #FFEFD8
+         * @param backgroundColor   A color string to set the background of the pdf view that will be visible between the pages if pageSpacing > 0. Default: #EAEAEA@
+         * @return  in instance of PdfFragment with the given settings
+         */
+        fun newInstance(
+            pdfUri: Uri,
+            fileName: String? = null,
+            displayFileName: Boolean? = null,
+            pageSpacing: Int? = null,
+            enableThumbnailNavigationView: Boolean? = null,
+            enableAnnotationRendering: Boolean? = null,
+            enableDoubleTapZoom: Boolean? = null,
+            showScrollIndicator: Boolean? = null,
+            showScrollIndicatorPageNumber: Boolean? = null,
+            primaryColor: String? = null,
+            secondaryColor: String? = null,
+            backgroundColor: String? = null
+        ): PdfFragment {
+            val fragment = PdfFragment()
+
+            val args = Bundle()
+            args.putString(PDF_URI, pdfUri.toString())
+            args.putString(FILE_NAME, fileName)
+            if (displayFileName != null)
+                args.putBoolean(DISPLAY_FILE_NAME, displayFileName)
+            if (pageSpacing != null)
+                args.putInt(PAGE_SPACING, pageSpacing)
+            if (enableThumbnailNavigationView != null)
+                args.putBoolean(ENABLE_THUMBNAIL_NAVIGATION_VIEW, enableThumbnailNavigationView)
+            if (enableAnnotationRendering != null)
+                args.putBoolean(ENABLE_ANNOTATION_RENDERING, enableAnnotationRendering)
+            if (enableDoubleTapZoom != null)
+                args.putBoolean(ENABLE_DOUBLE_TAP_ZOOM, enableDoubleTapZoom)
+            if (showScrollIndicator != null)
+                args.putBoolean(SHOW_SCROLL_INDICATOR, showScrollIndicator)
+            if (showScrollIndicatorPageNumber != null)
+                args.putBoolean(SHOW_SCROLL_INDICATOR_PAGE_NUMBER, showScrollIndicatorPageNumber)
+            args.putString(PRIMARY_COLOR, primaryColor)
+            args.putString(SECONDARY_COLOR, secondaryColor)
+            args.putString(BACKGROUND_COLOR, backgroundColor)
+            fragment.arguments = args
+
+            return fragment
+        }
     }
 }

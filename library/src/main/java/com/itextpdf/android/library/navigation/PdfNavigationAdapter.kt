@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.itextpdf.android.library.navigation.PdfPageRecyclerItem.Companion.TYPE_PDF_PAGE
+import com.itextpdf.android.library.R
 
 /**
  * Adapter class for the pdf thumbnail navigation
@@ -38,21 +38,14 @@ class PdfNavigationAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PdfNavigationViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
-            viewType,
+            R.layout.recycler_item_navigation_pdf_page,
             parent,
             false
         )
-        return when (viewType) {
-            TYPE_PDF_PAGE -> PdfNavigationViewHolder(view)
-            else -> throw IllegalStateException("Unsupported viewType $viewType")
-        }
+        return PdfNavigationViewHolder(view)
     }
 
     override fun getItemCount(): Int = data.size
-
-    override fun getItemViewType(position: Int): Int {
-        return data[position].type
-    }
 
     override fun onBindViewHolder(holder: PdfNavigationViewHolder, position: Int) {
         val item = data[position]
