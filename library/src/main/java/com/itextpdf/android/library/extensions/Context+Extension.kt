@@ -67,8 +67,9 @@ fun Context.pdfDocumentWriter(fileName: String, mode: Int = Context.MODE_PRIVATE
  */
 fun Context.pdfDocumentReader(fileName: String): PdfDocument? {
     return try {
-        val file = getFileStreamPath(fileName).absoluteFile
-        PdfDocument(PdfReader(file))
+        //TODO
+//        val file = getFileStreamPath(fileName).absoluteFile
+        PdfDocument(PdfReader(fileName))
     } catch (e: FileNotFoundException) {
         e.printStackTrace()
         null

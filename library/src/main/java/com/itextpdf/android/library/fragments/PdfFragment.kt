@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
+import android.util.Log
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -23,11 +24,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
+import com.itextpdf.android.library.extensions.pdfDocumentReader
+import com.itextpdf.android.library.extensions.pdfDocumentWriter
 import com.itextpdf.android.library.navigation.PdfNavigationAdapter
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
 import com.itextpdf.android.library.views.PdfViewScrollHandle
+import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.kernel.utils.PageRange
+import com.itextpdf.kernel.utils.PdfSplitter
+import com.itextpdf.layout.Document
+import com.itextpdf.layout.element.Paragraph
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
+import java.io.FileNotFoundException
 
 
 /**
@@ -138,6 +147,10 @@ open class PdfFragment : Fragment() {
             }
         }
 
+        val testFile = "test.pdf"
+        createPdf(testFile)
+//        val file = requireActivity().getFileStreamPath(testFile).absoluteFile
+
         return binding.root
     }
 
@@ -171,6 +184,43 @@ open class PdfFragment : Fragment() {
             secondaryColor = bundle.getString(SECONDARY_COLOR) ?: DEFAULT_SECONDARY_COLOR
             backgroundColor = bundle.getString(BACKGROUND_COLOR) ?: DEFAULT_BACKGROUND_COLOR
         }
+    }
+
+    private fun createPdf(fileName: String) {
+        val pdf = requireContext().pdfDocumentWriter(fileName)
+        if (pdf != null) {
+            val document = Document(pdf)
+
+            val paragraph = Paragraph("Test paragraph")
+            paragraph.setFontSize(50f)
+            document.add(paragraph)
+
+            document.close()
+            pdf.close()
+        }
+    }
+
+    private fun splitPdf(fileName: String) {
+        val maxPageCount = 2 // create a new PDF per 2 pages from the original file
+
+        val pdfDocument = requireContext().pdfDocumentReader(fileName)
+        val pdfSplitter: PdfSplitter = object : PdfSplitter(pdfDocument) {
+            var partNumber = 1
+            override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
+                return try {
+                    val name = "splitDocument_" + partNumber++ + ".pdf"
+                    val output = requireContext().openFileOutput(name, Context.MODE_PRIVATE)
+                    PdfWriter(output)
+                } catch (ignored: FileNotFoundException) {
+                    throw RuntimeException()
+                }
+            }
+        }
+
+        pdfSplitter.splitByPageCount(
+            maxPageCount
+        ) { pdfDoc: com.itextpdf.kernel.pdf.PdfDocument?, pageRange: PageRange? -> pdfDoc?.close() }
+        pdfDocument?.close()
     }
 
     override fun onDestroy() {
@@ -273,6 +323,19 @@ open class PdfFragment : Fragment() {
         R.id.action_navigate_pdf -> {
             if (navViewSetupComplete)
                 toggleThumbnailNavigationViewVisibility()
+            true
+        }
+        R.id.action_split_pdf -> {
+            //TODO: use this for testing
+            if (!fileName.isNullOrEmpty()) {
+                splitPdf("file:///data/user/0/com.itextpdf.android.app/cache/sample_3.pdf")
+                val fileList = requireContext().filesDir.listFiles()
+                if (fileList != null) {
+                    for (f in fileList) {
+                        Log.i("######", "filename: ${f.name}")
+                    }
+                }
+            }
             true
         }
         else -> {

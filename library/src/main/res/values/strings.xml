@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="navigate_pdf">Navigate pdf</string>
+    <string name="split_document">Split document</string>
 </resources>
