@@ -36,11 +36,15 @@ android {
 }
 
 dependencies {
+    // PDF
     implementation project(':library')
     // https://mvnrepository.com/artifact/com.itextpdf/kernel
     implementation("com.itextpdf:kernel:7.1.17")
     // https://mvnrepository.com/artifact/com.itextpdf/layout
     implementation("com.itextpdf:layout:7.1.17")
+    implementation("com.itextpdf:io:7.1.17")
+
+    implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.0'

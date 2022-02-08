@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
      */
     private val pdfSelectionResultLauncher = registerPdfSelectionResult { pdfUri, fileName ->
         if (pdfUri != null) {
-            PdfViewerActivity.launch(this, pdfUri, fileName)
+            PdfViewerActivity.launch(this, pdfUri, fileName, null)
         }
     }
 
@@ -47,7 +47,8 @@ class MainActivity : AppCompatActivity() {
             val uri = Uri.fromFile(File(path))
 
             data.add(PdfItem(pdfTitles[i], fileName, pdfDescriptions[i], uri) {
-                PdfViewerActivity.launch(this, uri, fileName)
+                // customise the view for the second pdf
+                PdfViewerActivity.launch(this, uri, fileName, i)
             })
         }
 
@@ -103,10 +104,10 @@ class MainActivity : AppCompatActivity() {
          * The pre-defined descriptions of the pdf files that are stored in the assets folder.
          */
         private val pdfDescriptions = mutableListOf(
-            "Description for sample 1.",
-            "Description for sample 2.",
-            "Description for sample 3.",
-            "Description for sample 4."
+            "Sample 1 shows a the pdf view that was customised within the xml file.",
+            "Sample 2 shows a the pdf view that was customised within the code.",
+            "Sample 3 shows the pdf view with it's default settings.",
+            "Sample 4 shows the view without an option to open the thumbnail navigation view."
         )
 
         /**
@@ -144,7 +145,7 @@ class MainActivity : AppCompatActivity() {
         val type: Int
 
         companion object {
-            const val TYPE_PDF = R.layout.recycler_item_pdf
+            const val TYPE_PDF = R.layout.recycler_item_pdf_selection
         }
     }
 

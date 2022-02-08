@@ -1,25 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
+    <!-- INFO: Some attributes for the PdfFragment can be set within xml -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/pdf_fragment_container"
+        android:name="com.itextpdf.android.library.fragments.PdfFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:background_color="#F4EFBB"
+        app:display_file_name="true"
+        app:file_name="sample_1.pdf"
+        app:file_uri="file:///data/user/0/com.itextpdf.android.app/cache/sample_1.pdf"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-<!-- INFO: Use this to add the pdfFragment via xml (with options) -->
-<!--    <androidx.fragment.app.FragmentContainerView-->
-<!--        android:id="@+id/pdf_fragment_container"-->
-<!--        android:name="com.itextpdf.android.library.ui.PdfFragment"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:file_name="sample_1.pdf"-->
-<!--        app:file_uri="file:///data/user/0/com.itextpdf.android.app/cache/sample_1.pdf" />-->
+        app:layout_constraintTop_toTopOf="parent"
+        app:page_spacing="400"
+        app:primary_color="#217C12"
+        app:secondary_color="#C6E6C1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

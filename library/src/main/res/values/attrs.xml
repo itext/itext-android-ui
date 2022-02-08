@@ -3,5 +3,15 @@
     <declare-styleable name="PdfFragment">
         <attr name="file_name" format="string" />
         <attr name="file_uri" format="string" />
+        <attr name="display_file_name" format="boolean" />
+        <attr name="page_spacing" format="integer" />
+        <attr name="enable_thumbnail_navigation_view" format="boolean" />
+        <attr name="enable_annotation_rendering" format="boolean" />
+        <attr name="enable_double_tap_zoom" format="boolean" />
+        <attr name="show_scroll_indicator" format="boolean" />
+        <attr name="show_scroll_indicator_page_number" format="boolean" />
+        <attr name="primary_color" format="string" />
+        <attr name="secondary_color" format="string" />
+        <attr name="background_color" format="string" />
     </declare-styleable>
 </resources>

@@ -6,7 +6,7 @@ import java.io.*
 class FileUtil {
     companion object {
         /**
-         * Utility function to copy a file from the assets folder to a provided
+         * Utility function to copy a file from the assets folder to a provided path
          *
          * @param assetManager  the assetManager that is required to open files from the assets
          * @param fileName      the name of the file that should be copied from assets to the given path
