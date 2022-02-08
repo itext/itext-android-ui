@@ -17,6 +17,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -200,15 +201,16 @@ open class PdfFragment : Fragment() {
         }
     }
 
-    private fun splitPdf(fileName: String) {
+    private fun splitPdf(filePath: String, fileName: String) {
         val maxPageCount = 2 // create a new PDF per 2 pages from the original file
 
-        val pdfDocument = requireContext().pdfDocumentReader(fileName)
+        val pdfDocument = requireContext().pdfDocumentReader(filePath)
         val pdfSplitter: PdfSplitter = object : PdfSplitter(pdfDocument) {
             var partNumber = 1
             override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
                 return try {
-                    val name = "splitDocument_" + partNumber++ + ".pdf"
+                    // fileName must contain .pdf
+                    val name = "splitDocument_" + partNumber++ + "_$fileName"
                     val output = requireContext().openFileOutput(name, Context.MODE_PRIVATE)
                     PdfWriter(output)
                 } catch (ignored: FileNotFoundException) {
@@ -327,12 +329,16 @@ open class PdfFragment : Fragment() {
         }
         R.id.action_split_pdf -> {
             //TODO: use this for testing
-            if (!fileName.isNullOrEmpty()) {
-                splitPdf("file:///data/user/0/com.itextpdf.android.app/cache/sample_3.pdf")
-                val fileList = requireContext().filesDir.listFiles()
-                if (fileList != null) {
-                    for (f in fileList) {
-                        Log.i("######", "filename: ${f.name}")
+            fileName?.let { name ->
+                pdfUri?.path?.let { path ->
+                    if (!fileName.isNullOrEmpty()) {
+                        splitPdf(path, name)
+                        val fileList = requireContext().filesDir.listFiles()
+                        if (fileList != null) {
+                            for (f in fileList) {
+                                Log.i("######", "filename: ${f.name}")
+                            }
+                        }
                     }
                 }
             }
