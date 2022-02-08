@@ -67,12 +67,29 @@ fun Context.pdfDocumentWriter(fileName: String, mode: Int = Context.MODE_PRIVATE
  */
 fun Context.pdfDocumentReader(fileName: String): PdfDocument? {
     return try {
-        //TODO
-//        val file = getFileStreamPath(fileName).absoluteFile
-        PdfDocument(PdfReader(fileName))
+        val file = getFileStreamPath(fileName).absoluteFile
+        PdfDocument(PdfReader(file))
     } catch (e: FileNotFoundException) {
         e.printStackTrace()
         null
+    }
+}
+
+/**
+ * Returns a pdfDocument object with the given uri in reading mode.
+ *
+ * @param uri  the uri of the pdf that should be read
+ * @return  the pdf document in reading mode
+ */
+fun Context.pdfDocumentReader(uri: Uri): PdfDocument? {
+    val inputStream = contentResolver.openInputStream(uri)
+    return try {
+        PdfDocument(PdfReader(inputStream))
+    } catch (e: FileNotFoundException) {
+        e.printStackTrace()
+        null
+    } finally {
+        inputStream?.close()
     }
 }
 

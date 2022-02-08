@@ -17,7 +17,6 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -201,10 +200,10 @@ open class PdfFragment : Fragment() {
         }
     }
 
-    private fun splitPdf(filePath: String, fileName: String) {
+    private fun splitPdf(fileUri: Uri, fileName: String) {
         val maxPageCount = 2 // create a new PDF per 2 pages from the original file
 
-        val pdfDocument = requireContext().pdfDocumentReader(filePath)
+        val pdfDocument = requireContext().pdfDocumentReader(fileUri)
         val pdfSplitter: PdfSplitter = object : PdfSplitter(pdfDocument) {
             var partNumber = 1
             override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
@@ -330,14 +329,12 @@ open class PdfFragment : Fragment() {
         R.id.action_split_pdf -> {
             //TODO: use this for testing
             fileName?.let { name ->
-                pdfUri?.path?.let { path ->
-                    if (!fileName.isNullOrEmpty()) {
-                        splitPdf(path, name)
-                        val fileList = requireContext().filesDir.listFiles()
-                        if (fileList != null) {
-                            for (f in fileList) {
-                                Log.i("######", "filename: ${f.name}")
-                            }
+                pdfUri?.let { uri ->
+                    splitPdf(uri, name)
+                    val fileList = requireContext().filesDir.listFiles()
+                    if (fileList != null) {
+                        for (f in fileList) {
+                            Log.i("######", "filename: ${f.name}")
                         }
                     }
                 }
