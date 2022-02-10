@@ -205,8 +205,6 @@ open class PdfFragment : Fragment() {
     }
 
     private fun splitPdf(fileUri: Uri, fileName: String) {
-        val maxPageCount = 2 // create a new PDF per 2 pages from the original file
-
         val pdfDocument = requireContext().pdfDocumentReader(fileUri)
         val pdfSplitter: PdfSplitter = object : PdfSplitter(pdfDocument) {
             var partNumber = 1
@@ -222,31 +220,24 @@ open class PdfFragment : Fragment() {
             }
         }
 
-        // split by page count
-//        pdfSplitter.splitByPageCount(maxPageCount) { pdfDoc, pageRange ->
-//            Log.i("####", "number of pages: ${pdfDoc.numberOfPages}")
-//            pdfDoc?.close()
-//            if (pageRange.isPageInRange(1)) {
-//                val name = "splitDocument_1_$fileName"
-//                val file = requireContext().getFileStreamPath(name).absoluteFile
-//                if (file.exists()) {
-//                    setupPdfView(file.toUri())
-//                }
-//            }
-//        }
-
-        //split by page numbers
-        pdfSplitter.splitByPageNumbers(listOf(1, 3, 6)) { pdfDoc, pageRange ->
-            Log.i("####", "range = $pageRange")
-            pdfDoc.close()
-            if (pageRange.isPageInRange(1)) {
-                val name = "splitDocument_1_$fileName"
-                val file = requireContext().getFileStreamPath(name).absoluteFile
-                if (file.exists()) {
-                    setupPdfView(file.toUri())
-                }
-            }
+        // extract page ranges
+        val range1 = PageRange("1, 3-4, 6")
+        val range1Alternative = PageRange()
+        range1Alternative.addPageSequence(1, 1)
+        range1Alternative.addPageSequence(3, 4)
+        range1Alternative.addPageSequence(6, 6)
+        val range2 = PageRange("2, 5, 7-")
+        val documents = pdfSplitter.extractPageRanges(listOf(range1, range1Alternative, range2))
+        for (doc in documents) {
+            Log.i("####", "pageCount = ${doc.numberOfPages}")
+            doc.close()
         }
+
+        // load first page into pdf view:
+        val name = "splitDocument_1_$fileName"
+        val file = requireContext().getFileStreamPath(name).absoluteFile
+        setupPdfView(file.toUri())
+
         pdfDocument?.close()
     }
 
@@ -360,7 +351,7 @@ open class PdfFragment : Fragment() {
                     val fileList = requireContext().filesDir.listFiles()
                     if (fileList != null) {
                         for (f in fileList) {
-                            Log.i("######", "filename: ${f.name}")
+                            Log.i("###", "filename: ${f.name}")
                         }
                     }
                 }
