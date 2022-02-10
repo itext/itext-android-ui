@@ -1,5 +1,6 @@
 package com.itextpdf.android.library.fragments
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.res.TypedArray
 import android.graphics.BlendMode
@@ -17,6 +18,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -133,9 +135,10 @@ open class PdfFragment : Fragment() {
         currentPage = savedInstanceState?.getInt(CURRENT_PAGE) ?: 0
 
         setupToolbar()
-        setupPdfView()
 
         pdfUri?.let {
+            setupPdfView(it)
+
             val fileDescriptor: ParcelFileDescriptor? =
                 requireContext().contentResolver.openFileDescriptor(it, "r")
             if (fileDescriptor != null) {
@@ -147,8 +150,9 @@ open class PdfFragment : Fragment() {
             }
         }
 
-        val testFile = "test.pdf"
-        createPdf(testFile)
+        //TODO: for testing
+//        val testFile = "test.pdf"
+//        createPdf(testFile)
 //        val file = requireActivity().getFileStreamPath(testFile).absoluteFile
 
         return binding.root
@@ -218,9 +222,31 @@ open class PdfFragment : Fragment() {
             }
         }
 
-        pdfSplitter.splitByPageCount(
-            maxPageCount
-        ) { pdfDoc: com.itextpdf.kernel.pdf.PdfDocument?, pageRange: PageRange? -> pdfDoc?.close() }
+        // split by page count
+//        pdfSplitter.splitByPageCount(maxPageCount) { pdfDoc, pageRange ->
+//            Log.i("####", "number of pages: ${pdfDoc.numberOfPages}")
+//            pdfDoc?.close()
+//            if (pageRange.isPageInRange(1)) {
+//                val name = "splitDocument_1_$fileName"
+//                val file = requireContext().getFileStreamPath(name).absoluteFile
+//                if (file.exists()) {
+//                    setupPdfView(file.toUri())
+//                }
+//            }
+//        }
+
+        //split by page numbers
+        pdfSplitter.splitByPageNumbers(listOf(1, 3, 6)) { pdfDoc, pageRange ->
+            Log.i("####", "range = $pageRange")
+            pdfDoc.close()
+            if (pageRange.isPageInRange(1)) {
+                val name = "splitDocument_1_$fileName"
+                val file = requireContext().getFileStreamPath(name).absoluteFile
+                if (file.exists()) {
+                    setupPdfView(file.toUri())
+                }
+            }
+        }
         pdfDocument?.close()
     }
 
@@ -375,60 +401,71 @@ open class PdfFragment : Fragment() {
         }
     }
 
-    private fun setupPdfView() {
-        pdfUri?.let { pdfUri ->
-            val scrollHandle =
-                if (showScrollIndicator) {
-                    PdfViewScrollHandle(
-                        requireContext(),
-                        primaryColor,
-                        secondaryColor,
-                        showScrollIndicatorPageNumber
-                    )
-                } else {
-                    null
-                }
-
-            binding.pdfLoadingIndicator.visibility = VISIBLE
-            binding.pdfView.fromUri(pdfUri)
-                .defaultPage(currentPage)
-                .scrollHandle(scrollHandle)
-                .onPageError { page, t ->
-                    binding.pdfLoadingIndicator.visibility = GONE
-                }
-                .onPageScroll { _, _ ->
-                    // if user scrolls, close the navView
-                    if (!navPageSelected && navViewOpen) {
-                        setThumbnailNavigationViewVisibility(false)
-                    }
-                }
-                .onPageChange { page, _ ->
-                    currentPage = page
-                }
-                .onLoad {
-                    setupThumbnailNavigationView()
-                    binding.pdfLoadingIndicator.visibility = GONE
-                }
-                .enableAnnotationRendering(enableAnnotationRendering)
-                .spacing(pageSpacing)
-                .enableDoubletap(enableDoubleTapZoom)
-                .load()
-
-            if (backgroundColor != null) {
-                binding.pdfView.setBackgroundColor(Color.parseColor(backgroundColor))
+    private fun setupPdfView(pdfUri: Uri) {
+        val scrollHandle =
+            if (showScrollIndicator) {
+                PdfViewScrollHandle(
+                    requireContext(),
+                    primaryColor,
+                    secondaryColor,
+                    showScrollIndicatorPageNumber
+                )
+            } else {
+                null
             }
-            if (primaryColor != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    binding.pdfLoadingIndicator.indeterminateDrawable.colorFilter =
-                        BlendModeColorFilter(Color.parseColor(primaryColor), BlendMode.SRC_ATOP)
-                } else {
-                    binding.pdfLoadingIndicator.indeterminateDrawable.setColorFilter(
-                        Color.parseColor(primaryColor),
-                        PorterDuff.Mode.SRC_ATOP
-                    )
+
+        binding.pdfLoadingIndicator.visibility = VISIBLE
+        binding.pdfView.fromUri(pdfUri)
+            .defaultPage(currentPage)
+            .scrollHandle(scrollHandle)
+            .onPageError { page, error ->
+                binding.pdfLoadingIndicator.visibility = GONE
+                showPdfLoadError(error.message ?: "Unknown")
+            }
+            .onError { error ->
+                binding.pdfLoadingIndicator.visibility = GONE
+                showPdfLoadError(error.message ?: "Unknown")
+            }
+            .onPageScroll { _, _ ->
+                // if user scrolls, close the navView
+                if (!navPageSelected && navViewOpen) {
+                    setThumbnailNavigationViewVisibility(false)
                 }
+            }
+            .onPageChange { page, _ ->
+                currentPage = page
+            }
+            .onLoad {
+                setupThumbnailNavigationView()
+                binding.pdfLoadingIndicator.visibility = GONE
+            }
+            .enableAnnotationRendering(enableAnnotationRendering)
+            .spacing(pageSpacing)
+            .enableDoubletap(enableDoubleTapZoom)
+            .load()
+
+        if (backgroundColor != null) {
+            binding.pdfView.setBackgroundColor(Color.parseColor(backgroundColor))
+        }
+        if (primaryColor != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                binding.pdfLoadingIndicator.indeterminateDrawable.colorFilter =
+                    BlendModeColorFilter(Color.parseColor(primaryColor), BlendMode.SRC_ATOP)
+            } else {
+                binding.pdfLoadingIndicator.indeterminateDrawable.setColorFilter(
+                    Color.parseColor(primaryColor),
+                    PorterDuff.Mode.SRC_ATOP
+                )
             }
         }
+    }
+
+    private fun showPdfLoadError(reason: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Error")
+            .setMessage("DEV: Error loading the pdf file. Reason:\n$reason")
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     /**
