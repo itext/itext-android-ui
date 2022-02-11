@@ -152,8 +152,8 @@ open class PdfFragment : Fragment() {
         }
 
         //TODO: for testing
-//        val testFile = "test.pdf"
-//        createPdf(testFile)
+        val testFile = "test.pdf"
+        createPdf(testFile)
 //        val file = requireActivity().getFileStreamPath(testFile).absoluteFile
 
         return binding.root
