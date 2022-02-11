@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -345,17 +346,18 @@ open class PdfFragment : Fragment() {
         }
         R.id.action_split_pdf -> {
             //TODO: use this for testing
-            fileName?.let { name ->
-                pdfUri?.let { uri ->
-                    splitPdf(uri, name)
-                    val fileList = requireContext().filesDir.listFiles()
-                    if (fileList != null) {
-                        for (f in fileList) {
-                            Log.i("###", "filename: ${f.name}")
-                        }
-                    }
-                }
-            }
+//            fileName?.let { name ->
+//                pdfUri?.let { uri ->
+//                    splitPdf(uri, name)
+//                    val fileList = requireContext().filesDir.listFiles()
+//                    if (fileList != null) {
+//                        for (f in fileList) {
+//                            Log.i("###", "filename: ${f.name}")
+//                        }
+//                    }
+//                }
+//            }
+            openSplitDocumentView()
             true
         }
         else -> {
@@ -457,6 +459,18 @@ open class PdfFragment : Fragment() {
             .setMessage("DEV: Error loading the pdf file. Reason:\n$reason")
             .setPositiveButton(android.R.string.ok, null)
             .show()
+    }
+
+    open fun openSplitDocumentView() {
+        pdfUri?.let { uri ->
+            val fragmentManager = requireActivity().supportFragmentManager
+            val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
+            val fragment = SplitDocumentFragment.newInstance(uri)
+            fragmentTransaction.addToBackStack(null)
+            fragmentTransaction.hide(this)
+            fragmentTransaction.add(android.R.id.content, fragment)
+            fragmentTransaction.commit()
+        }
     }
 
     /**
