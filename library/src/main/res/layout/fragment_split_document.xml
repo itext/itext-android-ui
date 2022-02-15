@@ -21,15 +21,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSplitDocument"
         android:layout_marginTop="?attr/actionBarSize"
-        android:background="@color/light_grey"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-    <ProgressBar
-        android:id="@+id/splitDocumentLoadingIndicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:indeterminateTint="@color/orange_700"
-        android:layout_gravity="center" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
