@@ -3,7 +3,6 @@
     <attr name="file_uri" format="string" />
     <attr name="primary_color" format="string" />
     <attr name="secondary_color" format="string" />
-    <attr name="background_color" format="string" />
 
     <declare-styleable name="PdfFragment">
         <attr name="file_uri" />
@@ -17,12 +16,11 @@
         <attr name="show_scroll_indicator_page_number" format="boolean" />
         <attr name="primary_color" />
         <attr name="secondary_color" />
-        <attr name="background_color" />
+        <attr name="background_color" format="string" />
     </declare-styleable>
     <declare-styleable name="SplitDocumentFragment">
         <attr name="file_uri" />
         <attr name="primary_color" />
         <attr name="secondary_color" />
-        <attr name="background_color" />
     </declare-styleable>
 </resources>

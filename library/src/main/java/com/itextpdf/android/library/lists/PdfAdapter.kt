@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.lists.PdfRecyclerItem.Companion.TYPE_NAVIGATE
 import com.itextpdf.android.library.lists.PdfRecyclerItem.Companion.TYPE_SPLIT
 import com.itextpdf.android.library.lists.navigation.PdfNavigationViewHolder
-import com.itextpdf.android.library.lists.navigation.PdfSplitViewHolder
+import com.itextpdf.android.library.lists.split.PdfSplitViewHolder
 
 /**
  * Adapter class for the pdf thumbnail navigation

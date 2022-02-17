@@ -1,11 +1,9 @@
-package com.itextpdf.android.library.lists.navigation
+package com.itextpdf.android.library.lists.split
 
 import android.graphics.Bitmap
 import android.view.View
 import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.PdfViewHolder
-import com.shockwave.pdfium.PdfDocument
-import com.shockwave.pdfium.PdfiumCore
 
 
 /**
@@ -35,10 +33,10 @@ class PdfSplitViewHolder(view: View) : PdfViewHolder(view) {
  * @property action the action that should happen when the item is clicked
  */
 data class PdfSplitRecyclerItem(
+    var bitmap: Bitmap,
     val pageIndex: Int,
     val action: () -> Unit
-): PdfRecyclerItem {
-    var bitmap: Bitmap? = null
+) : PdfRecyclerItem {
     override val type: Int
         get() = PdfRecyclerItem.TYPE_SPLIT
 }

@@ -1,6 +1,5 @@
 package com.itextpdf.android.library.lists.navigation
 
-import android.graphics.Bitmap
 import android.view.View
 import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.PdfViewHolder
@@ -41,7 +40,7 @@ data class PdfNavigationRecyclerItem(
     val pdfDocument: PdfDocument,
     val pageIndex: Int,
     val action: () -> Unit
-): PdfRecyclerItem {
+) : PdfRecyclerItem {
     override val type: Int
         get() = PdfRecyclerItem.TYPE_NAVIGATE
 }

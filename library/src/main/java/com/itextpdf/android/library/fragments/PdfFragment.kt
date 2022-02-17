@@ -30,8 +30,8 @@ import com.itextpdf.android.library.databinding.FragmentPdfBinding
 import com.itextpdf.android.library.extensions.pdfDocumentReader
 import com.itextpdf.android.library.extensions.pdfDocumentWriter
 import com.itextpdf.android.library.lists.PdfAdapter
-import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.lists.PdfRecyclerItem
+import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.utils.PageRange
@@ -470,7 +470,7 @@ open class PdfFragment : Fragment() {
         pdfUri?.let { uri ->
             val fragmentManager = requireActivity().supportFragmentManager
             val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
-            val fragment = SplitDocumentFragment.newInstance(uri)
+            val fragment = SplitDocumentFragment.newInstance(uri, primaryColor, secondaryColor)
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.hide(this)
             fragmentTransaction.add(android.R.id.content, fragment)
