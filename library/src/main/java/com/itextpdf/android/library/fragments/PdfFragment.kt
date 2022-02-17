@@ -29,8 +29,9 @@ import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
 import com.itextpdf.android.library.extensions.pdfDocumentReader
 import com.itextpdf.android.library.extensions.pdfDocumentWriter
-import com.itextpdf.android.library.navigation.PdfNavigationAdapter
-import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
+import com.itextpdf.android.library.lists.PdfAdapter
+import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
+import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.utils.PageRange
@@ -110,7 +111,7 @@ open class PdfFragment : Fragment() {
     private var backgroundColor: String? = DEFAULT_BACKGROUND_COLOR
 
     private lateinit var binding: FragmentPdfBinding
-    private lateinit var pdfNavigationAdapter: PdfNavigationAdapter
+    private lateinit var pdfNavigationAdapter: PdfAdapter
 
     private val actionsBottomSheet by lazy { binding.includedBottomSheetActions.bottomSheetActions }
     private lateinit var actionsBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
@@ -367,9 +368,13 @@ open class PdfFragment : Fragment() {
 
     private fun setupThumbnailNavigationView() {
         navigationPdfDocument?.let {
-            val data = mutableListOf<PdfPageRecyclerItem>()
+            val data = mutableListOf<PdfRecyclerItem>()
             for (i in 0 until binding.pdfView.pageCount) {
-                data.add(PdfPageRecyclerItem(pdfiumCore, it, i) {
+                data.add(PdfNavigationRecyclerItem(
+                    pdfiumCore,
+                    it,
+                    i
+                ) {
                     navPageSelected = true
                     scrollThumbnailNavigationViewToPage(i)
                     scrollToPage(i)
@@ -377,7 +382,7 @@ open class PdfFragment : Fragment() {
                 })
             }
 
-            pdfNavigationAdapter = PdfNavigationAdapter(data, primaryColor, secondaryColor)
+            pdfNavigationAdapter = PdfAdapter(data, false, primaryColor, secondaryColor)
             binding.includedBottomSheetActions.rvPdfPages.adapter = pdfNavigationAdapter
             binding.includedBottomSheetActions.rvPdfPages.layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)

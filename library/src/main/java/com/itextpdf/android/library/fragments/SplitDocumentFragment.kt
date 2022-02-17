@@ -18,8 +18,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentSplitDocumentBinding
-import com.itextpdf.android.library.navigation.PdfNavigationAdapter
-import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
+import com.itextpdf.android.library.lists.PdfAdapter
+import com.itextpdf.android.library.lists.navigation.PdfSplitRecyclerItem
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import kotlinx.coroutines.*
@@ -48,7 +48,7 @@ open class SplitDocumentFragment : Fragment() {
     private var backgroundColor: String? = PdfFragment.DEFAULT_BACKGROUND_COLOR
 
     private lateinit var binding: FragmentSplitDocumentBinding
-    private lateinit var splitPdfAdapter: PdfNavigationAdapter
+    private lateinit var splitPdfAdapter: PdfAdapter
 
     private lateinit var pdfiumCore: PdfiumCore
 
@@ -150,19 +150,15 @@ open class SplitDocumentFragment : Fragment() {
 
     private fun setupSplitSelectionList() {
         navigationPdfDocument?.let {
-            val data = mutableListOf<PdfPageRecyclerItem>()
+            val data = mutableListOf<PdfSplitRecyclerItem>()
             for (i in 0 until pdfiumCore.getPageCount(it) * 100) {
-                //TODO: REMOVE MODULO
-                data.add(PdfPageRecyclerItem(pdfiumCore, it, i % pdfiumCore.getPageCount(it)) {
-//                    navPageSelected = true
-//                    scrollThumbnailNavigationViewToPage(i)
-//                    scrollToPage(i)
-//                    navPageSelected = false
+                //TODO: REMOVE MODULO -> only for testing
+                data.add(PdfSplitRecyclerItem(i % pdfiumCore.getPageCount(it)) {
                     splitPdfAdapter.updateSelectedItem(i)
                 })
             }
 
-            splitPdfAdapter = PdfNavigationAdapter(data, primaryColor, secondaryColor)
+            splitPdfAdapter = PdfAdapter(data, true, primaryColor, secondaryColor)
             binding.rvSplitDocument.adapter = splitPdfAdapter
             binding.rvSplitDocument.layoutManager =
                 GridLayoutManager(requireContext(), ROW_NUMBER, GridLayoutManager.VERTICAL, false)

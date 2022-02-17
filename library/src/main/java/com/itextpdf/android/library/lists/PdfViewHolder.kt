@@ -1,6 +1,5 @@
-package com.itextpdf.android.library.navigation
+package com.itextpdf.android.library.lists
 
-import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.graphics.drawable.DrawableContainer.DrawableContainerState
 import android.graphics.drawable.GradientDrawable
@@ -11,8 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.util.DisplayUtil
 import com.itextpdf.android.library.views.PdfThumbnailView
-import com.shockwave.pdfium.PdfDocument
-import com.shockwave.pdfium.PdfiumCore
 
 
 /**
@@ -26,7 +23,7 @@ abstract class PdfViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     protected val thumbnailView: PdfThumbnailView = view.findViewById(R.id.pageThumbnail)
     protected val strokeWidth: Int = DisplayUtil.dpToPx(STROKE_WIDTH_IN_DP, itemView.context)
 
-    abstract fun bind(item: PdfPageRecyclerItem)
+    abstract fun bind(item: PdfRecyclerItem)
 
     /**
      * Updates the text size of the view based on the selection state
@@ -63,24 +60,7 @@ abstract class PdfViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     }
 }
 
-/**
- * The data class holding all the data required for the pdf navigation
- *
- * @property pdfiumCore required for rendering the pdf page that needs to be displayed as a thumbnail
- * @property pdfDocument    the pdfDocument that contains the page that should be rendered
- * @property pageIndex  the index of the page within the pdfDocument
- * @property action the action that should happen when the item is clicked
- */
-data class PdfPageRecyclerItem(
-    val pdfiumCore: PdfiumCore,
-    val pdfDocument: PdfDocument,
-    val pageIndex: Int,
-    val action: () -> Unit
-) {
-    var bitmap: Bitmap? = null
-}
-
-interface RecyclerItem {
+interface PdfRecyclerItem {
     val type: Int
 
     companion object {
