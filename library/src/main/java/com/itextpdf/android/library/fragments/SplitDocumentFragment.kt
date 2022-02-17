@@ -158,6 +158,7 @@ open class SplitDocumentFragment : Fragment() {
 //                    scrollThumbnailNavigationViewToPage(i)
 //                    scrollToPage(i)
 //                    navPageSelected = false
+                    splitPdfAdapter.updateSelectedItem(i)
                 })
             }
 
@@ -175,8 +176,8 @@ open class SplitDocumentFragment : Fragment() {
             binding.rvSplitDocument.itemAnimator = itemAnimator
 
             //TODO
-//            val width = min(100, fragmentWidth / ROW_NUMBER * 2)
-            val width = 100
+//            val width = min(200, fragmentWidth / ROW_NUMBER * 2)
+            val width = 150
             val height = (width * 1.3).toInt()
 
             renderJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {

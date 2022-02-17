@@ -38,7 +38,7 @@ class PdfNavigationAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PdfNavigationViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
-            R.layout.recycler_item_navigation_pdf_page,
+            R.layout.recycler_item_split_pdf_page,
             parent,
             false
         )
