@@ -1,5 +1,6 @@
 package com.itextpdf.android.library.navigation
 
+import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.graphics.drawable.DrawableContainer.DrawableContainerState
 import android.graphics.drawable.GradientDrawable
@@ -28,7 +29,11 @@ class PdfNavigationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     fun bind(item: PdfPageRecyclerItem) {
         val pageNumber = item.pageIndex + 1
         tvPageNumber.text = "$pageNumber"
-        thumbnailView.setMultiple(item.pdfiumCore, item.pdfDocument, item.pageIndex)
+        //TODO: this is required for for thumbnails to work in preview and in activity (but bad performance)
+//        thumbnailView.setMultiple(item.pdfiumCore, item.pdfDocument, item.pageIndex)
+
+        // TODO: this has better performance
+        thumbnailView.pdfImageView.setImageBitmap(item.bitmap)
 
         itemView.setOnClickListener {
             item.action()
@@ -83,4 +88,6 @@ data class PdfPageRecyclerItem(
     val pdfDocument: PdfDocument,
     val pageIndex: Int,
     val action: () -> Unit
-)
+) {
+    var bitmap: Bitmap? = null
+}

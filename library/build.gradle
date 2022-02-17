@@ -56,6 +56,10 @@ dependencies {
     // Google
     implementation 'com.google.android.material:material:1.5.0'
 
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0'
+    implementation('org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0')
+    implementation('androidx.lifecycle:lifecycle-runtime-ktx:2.4.1')
+
     // Espresso
     // Core library
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'

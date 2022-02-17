@@ -2,6 +2,7 @@ package com.itextpdf.android.library.fragments
 
 import android.content.Context
 import android.content.res.TypedArray
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
@@ -11,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +22,8 @@ import com.itextpdf.android.library.navigation.PdfNavigationAdapter
 import com.itextpdf.android.library.navigation.PdfPageRecyclerItem
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
+import kotlinx.coroutines.*
+import kotlin.math.max
 
 open class SplitDocumentFragment : Fragment() {
 
@@ -50,6 +54,8 @@ open class SplitDocumentFragment : Fragment() {
 
     private var navigationPdfDocument: PdfDocument? = null
 
+    private var renderJob: Job? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -76,8 +82,6 @@ open class SplitDocumentFragment : Fragment() {
             }
         }
 
-        setupSplitSelectionList()
-
         return binding.root
     }
 
@@ -98,6 +102,7 @@ open class SplitDocumentFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         if (navigationPdfDocument != null) {
+            renderJob?.cancel()
             pdfiumCore.closeDocument(navigationPdfDocument)
         }
     }
@@ -146,7 +151,7 @@ open class SplitDocumentFragment : Fragment() {
     private fun setupSplitSelectionList() {
         navigationPdfDocument?.let {
             val data = mutableListOf<PdfPageRecyclerItem>()
-            for (i in 0 until pdfiumCore.getPageCount(it) * 10) {
+            for (i in 0 until pdfiumCore.getPageCount(it) * 100) {
                 //TODO: REMOVE MODULO
                 data.add(PdfPageRecyclerItem(pdfiumCore, it, i % pdfiumCore.getPageCount(it)) {
 //                    navPageSelected = true
@@ -159,7 +164,7 @@ open class SplitDocumentFragment : Fragment() {
             splitPdfAdapter = PdfNavigationAdapter(data, primaryColor, secondaryColor)
             binding.rvSplitDocument.adapter = splitPdfAdapter
             binding.rvSplitDocument.layoutManager =
-                GridLayoutManager(requireContext(), 3, GridLayoutManager.VERTICAL, false)
+                GridLayoutManager(requireContext(), ROW_NUMBER, GridLayoutManager.VERTICAL, false)
 
             // make selection snappier as view holder can be reused
             val itemAnimator: DefaultItemAnimator = object : DefaultItemAnimator() {
@@ -168,6 +173,31 @@ open class SplitDocumentFragment : Fragment() {
                 }
             }
             binding.rvSplitDocument.itemAnimator = itemAnimator
+
+            //TODO
+//            val width = min(100, fragmentWidth / ROW_NUMBER * 2)
+            val width = 100
+            val height = (width * 1.3).toInt()
+
+            renderJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                for ((index, d) in data.withIndex()) {
+                    pdfiumCore.openPage(it, d.pageIndex)
+
+
+                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+                    d.bitmap = bitmap
+                    pdfiumCore.renderPageBitmap(it, bitmap, d.pageIndex, 0, 0, width, height, true)
+
+
+                    val updateChange = index % 10 == 0
+
+                    if (updateChange) {
+                        withContext(Dispatchers.Main) {
+                            splitPdfAdapter.notifyItemRangeChanged(max(0, index - 10), index)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -176,6 +206,8 @@ open class SplitDocumentFragment : Fragment() {
         private const val PRIMARY_COLOR = "PRIMARY_COLOR"
         private const val SECONDARY_COLOR = "SECONDARY_COLOR"
         private const val BACKGROUND_COLOR = "BACKGROUND_COLOR"
+
+        private const val ROW_NUMBER = 3
 
         fun newInstance(
             pdfUri: Uri
