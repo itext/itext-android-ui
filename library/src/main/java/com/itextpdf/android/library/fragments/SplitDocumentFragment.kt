@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -21,17 +22,23 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentSplitDocumentBinding
+import com.itextpdf.android.library.extensions.pdfDocumentReader
 import com.itextpdf.android.library.lists.PdfAdapter
 import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.split.PdfSplitRecyclerItem
 import com.itextpdf.android.library.paging.Page
 import com.itextpdf.android.library.paging.PaginationScrollListener
+import com.itextpdf.android.library.util.PdfManipulator
+import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.kernel.utils.PageRange
+import com.itextpdf.kernel.utils.PdfSplitter
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.FileNotFoundException
 import kotlin.math.ceil
 import kotlin.math.min
 
@@ -41,6 +48,11 @@ open class SplitDocumentFragment : Fragment() {
      * The uri of the pdf that should be displayed
      */
     private var pdfUri: Uri? = null
+
+    /**
+     * The name of the file that should be displayed
+     */
+    private var fileName: String? = null
 
     /**
      * A color string to set the primary color of the view (affects: scroll indicator, navigation thumbnails and loading indicator). Default: #FF9400
@@ -107,7 +119,7 @@ open class SplitDocumentFragment : Fragment() {
 
         binding.fabSplit.visibility = View.INVISIBLE
         binding.fabSplit.setOnClickListener {
-            Log.i("###", "SPLIT")
+            openSplitDocumentDialog()
         }
 
         return binding.root
@@ -135,6 +147,7 @@ open class SplitDocumentFragment : Fragment() {
             if (!storedUri.isNullOrEmpty()) {
                 pdfUri = Uri.parse(storedUri)
             }
+            fileName = bundle.getString(FILE_NAME) ?: ""
             primaryColor = bundle.getString(PRIMARY_COLOR) ?: PdfFragment.DEFAULT_PRIMARY_COLOR
             secondaryColor =
                 bundle.getString(SECONDARY_COLOR) ?: PdfFragment.DEFAULT_SECONDARY_COLOR
@@ -161,6 +174,9 @@ open class SplitDocumentFragment : Fragment() {
         a.getText(R.styleable.SplitDocumentFragment_file_uri)?.let {
             pdfUri = Uri.parse(it.toString())
         }
+        a.getText(R.styleable.SplitDocumentFragment_file_name)?.let {
+            fileName = it.toString()
+        }
         a.getText(R.styleable.SplitDocumentFragment_primary_color)?.let {
             primaryColor = it.toString()
         }
@@ -173,6 +189,7 @@ open class SplitDocumentFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(PDF_URI, pdfUri.toString())
+        outState.putString(FILE_NAME, fileName)
         outState.putString(PRIMARY_COLOR, primaryColor)
         outState.putString(SECONDARY_COLOR, secondaryColor)
     }
@@ -215,6 +232,20 @@ open class SplitDocumentFragment : Fragment() {
 
         binding.splitPdfLoadingIndicator.visibility = View.VISIBLE
         requestPage(currentPage)
+    }
+
+    private fun openSplitDocumentDialog() {
+        //TODO: use this for testing
+        pdfUri?.let { uri ->
+            val name = if (!fileName.isNullOrEmpty()) fileName!! else UNNAMED_FILE
+            PdfManipulator.splitPdfWithWithSelection(requireContext(), uri, name, splitPdfAdapter.getSelectedPositions())
+            val fileList = requireContext().filesDir.listFiles()
+            if (fileList != null) {
+                for (f in fileList) {
+                    Log.i("###", "filename: ${f.name}")
+                }
+            }
+        }
     }
 
     private fun requestPage(pageIndex: Int) {
@@ -275,15 +306,18 @@ open class SplitDocumentFragment : Fragment() {
 
     companion object {
         private const val PDF_URI = "PDF_URI"
+        private const val FILE_NAME = "FILE_NAME"
         private const val PRIMARY_COLOR = "PRIMARY_COLOR"
         private const val SECONDARY_COLOR = "SECONDARY_COLOR"
 
         private const val ROW_NUMBER = 3
         private const val PAGE_SIZE = 30
         private const val LOAD_MORE_OFFSET = PAGE_SIZE / 2
+        private const val UNNAMED_FILE = "unnamed.pdf"
 
         fun newInstance(
             pdfUri: Uri,
+            fileName: String? = null,
             primaryColor: String? = null,
             secondaryColor: String? = null
         ): SplitDocumentFragment {
@@ -291,6 +325,7 @@ open class SplitDocumentFragment : Fragment() {
 
             val args = Bundle()
             args.putString(PDF_URI, pdfUri.toString())
+            args.putString(FILE_NAME, fileName)
             args.putString(PRIMARY_COLOR, primaryColor)
             args.putString(SECONDARY_COLOR, secondaryColor)
 

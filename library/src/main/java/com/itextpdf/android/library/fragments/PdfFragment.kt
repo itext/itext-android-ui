@@ -206,43 +206,6 @@ open class PdfFragment : Fragment() {
         }
     }
 
-    private fun splitPdf(fileUri: Uri, fileName: String) {
-        val pdfDocument = requireContext().pdfDocumentReader(fileUri)
-        val pdfSplitter: PdfSplitter = object : PdfSplitter(pdfDocument) {
-            var partNumber = 1
-            override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
-                return try {
-                    // fileName must contain .pdf
-                    val name = "splitDocument_" + partNumber++ + "_$fileName"
-                    val output = requireContext().openFileOutput(name, Context.MODE_PRIVATE)
-                    PdfWriter(output)
-                } catch (ignored: FileNotFoundException) {
-                    throw RuntimeException()
-                }
-            }
-        }
-
-        // extract page ranges
-        val range1 = PageRange("1, 3-4, 6")
-        val range1Alternative = PageRange()
-        range1Alternative.addPageSequence(1, 1)
-        range1Alternative.addPageSequence(3, 4)
-        range1Alternative.addPageSequence(6, 6)
-        val range2 = PageRange("2, 5, 7-")
-        val documents = pdfSplitter.extractPageRanges(listOf(range1, range1Alternative, range2))
-        for (doc in documents) {
-            Log.i("####", "pageCount = ${doc.numberOfPages}")
-            doc.close()
-        }
-
-        // load first page into pdf view:
-        val name = "splitDocument_1_$fileName"
-        val file = requireContext().getFileStreamPath(name).absoluteFile
-        setupPdfView(file.toUri())
-
-        pdfDocument?.close()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         if (navigationPdfDocument != null) {
@@ -346,18 +309,6 @@ open class PdfFragment : Fragment() {
             true
         }
         R.id.action_split_pdf -> {
-            //TODO: use this for testing
-//            fileName?.let { name ->
-//                pdfUri?.let { uri ->
-//                    splitPdf(uri, name)
-//                    val fileList = requireContext().filesDir.listFiles()
-//                    if (fileList != null) {
-//                        for (f in fileList) {
-//                            Log.i("###", "filename: ${f.name}")
-//                        }
-//                    }
-//                }
-//            }
             openSplitDocumentView()
             true
         }
@@ -470,7 +421,7 @@ open class PdfFragment : Fragment() {
         pdfUri?.let { uri ->
             val fragmentManager = requireActivity().supportFragmentManager
             val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
-            val fragment = SplitDocumentFragment.newInstance(uri, primaryColor, secondaryColor)
+            val fragment = SplitDocumentFragment.newInstance(uri, fileName, primaryColor, secondaryColor)
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.hide(this)
             fragmentTransaction.add(android.R.id.content, fragment)
