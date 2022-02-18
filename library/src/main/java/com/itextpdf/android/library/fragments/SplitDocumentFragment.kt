@@ -1,6 +1,7 @@
 package com.itextpdf.android.library.fragments
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.content.res.TypedArray
 import android.graphics.*
 import android.net.Uri
@@ -102,19 +103,30 @@ open class SplitDocumentFragment : Fragment() {
             }
         }
 
-        if (primaryColor != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                binding.splitPdfLoadingIndicator.indeterminateDrawable.colorFilter =
-                    BlendModeColorFilter(Color.parseColor(primaryColor), BlendMode.SRC_ATOP)
-            } else {
-                binding.splitPdfLoadingIndicator.indeterminateDrawable.setColorFilter(
-                    Color.parseColor(primaryColor),
-                    PorterDuff.Mode.SRC_ATOP
-                )
-            }
+        adjustColors()
+
+        binding.fabSplit.visibility = View.INVISIBLE
+        binding.fabSplit.setOnClickListener {
+            Log.i("###", "SPLIT")
         }
 
         return binding.root
+    }
+
+    private fun adjustColors() {
+        if (primaryColor != null) {
+            val primary = Color.parseColor(primaryColor)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                binding.splitPdfLoadingIndicator.indeterminateDrawable.colorFilter =
+                    BlendModeColorFilter(primary, BlendMode.SRC_ATOP)
+            } else {
+                binding.splitPdfLoadingIndicator.indeterminateDrawable.setColorFilter(
+                    primary,
+                    PorterDuff.Mode.SRC_ATOP
+                )
+            }
+            binding.fabSplit.backgroundTintList = ColorStateList.valueOf(primary)
+        }
     }
 
     private fun setParamsFromBundle(bundle: Bundle?) {
@@ -227,7 +239,7 @@ open class SplitDocumentFragment : Fragment() {
                         pdfiumCore.renderPageBitmap(it, bitmap, i, 0, 0, width, height, true)
 
                         pdfItems.add(PdfSplitRecyclerItem(bitmap, i) {
-                            splitPdfAdapter.updateSelectedItem(i)
+                            documentPageSelected(i)
                         })
                     }
                     page = Page(pdfItems, pdfItems.size, pageIndex, totalPages)
@@ -248,6 +260,16 @@ open class SplitDocumentFragment : Fragment() {
             }
         } ?: run {
             binding.splitPdfLoadingIndicator.visibility = View.GONE
+        }
+    }
+
+    private fun documentPageSelected(index: Int) {
+        splitPdfAdapter.updateSelectedItem(index)
+        val selectedPages = splitPdfAdapter.getSelectedPositions()
+        if (selectedPages.size == 1) {
+            binding.fabSplit.show()
+        } else if (selectedPages.isEmpty()) {
+            binding.fabSplit.hide()
         }
     }
 

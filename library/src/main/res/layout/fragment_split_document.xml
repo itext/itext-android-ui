@@ -34,4 +34,17 @@
         android:indeterminateTint="@color/orange_700"
         android:layout_gravity="center" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabSplit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        app:borderWidth="0dp"
+        app:backgroundTint="@color/orange_700"
+        app:tint="@color/white"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Material3.FloatingActionButton"
+        android:contentDescription="@string/split_document"
+        app:srcCompat="@drawable/ic_check"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
