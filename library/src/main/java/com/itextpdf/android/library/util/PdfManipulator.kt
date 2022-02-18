@@ -77,11 +77,10 @@ object PdfManipulator {
             // split document
             val documents = pdfSplitter.extractPageRanges(listOf(selectedRange, unselectedRange))
             for (doc in documents) {
-                Log.i("####", "pageCount = ${doc.numberOfPages}")
                 doc.close()
             }
 
-            // load first page into pdf view:
+            // go through file names and create files
             for (name in fileNames) {
                 val file = context.getFileStreamPath(name).absoluteFile
                 pdfUriList.add(file.toUri())
