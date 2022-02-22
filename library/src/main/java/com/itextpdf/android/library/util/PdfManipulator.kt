@@ -2,27 +2,36 @@ package com.itextpdf.android.library.util
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.core.net.toUri
 import com.itextpdf.android.library.extensions.pdfDocumentReader
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.utils.PageRange
 import com.itextpdf.kernel.utils.PdfSplitter
+import java.io.File
 import java.io.FileNotFoundException
-import java.lang.StringBuilder
+import java.io.FileOutputStream
 
 object PdfManipulator {
 
+    /**
+     * TODO
+     *
+     * @param context
+     * @param fileUri
+     * @param fileName
+     * @param selectedPageIndices
+     * @return
+     */
     fun splitPdfWithWithSelection(
         context: Context,
         fileUri: Uri,
         fileName: String,
-        selectedIndices: List<Int>
+        selectedPageIndices: List<Int>
     ): List<Uri> {
         val pdfDocument = context.pdfDocumentReader(fileUri)
         val pdfUriList = mutableListOf<Uri>()
-        val fileNames = mutableListOf<String>()
-        if (pdfDocument != null) {
+        val cacheFolderPath = context.externalCacheDir?.absolutePath
+        if (pdfDocument != null && cacheFolderPath != null) {
             val numberOfPages = pdfDocument.numberOfPages
             val pdfSplitter: PdfSplitter = object : PdfSplitter(pdfDocument) {
                 var partNumber = 1
@@ -45,12 +54,14 @@ object PdfManipulator {
                         nameSB.append(".pdf")
 
                         val name = nameSB.toString()
-                        fileNames.add(name)
 
                         partNumber++
 
-                        val output = context.openFileOutput(name, Context.MODE_PRIVATE)
-                        PdfWriter(output)
+                        val pdfFile = File("$cacheFolderPath/$name")
+                        pdfUriList.add(pdfFile.toUri())
+
+                        val newOutput = FileOutputStream(pdfFile)
+                        PdfWriter(newOutput)
                     } catch (ignored: FileNotFoundException) {
                         throw RuntimeException()
                     }
@@ -59,7 +70,7 @@ object PdfManipulator {
 
             val selectedPagesNumbers = mutableListOf<Int>()
             // for splitting we need the actual page number and not the index, therefore add 1 to each index
-            selectedIndices.forEach { selectedPagesNumbers.add(it + 1) }
+            selectedPageIndices.forEach { selectedPagesNumbers.add(it + 1) }
 
             val unselectedPageNumbers = mutableListOf<Int>()
             for (i in 1..numberOfPages) {
@@ -78,12 +89,6 @@ object PdfManipulator {
             val documents = pdfSplitter.extractPageRanges(listOf(selectedRange, unselectedRange))
             for (doc in documents) {
                 doc.close()
-            }
-
-            // go through file names and create files
-            for (name in fileNames) {
-                val file = context.getFileStreamPath(name).absoluteFile
-                pdfUriList.add(file.toUri())
             }
             pdfDocument.close()
         }

@@ -18,29 +18,21 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
-import com.itextpdf.android.library.extensions.pdfDocumentReader
-import com.itextpdf.android.library.extensions.pdfDocumentWriter
 import com.itextpdf.android.library.lists.PdfAdapter
 import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.views.PdfViewScrollHandle
-import com.itextpdf.kernel.pdf.PdfWriter
-import com.itextpdf.kernel.utils.PageRange
-import com.itextpdf.kernel.utils.PdfSplitter
-import com.itextpdf.layout.Document
-import com.itextpdf.layout.element.Paragraph
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
-import java.io.FileNotFoundException
 
 
 /**
@@ -152,10 +144,18 @@ open class PdfFragment : Fragment() {
             }
         }
 
-        //TODO: for testing
-        val testFile = "test.pdf"
-        createPdf(testFile)
-//        val file = requireActivity().getFileStreamPath(testFile).absoluteFile
+        setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT) { _, bundle ->
+            val pdfUriList = bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST)
+            if (pdfUriList != null) {
+                for (pdfUri in pdfUriList) {
+                    //TODO: only for testing set the selected pdf in the pdfView
+                    Log.i("######", pdfUri.toString())
+                    if (pdfUri.toString().contains("_selected.pdf")) {
+                        setupPdfView(pdfUri)
+                    }
+                }
+            }
+        }
 
         return binding.root
     }
@@ -189,20 +189,6 @@ open class PdfFragment : Fragment() {
             primaryColor = bundle.getString(PRIMARY_COLOR) ?: DEFAULT_PRIMARY_COLOR
             secondaryColor = bundle.getString(SECONDARY_COLOR) ?: DEFAULT_SECONDARY_COLOR
             backgroundColor = bundle.getString(BACKGROUND_COLOR) ?: DEFAULT_BACKGROUND_COLOR
-        }
-    }
-
-    private fun createPdf(fileName: String) {
-        val pdf = requireContext().pdfDocumentWriter(fileName)
-        if (pdf != null) {
-            val document = Document(pdf)
-
-            val paragraph = Paragraph("Test paragraph")
-            paragraph.setFontSize(50f)
-            document.add(paragraph)
-
-            document.close()
-            pdf.close()
         }
     }
 
@@ -421,7 +407,8 @@ open class PdfFragment : Fragment() {
         pdfUri?.let { uri ->
             val fragmentManager = requireActivity().supportFragmentManager
             val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
-            val fragment = SplitDocumentFragment.newInstance(uri, fileName, primaryColor, secondaryColor)
+            val fragment =
+                SplitDocumentFragment.newInstance(uri, fileName, primaryColor, secondaryColor)
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.hide(this)
             fragmentTransaction.add(android.R.id.content, fragment)

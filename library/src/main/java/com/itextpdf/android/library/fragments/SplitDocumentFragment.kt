@@ -9,36 +9,31 @@ import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentSplitDocumentBinding
-import com.itextpdf.android.library.extensions.pdfDocumentReader
 import com.itextpdf.android.library.lists.PdfAdapter
 import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.split.PdfSplitRecyclerItem
 import com.itextpdf.android.library.paging.Page
 import com.itextpdf.android.library.paging.PaginationScrollListener
 import com.itextpdf.android.library.util.PdfManipulator
-import com.itextpdf.kernel.pdf.PdfWriter
-import com.itextpdf.kernel.utils.PageRange
-import com.itextpdf.kernel.utils.PdfSplitter
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.FileNotFoundException
 import kotlin.math.ceil
 import kotlin.math.min
 
@@ -119,7 +114,7 @@ open class SplitDocumentFragment : Fragment() {
 
         binding.fabSplit.visibility = View.INVISIBLE
         binding.fabSplit.setOnClickListener {
-            openSplitDocumentDialog()
+            splitPdfDocument()
         }
 
         return binding.root
@@ -234,17 +229,17 @@ open class SplitDocumentFragment : Fragment() {
         requestPage(currentPage)
     }
 
-    private fun openSplitDocumentDialog() {
-        //TODO: use this for testing
+    private fun splitPdfDocument() {
         pdfUri?.let { uri ->
             val name = if (!fileName.isNullOrEmpty()) fileName!! else UNNAMED_FILE
-            PdfManipulator.splitPdfWithWithSelection(requireContext(), uri, name, splitPdfAdapter.getSelectedPositions())
-            val fileList = requireContext().filesDir.listFiles()
-            if (fileList != null) {
-                for (f in fileList) {
-                    Log.i("###", "filename: ${f.name}")
-                }
-            }
+            val pdfUriList = PdfManipulator.splitPdfWithWithSelection(
+                requireContext(),
+                uri,
+                name,
+                splitPdfAdapter.getSelectedPositions()
+            )
+            setFragmentResult(SPLIT_DOCUMENT_RESULT, bundleOf(SPLIT_PDF_URI_LIST to pdfUriList))
+            requireActivity().onBackPressed()
         }
     }
 
@@ -314,6 +309,9 @@ open class SplitDocumentFragment : Fragment() {
         private const val PAGE_SIZE = 30
         private const val LOAD_MORE_OFFSET = PAGE_SIZE / 2
         private const val UNNAMED_FILE = "unnamed.pdf"
+
+        const val SPLIT_DOCUMENT_RESULT = "SPLIT_DOCUMENT_RESULT"
+        const val SPLIT_PDF_URI_LIST = "SPLIT_PDF_URI_LIST"
 
         fun newInstance(
             pdfUri: Uri,
