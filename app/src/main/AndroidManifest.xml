@@ -20,5 +20,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.PdfViewerActivity" />
+        <activity android:name=".ui.PdfSplitActivity" />
     </application>
 </manifest>

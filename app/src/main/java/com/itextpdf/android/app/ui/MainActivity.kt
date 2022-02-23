@@ -5,7 +5,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toFile
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.app.R
@@ -14,6 +16,7 @@ import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_P
 import com.itextpdf.android.app.util.FileUtil
 import com.itextpdf.android.library.extensions.registerPdfSelectionResult
 import com.itextpdf.android.library.extensions.selectPdfIntent
+import com.itextpdf.android.library.fragments.SplitDocumentFragment
 import com.itextpdf.android.library.views.PdfThumbnailView
 import java.io.File
 import java.io.IOException
@@ -47,8 +50,12 @@ class MainActivity : AppCompatActivity() {
             val uri = Uri.fromFile(File(path))
 
             data.add(PdfItem(pdfTitles[i], fileName, pdfDescriptions[i], uri) {
-                // customise the view for the second pdf
-                PdfViewerActivity.launch(this, uri, fileName, i)
+                // the 5th element should open the split view directly
+                if (i == 4) {
+                    PdfSplitActivity.launch(this, uri, fileName)
+                } else {
+                    PdfViewerActivity.launch(this, uri, fileName, i)
+                }
             })
         }
 
@@ -98,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         /**
          * The pre-defined titles of the pdf files that are stored in the assets folder.
          */
-        private val pdfTitles = mutableListOf("Sample 1", "Sample 2", "Sample 3", "Sample 4")
+        private val pdfTitles = mutableListOf("Sample 1", "Sample 2", "Sample 3", "Sample 4", "Split Sample 3")
 
         /**
          * The pre-defined descriptions of the pdf files that are stored in the assets folder.
@@ -107,14 +114,15 @@ class MainActivity : AppCompatActivity() {
             "Sample 1 shows a the pdf view that was customised within the xml file.",
             "Sample 2 shows a the pdf view that was customised within the code.",
             "Sample 3 shows the pdf view with it's default settings.",
-            "Sample 4 shows the view without an option to open the thumbnail navigation view."
+            "Sample 4 shows the view without an option to open the thumbnail navigation view.",
+            "Split Sample 3 opens the split document view directly for Sample 3."
         )
 
         /**
          * The file names of the pdf files that are stored in the assets folder.
          */
         private val pdfFileNames =
-            mutableListOf("sample_1.pdf", "sample_2.pdf", "sample_3.pdf", "sample_4.pdf")
+            mutableListOf("sample_1.pdf", "sample_2.pdf", "sample_3.pdf", "sample_4.pdf", "sample_3.pdf")
     }
 
     /**
