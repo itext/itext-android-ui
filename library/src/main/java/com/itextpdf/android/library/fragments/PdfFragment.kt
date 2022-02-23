@@ -12,12 +12,13 @@ import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
-import android.util.Log
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.setFragmentResultListener
@@ -145,18 +146,19 @@ open class PdfFragment : Fragment() {
         }
 
         setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT) { _, bundle ->
-            val pdfUriList = bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST)
+            val pdfUriList =
+                bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST)
             if (pdfUriList != null) {
-                for (pdfUri in pdfUriList) {
-                    //TODO: only for testing set the selected pdf in the pdfView
-                    Log.i("######", pdfUri.toString())
-                    if (pdfUri.toString().contains("_selected.pdf")) {
-                        setupPdfView(pdfUri)
-                    }
+                if (!pdfUriList.isNullOrEmpty()) {
+                    val file = pdfUriList.first().toFile()
+                    Toast.makeText(
+                        requireContext(),
+                        "Successfully split document. Files stored in: ${file.parent}",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
-
         return binding.root
     }
 

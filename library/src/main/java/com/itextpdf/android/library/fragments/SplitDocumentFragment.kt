@@ -248,9 +248,8 @@ open class SplitDocumentFragment : Fragment() {
         navigationPdfDocument?.let {
             loading = true
             currentPage = pageIndex
-            //TODO
-            //            val width = min(200, fragmentWidth / ROW_NUMBER * 2)
-            val width = 150
+
+            val width = min(MAX_THUMBNAIL_WIDTH, THUMBNAIL_WIDTH_BASE / (ROW_NUMBER * 2))
             val height = (width * 1.3).toInt()
 
             renderJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
@@ -305,6 +304,8 @@ open class SplitDocumentFragment : Fragment() {
         private const val PRIMARY_COLOR = "PRIMARY_COLOR"
         private const val SECONDARY_COLOR = "SECONDARY_COLOR"
 
+        private const val THUMBNAIL_WIDTH_BASE = 1080
+        private const val MAX_THUMBNAIL_WIDTH = 150
         private const val ROW_NUMBER = 3
         private const val PAGE_SIZE = 30
         private const val LOAD_MORE_OFFSET = PAGE_SIZE / 2
