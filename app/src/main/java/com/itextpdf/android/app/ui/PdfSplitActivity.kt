@@ -41,6 +41,7 @@ class PdfSplitActivity : AppCompatActivity() {
             }
         }
 
+        // listen for the fragment result to get a list pdfUris resulting from the split
         supportFragmentManager.setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT, this) { _, bundle ->
             val pdfUriList =
                 bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST)
