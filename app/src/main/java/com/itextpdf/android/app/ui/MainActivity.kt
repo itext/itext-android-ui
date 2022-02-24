@@ -3,6 +3,7 @@ package com.itextpdf.android.app.ui
 import android.content.res.AssetManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.TextView
 import android.widget.Toast
@@ -16,7 +17,7 @@ import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_P
 import com.itextpdf.android.app.util.FileUtil
 import com.itextpdf.android.library.extensions.registerPdfSelectionResult
 import com.itextpdf.android.library.extensions.selectPdfIntent
-import com.itextpdf.android.library.fragments.SplitDocumentFragment
+import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfThumbnailView
 import java.io.File
 import java.io.IOException
@@ -50,11 +51,20 @@ class MainActivity : AppCompatActivity() {
             val uri = Uri.fromFile(File(path))
 
             data.add(PdfItem(pdfTitles[i], fileName, pdfDescriptions[i], uri) {
-                // the 5th element should open the split view directly
-                if (i == 4) {
-                    PdfSplitActivity.launch(this, uri, fileName)
-                } else {
-                    PdfViewerActivity.launch(this, uri, fileName, i)
+                when (i) {
+                    4 -> {
+                        // element at index 4 should open the split view directly
+                        PdfSplitActivity.launch(this, uri, fileName)
+                    }
+                    5 -> {
+                        // element at index 5 should directly split document without any UI
+                        // create a list with only index 0, which results in a split document with the first page and another one with the other pages
+                        noUISplit(uri, fileName, listOf(0))
+                    }
+                    else -> {
+                        // open the pdf viewer for the remaining elements
+                        PdfViewerActivity.launch(this, uri, fileName, i)
+                    }
                 }
             })
         }
@@ -62,6 +72,37 @@ class MainActivity : AppCompatActivity() {
         val adapter = PdfAdapter(data)
         binding.rvPdfList.adapter = adapter
         binding.rvPdfList.layoutManager = LinearLayoutManager(this)
+    }
+
+    /**
+     * Helper function to split a pdf file with the given uri and the selectedPageIndices
+     *
+     * @param uri   the uri of the pdf file
+     * @param fileName  the filename of the pdf
+     * @param selectedPageIndices   the page indices that should be in the one pdf document. All the other indices will be in the other document
+     */
+    private fun noUISplit(uri: Uri, fileName: String, selectedPageIndices: List<Int>) {
+        val pdfUriList = PdfManipulator.splitPdfWithSelection(
+            this,
+            uri,
+            fileName,
+            selectedPageIndices
+        )
+        if (pdfUriList.isNotEmpty()) {
+            val file = pdfUriList.first().toFile()
+            val successText = getString(R.string.split_document_success, "${file.parent}/")
+            Toast.makeText(
+                this,
+                successText,
+                Toast.LENGTH_LONG
+            ).show()
+            Log.i(TAG, successText)
+        } else {
+            Log.e(
+                TAG,
+                getString(com.itextpdf.android.library.R.string.split_document_error)
+            )
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -102,10 +143,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
+        private const val TAG = "MainActivity"
+
         /**
          * The pre-defined titles of the pdf files that are stored in the assets folder.
          */
-        private val pdfTitles = mutableListOf("Sample 1", "Sample 2", "Sample 3", "Sample 4", "Split Sample 3")
+        private val pdfTitles = mutableListOf(
+            "Pdf View: Sample 1",
+            "Pdf View: Sample 2",
+            "Pdf View: Sample 3",
+            "Pdf View: Sample 4",
+            "Pdf Split View: Sample 3",
+            "No UI Split: Sample 2"
+        )
 
         /**
          * The pre-defined descriptions of the pdf files that are stored in the assets folder.
@@ -115,14 +165,22 @@ class MainActivity : AppCompatActivity() {
             "Sample 2 shows a the pdf view that was customised within the code.",
             "Sample 3 shows the pdf view with it's default settings.",
             "Sample 4 shows the view without an option to open the thumbnail navigation view.",
-            "Split Sample 3 opens the split document view directly for Sample 3."
+            "Split Sample 3 opens the split document view directly for Sample 3.",
+            "No UI split Sample 2 directly splits the two-page document into two documents with one page each without showing a split document view."
         )
 
         /**
          * The file names of the pdf files that are stored in the assets folder.
          */
         private val pdfFileNames =
-            mutableListOf("sample_1.pdf", "sample_2.pdf", "sample_3.pdf", "sample_4.pdf", "sample_3.pdf")
+            mutableListOf(
+                "sample_1.pdf",
+                "sample_2.pdf",
+                "sample_3.pdf",
+                "sample_4.pdf",
+                "sample_3.pdf",
+                "sample_2.pdf"
+            )
     }
 
     /**

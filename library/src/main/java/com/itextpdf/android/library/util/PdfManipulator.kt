@@ -24,7 +24,7 @@ object PdfManipulator {
      *  with not selected pages.
      * @return  the list of uris of the newly created split documents
      */
-    fun splitPdfWithWithSelection(
+    fun splitPdfWithSelection(
         context: Context,
         fileUri: Uri,
         fileName: String,

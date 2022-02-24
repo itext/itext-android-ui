@@ -234,7 +234,7 @@ open class SplitDocumentFragment : Fragment() {
     private fun splitPdfDocument() {
         pdfUri?.let { uri ->
             val name = if (!fileName.isNullOrEmpty()) fileName!! else UNNAMED_FILE
-            val pdfUriList = PdfManipulator.splitPdfWithWithSelection(
+            val pdfUriList = PdfManipulator.splitPdfWithSelection(
                 requireContext(),
                 uri,
                 name,
