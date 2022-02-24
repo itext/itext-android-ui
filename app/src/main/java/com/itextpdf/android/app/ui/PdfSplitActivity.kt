@@ -50,11 +50,13 @@ class PdfSplitActivity : AppCompatActivity() {
                     val file = pdfUriList.first().toFile()
                     Toast.makeText(
                         this,
-                        "Successfully split document. Files stored in: ${file.parent}",
+                        getString(R.string.split_document_success, "${file.parent}/"),
                         Toast.LENGTH_LONG
                     ).show()
                 }
             }
+            // close activity
+            finish()
         }
     }
 

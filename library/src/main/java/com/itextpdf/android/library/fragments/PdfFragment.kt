@@ -153,11 +153,12 @@ open class PdfFragment : Fragment() {
                     val file = pdfUriList.first().toFile()
                     Toast.makeText(
                         requireContext(),
-                        "Successfully split document. Files stored in: ${file.parent}",
+                        getString(R.string.split_document_success, "${file.parent}/"),
                         Toast.LENGTH_LONG
                     ).show()
                 }
             }
+            requireActivity().onBackPressed()
         }
         return binding.root
     }

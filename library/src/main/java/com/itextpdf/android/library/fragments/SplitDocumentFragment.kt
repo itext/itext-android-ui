@@ -9,10 +9,12 @@ import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toFile
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
@@ -238,8 +240,13 @@ open class SplitDocumentFragment : Fragment() {
                 name,
                 splitPdfAdapter.getSelectedPositions()
             )
+            if (pdfUriList.isNotEmpty()) {
+                val file = pdfUriList.first().toFile()
+                Log.i(TAG, getString(R.string.split_document_success, "${file.parent}/"))
+            } else {
+                Log.e(TAG, getString(R.string.split_document_error))
+            }
             setFragmentResult(SPLIT_DOCUMENT_RESULT, bundleOf(SPLIT_PDF_URI_LIST to pdfUriList))
-            requireActivity().onBackPressed()
         }
     }
 
@@ -299,6 +306,8 @@ open class SplitDocumentFragment : Fragment() {
     }
 
     companion object {
+        private const val TAG = "SplitDocumentFragment"
+
         private const val PDF_URI = "PDF_URI"
         private const val FILE_NAME = "FILE_NAME"
         private const val PRIMARY_COLOR = "PRIMARY_COLOR"
