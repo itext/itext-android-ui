@@ -37,9 +37,8 @@ import com.shockwave.pdfium.PdfiumCore
 
 
 /**
- * Fragment that can be used to display a pdf file. To pass the pdf file to the fragment set the uri
- * to the pdf via the public variable pdfUri before committing the fragment in code or by setting
- * the attribute app:file_uri in xml.
+ * Fragment that can be used to display a pdf file. To pass the pdf file and other settings to the
+ * fragment use the static newInstance() function or set them as attributes in (e.g.: app:file_uri).
  */
 open class PdfFragment : Fragment() {
 
@@ -145,6 +144,7 @@ open class PdfFragment : Fragment() {
             }
         }
 
+        // listen for the fragment result from the SplitDocumentFragment to get a list pdfUris resulting from the split
         setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT) { _, bundle ->
             val pdfUriList =
                 bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST)
@@ -340,6 +340,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setupPdfView(pdfUri: Uri) {
+        this.pdfUri = pdfUri
         val scrollHandle =
             if (showScrollIndicator) {
                 PdfViewScrollHandle(
@@ -406,6 +407,9 @@ open class PdfFragment : Fragment() {
             .show()
     }
 
+    /**
+     * Opens the split document view for the currently visible pdf document
+     */
     open fun openSplitDocumentView() {
         pdfUri?.let { uri ->
             val fragmentManager = requireActivity().supportFragmentManager
@@ -501,7 +505,7 @@ open class PdfFragment : Fragment() {
         const val DEFAULT_BACKGROUND_COLOR = "#EAEAEA"
 
         /**
-         * Static class to create a new instance of the PdfFragment with the given settings
+         * Static function to create a new instance of the PdfFragment with the given settings
          *
          * @param pdfUri    The uri of the pdf that should be displayed. This is the only required param
          * @param fileName  The name of the file that should be displayed

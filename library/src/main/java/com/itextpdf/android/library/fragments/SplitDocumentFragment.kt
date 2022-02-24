@@ -39,6 +39,15 @@ import kotlinx.coroutines.withContext
 import kotlin.math.ceil
 import kotlin.math.min
 
+/**
+ * Fragment that can be used to split a pdf file into two pieces. One containing of the selected pages
+ * another one containing of the not selected pages.
+ * To pass the pdf file and other settings to the fragment use the static newInstance() function or set
+ * them as attributes in (e.g.: app:file_uri).
+ * After the successful split, the SplitDocumentFragment sets a list of pdfUris resulting from the split
+ * as a fragmentResult. Therefore set a listener for the key SplitDocumentFragment.SPLIT_DOCUMENT_RESULT
+ * to get the uris via: bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST)
+ */
 open class SplitDocumentFragment : Fragment() {
 
     /**
@@ -231,27 +240,7 @@ open class SplitDocumentFragment : Fragment() {
         requestPage(currentPage)
     }
 
-    private fun splitPdfDocument() {
-        pdfUri?.let { uri ->
-            val name = if (!fileName.isNullOrEmpty()) fileName!! else UNNAMED_FILE
-            val pdfUriList = PdfManipulator.splitPdfWithSelection(
-                requireContext(),
-                uri,
-                name,
-                splitPdfAdapter.getSelectedPositions()
-            )
-            if (pdfUriList.isNotEmpty()) {
-                val file = pdfUriList.first().toFile()
-                Log.i(TAG, getString(R.string.split_document_success, "${file.parent}/"))
-            } else {
-                Log.e(TAG, getString(R.string.split_document_error))
-            }
-            setFragmentResult(SPLIT_DOCUMENT_RESULT, bundleOf(SPLIT_PDF_URI_LIST to pdfUriList))
-        }
-    }
-
     private fun requestPage(pageIndex: Int) {
-
         navigationPdfDocument?.let {
             loading = true
             currentPage = pageIndex
@@ -305,6 +294,30 @@ open class SplitDocumentFragment : Fragment() {
         }
     }
 
+    /**
+     * Splits the document based on the currently selected pages and sets the resulting uris of the
+     * split documents as fragment result (requestKey: SPLIT_DOCUMENT_RESULT, bundleKey: SPLIT_PDF_URI_LIST)
+     */
+    open fun splitPdfDocument() {
+        pdfUri?.let { uri ->
+            val name = if (!fileName.isNullOrEmpty()) fileName!! else UNNAMED_FILE
+            val pdfUriList = PdfManipulator.splitPdfWithSelection(
+                requireContext(),
+                uri,
+                name,
+                splitPdfAdapter.getSelectedPositions()
+            )
+            if (pdfUriList.isNotEmpty()) {
+                val file = pdfUriList.first().toFile()
+                Log.i(TAG, getString(R.string.split_document_success, "${file.parent}/"))
+            } else {
+                Log.e(TAG, getString(R.string.split_document_error))
+            }
+            // set the uris as fragmentResult for any class that is listening
+            setFragmentResult(SPLIT_DOCUMENT_RESULT, bundleOf(SPLIT_PDF_URI_LIST to pdfUriList))
+        }
+    }
+
     companion object {
         private const val TAG = "SplitDocumentFragment"
 
@@ -323,6 +336,15 @@ open class SplitDocumentFragment : Fragment() {
         const val SPLIT_DOCUMENT_RESULT = "SPLIT_DOCUMENT_RESULT"
         const val SPLIT_PDF_URI_LIST = "SPLIT_PDF_URI_LIST"
 
+        /**
+         * Static function to create a new instance of the SplitDocumentFragment with the given settings
+         *
+         * @param pdfUri    The uri of the pdf that should be split. This is the only required param
+         * @param fileName  The name of the file that should be split
+         * @param primaryColor  A color string to set the primary color of the view (affects: thumbnail selection and loading indicator). Default: #FF9400
+         * @param secondaryColor    A color string to set the secondary color of the view (affects: thumbnail selection and loading indicator). Default: #FFEFD8
+         * @return  in instance of SplitDocumentFragment with the given settings
+         */
         fun newInstance(
             pdfUri: Uri,
             fileName: String? = null,
