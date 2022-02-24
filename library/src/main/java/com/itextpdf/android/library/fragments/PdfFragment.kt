@@ -68,6 +68,11 @@ open class PdfFragment : Fragment() {
     private var enableThumbnailNavigationView = DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
 
     /**
+     * A boolean flag to enable/disable pdf split view. Default: true
+     */
+    private var enableSplitView = DEFAULT_ENABLE_SPLIT_VIEW
+
+    /**
      * A boolean flag to enable/disable annotation rendering. Default: true
      */
     private var enableAnnotationRendering = DEFAULT_ENABLE_ANNOTATION_RENDERING
@@ -176,6 +181,10 @@ open class PdfFragment : Fragment() {
                 ENABLE_THUMBNAIL_NAVIGATION_VIEW,
                 DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
             )
+            enableSplitView = bundle.getBoolean(
+                ENABLE_SPLIT_VIEW,
+                DEFAULT_ENABLE_SPLIT_VIEW
+            )
             enableAnnotationRendering =
                 bundle.getBoolean(
                     ENABLE_ANNOTATION_RENDERING,
@@ -230,6 +239,10 @@ open class PdfFragment : Fragment() {
             R.styleable.PdfFragment_enable_thumbnail_navigation_view,
             DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
         )
+        enableSplitView = a.getBoolean(
+            R.styleable.PdfFragment_enable_split_view,
+            DEFAULT_ENABLE_SPLIT_VIEW
+        )
         enableAnnotationRendering = a.getBoolean(
             R.styleable.PdfFragment_enable_annotation_rendering,
             DEFAULT_ENABLE_ANNOTATION_RENDERING
@@ -266,6 +279,7 @@ open class PdfFragment : Fragment() {
         outState.putBoolean(DISPLAY_FILE_NAME, displayFileName)
         outState.putInt(PAGE_SPACING, pageSpacing)
         outState.putBoolean(ENABLE_THUMBNAIL_NAVIGATION_VIEW, enableThumbnailNavigationView)
+        outState.putBoolean(ENABLE_SPLIT_VIEW, enableSplitView)
         outState.putBoolean(ENABLE_ANNOTATION_RENDERING, enableAnnotationRendering)
         outState.putBoolean(ENABLE_DOUBLE_TAP_ZOOM, enableDoubleTapZoom)
         outState.putBoolean(SHOW_SCROLL_INDICATOR, showScrollIndicator)
@@ -288,6 +302,7 @@ open class PdfFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_pdf_fragment, menu)
         menu.getItem(0).isVisible = enableThumbnailNavigationView
+        menu.getItem(1).isVisible = enableSplitView
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -485,6 +500,7 @@ open class PdfFragment : Fragment() {
         private const val DISPLAY_FILE_NAME = "DISPLAY_FILE_NAME"
         private const val PAGE_SPACING = "PAGE_SPACING"
         private const val ENABLE_THUMBNAIL_NAVIGATION_VIEW = "ENABLE_THUMBNAIL_NAVIGATION_VIEW"
+        private const val ENABLE_SPLIT_VIEW = "ENABLE_SPLIT_VIEW"
         private const val ENABLE_ANNOTATION_RENDERING = "ENABLE_ANNOTATION_RENDERING"
         private const val ENABLE_DOUBLE_TAP_ZOOM = "ENABLE_DOUBLE_TAP_ZOOM"
         private const val SHOW_SCROLL_INDICATOR = "SHOW_SCROLL_INDICATOR"
@@ -496,6 +512,7 @@ open class PdfFragment : Fragment() {
         const val DEFAULT_DISPLAY_FILE_NAME = false
         const val DEFAULT_PAGE_SPACING = 10
         const val DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW = true
+        const val DEFAULT_ENABLE_SPLIT_VIEW = true
         const val DEFAULT_ENABLE_ANNOTATION_RENDERING = true
         const val DEFAULT_ENABLE_DOUBLE_TAP_ZOOM = true
         const val DEFAULT_SHOW_SCROLL_INDICATOR = true
@@ -512,6 +529,7 @@ open class PdfFragment : Fragment() {
          * @param displayFileName   A boolean flag that defines if the given file name should be displayed in the toolbar. Default: false
          * @param pageSpacing   The spacing in px between the pdf pages. Default: 20
          * @param enableThumbnailNavigationView A boolean flag to enable/disable pdf thumbnail navigation view. Default: true
+         * @param enableSplitView A boolean flag to enable/disable pdf split view. Default: true
          * @param enableAnnotationRendering A boolean flag to enable/disable annotation rendering. Default: true
          * @param enableDoubleTapZoom   A boolean flag to enable/disable double tap to zoom. Default: true
          * @param showScrollIndicator   A boolean flag to enable/disable a scrolling indicator at the right of the page, that can be used fast scrolling. Default: true
@@ -527,6 +545,7 @@ open class PdfFragment : Fragment() {
             displayFileName: Boolean? = null,
             pageSpacing: Int? = null,
             enableThumbnailNavigationView: Boolean? = null,
+            enableSplitView: Boolean? = null,
             enableAnnotationRendering: Boolean? = null,
             enableDoubleTapZoom: Boolean? = null,
             showScrollIndicator: Boolean? = null,
@@ -546,6 +565,8 @@ open class PdfFragment : Fragment() {
                 args.putInt(PAGE_SPACING, pageSpacing)
             if (enableThumbnailNavigationView != null)
                 args.putBoolean(ENABLE_THUMBNAIL_NAVIGATION_VIEW, enableThumbnailNavigationView)
+            if (enableSplitView != null)
+                args.putBoolean(ENABLE_SPLIT_VIEW, enableSplitView)
             if (enableAnnotationRendering != null)
                 args.putBoolean(ENABLE_ANNOTATION_RENDERING, enableAnnotationRendering)
             if (enableDoubleTapZoom != null)
