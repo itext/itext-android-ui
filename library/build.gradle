@@ -14,6 +14,19 @@ android {
         consumerProguardFiles "consumer-rules.pro"
     }
 
+    sourceSets {
+        main {
+            assets {
+                srcDirs 'src/test/assets'
+            }
+        }
+        test {
+            resources {
+                srcDirs 'src/test/assets'
+            }
+        }
+    }
+
     buildFeatures {
         viewBinding true
     }

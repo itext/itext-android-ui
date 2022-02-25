@@ -1,6 +1,5 @@
 package com.itextpdf.android.app.ui
 
-import android.content.res.AssetManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -14,13 +13,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityMainBinding
 import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
-import com.itextpdf.android.app.util.FileUtil
 import com.itextpdf.android.library.extensions.registerPdfSelectionResult
 import com.itextpdf.android.library.extensions.selectPdfIntent
+import com.itextpdf.android.library.util.FileUtil
 import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfThumbnailView
-import java.io.File
-import java.io.IOException
 
 
 class MainActivity : AppCompatActivity() {
@@ -47,8 +44,8 @@ class MainActivity : AppCompatActivity() {
         // prepare pre-defined pdf files from the assets folder to display them in a recyclerView
         val data = mutableListOf<PdfRecyclerItem>()
         pdfFileNames.forEachIndexed { i, fileName ->
-            val path = loadPdfFromAssets(fileName)
-            val uri = Uri.fromFile(File(path))
+            val file = FileUtil.loadFileFromAssets(this, fileName)
+            val uri = Uri.fromFile(file)
 
             data.add(PdfItem(pdfTitles[i], fileName, pdfDescriptions[i], uri) {
                 when (i) {
@@ -121,27 +118,6 @@ class MainActivity : AppCompatActivity() {
         else -> {
             super.onOptionsItemSelected(item)
         }
-    }
-
-    /**
-     * Loads a pdf with the given fileName from the assets folder to a location the app can access and
-     * returns the absolute path to that file if the operation was successful or throws an IOException
-     * if something went wrong.
-     *
-     * @param fileName  the name of the pdf file that should be loaded from the assets folder
-     * @return          the absolute path to the loaded file
-     * @throws IOException
-     */
-    @Throws(IOException::class)
-    private fun loadPdfFromAssets(fileName: String): String {
-        // create file object to read and write on in the cache directory of the app
-        val file = File(cacheDir, fileName)
-        if (!file.exists()) {
-            val assetManager: AssetManager = assets
-            // copy pdf file from assets to location of the previously created file
-            FileUtil.copyAsset(assetManager, fileName, file.absolutePath)
-        }
-        return file.absolutePath
     }
 
     companion object {

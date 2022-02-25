@@ -35,12 +35,20 @@ object PdfManipulator {
         val pdfDocument = context.pdfDocumentReader(fileUri)
         val pdfUriList = mutableListOf<Uri>()
         if (pdfDocument != null) {
+            val selectedPagesNumbers = mutableListOf<Int>()
+            val unselectedPageNumbers = mutableListOf<Int>()
+
             val numberOfPages = pdfDocument.numberOfPages
             val pdfSplitter: PdfSplitter = object : PdfSplitter(pdfDocument) {
                 var partNumber = 1
                 override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
                     return try {
-                        val name = getSplitDocumentName(fileName, partNumber)
+                        val name = getSplitDocumentName(
+                            fileName,
+                            partNumber,
+                            selectedPagesNumbers,
+                            unselectedPageNumbers
+                        )
                         partNumber++
 
                         val pdfFile = File("$storageFolderPath/$name")
@@ -54,11 +62,9 @@ object PdfManipulator {
                 }
             }
 
-            val selectedPagesNumbers = mutableListOf<Int>()
             // for splitting we need the actual page number and not the index, therefore add 1 to each index
             selectedPageIndices.forEach { selectedPagesNumbers.add(it + 1) }
 
-            val unselectedPageNumbers = mutableListOf<Int>()
             for (i in 1..numberOfPages) {
                 if (!selectedPagesNumbers.contains(i)) {
                     unselectedPageNumbers.add(i)
@@ -86,17 +92,38 @@ object PdfManipulator {
      *
      * @param initialFileName   the name of the original document
      * @param partNumber    the part number of the document for which a name should be created. 1 is the first document, 2 the second, ...
+     * @param selectedPagesNumbers  the list of selected page numbers
+     * @param unselectedPageNumbers  the list of unselected page numbers
      * @return  the name for the split document
      */
-    private fun getSplitDocumentName(initialFileName: String, partNumber: Int): String {
+    private fun getSplitDocumentName(
+        initialFileName: String,
+        partNumber: Int,
+        selectedPagesNumbers: List<Int>,
+        unselectedPageNumbers: List<Int>
+    ): String {
         // remove .pdf suffix
         val nameSB = StringBuilder(initialFileName.removeSuffix(".pdf"))
         when (partNumber) {
             1 -> {
-                nameSB.append("_selected")
+                when {
+                    selectedPagesNumbers.isNotEmpty() -> {
+                        nameSB.append("_selected")
+                    }
+                    unselectedPageNumbers.isNotEmpty() -> {
+                        nameSB.append("_unselected")
+                    }
+                    else -> {
+                        nameSB.append("_part_$partNumber")
+                    }
+                }
             }
             2 -> {
-                nameSB.append("_unselected")
+                if (unselectedPageNumbers.isNotEmpty()) {
+                    nameSB.append("_unselected")
+                } else {
+                    nameSB.append("_part_$partNumber")
+                }
             }
             else -> {
                 nameSB.append("_part_$partNumber")
