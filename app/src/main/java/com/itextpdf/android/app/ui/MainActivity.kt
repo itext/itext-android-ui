@@ -82,11 +82,13 @@ class MainActivity : AppCompatActivity() {
      * @param selectedPageIndices   the page indices that should be in the one pdf document. All the other indices will be in the other document
      */
     private fun noUISplit(uri: Uri, fileName: String, selectedPageIndices: List<Int>) {
+        val storageFolderPath = (externalCacheDir ?: cacheDir).absolutePath
         val pdfUriList = PdfManipulator.splitPdfWithSelection(
             this,
             uri,
             fileName,
-            selectedPageIndices
+            selectedPageIndices,
+            storageFolderPath
         )
         if (pdfUriList.isNotEmpty()) {
             val file = pdfUriList.first().toFile()

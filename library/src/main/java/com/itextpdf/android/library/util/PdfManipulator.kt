@@ -22,18 +22,19 @@ object PdfManipulator {
      * @param fileName  the name of the file that will be split. Only relevant for naming the new split documents.
      * @param selectedPageIndices   the list of selected page indices that will be used to create a document with selected and another document
      *  with not selected pages.
+     * @param storageFolderPath    the path where the newly created pdf files will be stored
      * @return  the list of uris of the newly created split documents
      */
     fun splitPdfWithSelection(
         context: Context,
         fileUri: Uri,
         fileName: String,
-        selectedPageIndices: List<Int>
+        selectedPageIndices: List<Int>,
+        storageFolderPath: String
     ): List<Uri> {
         val pdfDocument = context.pdfDocumentReader(fileUri)
         val pdfUriList = mutableListOf<Uri>()
-        val cacheFolderPath = context.externalCacheDir?.absolutePath
-        if (pdfDocument != null && cacheFolderPath != null) {
+        if (pdfDocument != null) {
             val numberOfPages = pdfDocument.numberOfPages
             val pdfSplitter: PdfSplitter = object : PdfSplitter(pdfDocument) {
                 var partNumber = 1
@@ -42,7 +43,7 @@ object PdfManipulator {
                         val name = getSplitDocumentName(fileName, partNumber)
                         partNumber++
 
-                        val pdfFile = File("$cacheFolderPath/$name")
+                        val pdfFile = File("$storageFolderPath/$name")
                         pdfUriList.add(pdfFile.toUri())
 
                         val newOutput = FileOutputStream(pdfFile)

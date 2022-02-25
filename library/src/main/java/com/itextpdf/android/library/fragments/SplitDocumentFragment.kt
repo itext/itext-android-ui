@@ -300,12 +300,14 @@ open class SplitDocumentFragment : Fragment() {
      */
     open fun splitPdfDocument() {
         pdfUri?.let { uri ->
+            val storageFolderPath = (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
             val name = if (!fileName.isNullOrEmpty()) fileName!! else UNNAMED_FILE
             val pdfUriList = PdfManipulator.splitPdfWithSelection(
                 requireContext(),
                 uri,
                 name,
-                splitPdfAdapter.getSelectedPositions()
+                splitPdfAdapter.getSelectedPositions(),
+                storageFolderPath
             )
             if (pdfUriList.isNotEmpty()) {
                 val file = pdfUriList.first().toFile()
