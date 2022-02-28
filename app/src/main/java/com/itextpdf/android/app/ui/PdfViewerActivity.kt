@@ -63,7 +63,7 @@ class PdfViewerActivity : AppCompatActivity() {
                         }
 
                         val fm = supportFragmentManager.beginTransaction()
-                        fm.replace(R.id.pdf_fragment_container, fragment)
+                        fm.replace(R.id.pdf_fragment_container, fragment, PdfFragment.TAG)
                         fm.commit()
                     }
                 }

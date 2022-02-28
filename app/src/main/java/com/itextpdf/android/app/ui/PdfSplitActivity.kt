@@ -35,7 +35,7 @@ class PdfSplitActivity : AppCompatActivity() {
                         fileName = fileName
                     )
                     val fm = supportFragmentManager.beginTransaction()
-                    fm.replace(R.id.pdf_splitter_container, fragment)
+                    fm.replace(R.id.pdf_splitter_container, fragment, SplitDocumentFragment.TAG)
                     fm.commit()
                 }
             }

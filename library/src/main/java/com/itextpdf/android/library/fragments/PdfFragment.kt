@@ -151,10 +151,12 @@ open class PdfFragment : Fragment() {
 
         // listen for the fragment result from the SplitDocumentFragment to get a list pdfUris resulting from the split
         setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT) { _, bundle ->
+            // get the uri from the pdf files created when splitting the document
             val pdfUriList =
                 bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST)
             if (pdfUriList != null) {
                 if (!pdfUriList.isNullOrEmpty()) {
+                    // show toast with storage location
                     val file = pdfUriList.first().toFile()
                     Toast.makeText(
                         requireContext(),
@@ -163,7 +165,8 @@ open class PdfFragment : Fragment() {
                     ).show()
                 }
             }
-            requireActivity().onBackPressed()
+            // close SplitDocumentFragment to show PdfFragment again
+            closeSplitDocumentView()
         }
         return binding.root
     }
@@ -431,9 +434,22 @@ open class PdfFragment : Fragment() {
             val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
             val fragment =
                 SplitDocumentFragment.newInstance(uri, fileName, primaryColor, secondaryColor)
-            fragmentTransaction.addToBackStack(null)
             fragmentTransaction.hide(this)
-            fragmentTransaction.add(android.R.id.content, fragment)
+            fragmentTransaction.add(android.R.id.content, fragment, SplitDocumentFragment.TAG)
+            fragmentTransaction.commit()
+        }
+    }
+
+    /**
+     * Closes the split document view if the SplitDocumentFragment TAG is found
+     */
+    open fun closeSplitDocumentView() {
+        val fragmentManager = requireActivity().supportFragmentManager
+        val splitDocumentFragment = fragmentManager.findFragmentByTag(SplitDocumentFragment.TAG)
+        if (splitDocumentFragment != null) {
+            val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
+            fragmentTransaction.show(this)
+            fragmentTransaction.remove(splitDocumentFragment)
             fragmentTransaction.commit()
         }
     }
@@ -493,7 +509,8 @@ open class PdfFragment : Fragment() {
     }
 
     companion object {
-        private const val TAG = "PdfFragment"
+        const val TAG = "PdfFragment"
+
         private const val CURRENT_PAGE = "CURRENT_PAGE"
         private const val FILE_NAME = "FILE_NAME"
         private const val PDF_URI = "PDF_URI"

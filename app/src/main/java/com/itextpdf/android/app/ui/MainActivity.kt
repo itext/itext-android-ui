@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
      * @param selectedPageIndices   the page indices that should be in the one pdf document. All the other indices will be in the other document
      */
     private fun noUISplit(uri: Uri, fileName: String, selectedPageIndices: List<Int>) {
+        // specify the path where the newly created pdf files will be stored -> Cache
         val storageFolderPath = (externalCacheDir ?: cacheDir).absolutePath
         val pdfUriList = PdfManipulator.splitPdfWithSelection(
             this,
@@ -87,7 +88,9 @@ class MainActivity : AppCompatActivity() {
             selectedPageIndices,
             storageFolderPath
         )
+        // check if uris were returned
         if (pdfUriList.isNotEmpty()) {
+            // create toast message with storage info of the new files
             val file = pdfUriList.first().toFile()
             val successText = getString(R.string.split_document_success, "${file.parent}/")
             Toast.makeText(

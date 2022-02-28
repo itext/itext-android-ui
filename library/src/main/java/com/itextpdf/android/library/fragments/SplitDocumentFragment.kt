@@ -321,7 +321,7 @@ open class SplitDocumentFragment : Fragment() {
     }
 
     companion object {
-        private const val TAG = "SplitDocumentFragment"
+        const val TAG = "SplitDocumentFragment"
 
         private const val PDF_URI = "PDF_URI"
         private const val FILE_NAME = "FILE_NAME"
