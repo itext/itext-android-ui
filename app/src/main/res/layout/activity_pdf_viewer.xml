@@ -16,6 +16,7 @@
         app:file_uri="file:///data/user/0/com.itextpdf.android.app/cache/sample_1.pdf"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:enable_split_view="false"
         app:page_spacing="400"
         app:primary_color="#217C12"
         app:secondary_color="#C6E6C1" />

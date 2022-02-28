@@ -1,4 +1,4 @@
-package com.itextpdf.android.library.navigation
+package com.itextpdf.android.library.lists
 
 import android.graphics.Typeface
 import android.graphics.drawable.DrawableContainer.DrawableContainerState
@@ -10,8 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.util.DisplayUtil
 import com.itextpdf.android.library.views.PdfThumbnailView
-import com.shockwave.pdfium.PdfDocument
-import com.shockwave.pdfium.PdfiumCore
 
 
 /**
@@ -19,21 +17,13 @@ import com.shockwave.pdfium.PdfiumCore
  *
  * @param view  the view
  */
-class PdfNavigationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+abstract class PdfViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-    private val tvPageNumber: TextView = view.findViewById(R.id.tvPageNumber)
-    private val thumbnailView: PdfThumbnailView = view.findViewById(R.id.pageThumbnail)
-    private val strokeWidth: Int = DisplayUtil.dpToPx(STROKE_WIDTH_IN_DP, itemView.context)
+    protected val tvPageNumber: TextView = view.findViewById(R.id.tvPageNumber)
+    protected val thumbnailView: PdfThumbnailView = view.findViewById(R.id.pageThumbnail)
+    protected val strokeWidth: Int = DisplayUtil.dpToPx(STROKE_WIDTH_IN_DP, itemView.context)
 
-    fun bind(item: PdfPageRecyclerItem) {
-        val pageNumber = item.pageIndex + 1
-        tvPageNumber.text = "$pageNumber"
-        thumbnailView.setMultiple(item.pdfiumCore, item.pdfDocument, item.pageIndex)
-
-        itemView.setOnClickListener {
-            item.action()
-        }
-    }
+    abstract fun bind(item: PdfRecyclerItem)
 
     /**
      * Updates the text size of the view based on the selection state
@@ -70,17 +60,11 @@ class PdfNavigationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     }
 }
 
-/**
- * The data class holding all the data required for the pdf navigation
- *
- * @property pdfiumCore required for rendering the pdf page that needs to be displayed as a thumbnail
- * @property pdfDocument    the pdfDocument that contains the page that should be rendered
- * @property pageIndex  the index of the page within the pdfDocument
- * @property action the action that should happen when the item is clicked
- */
-data class PdfPageRecyclerItem(
-    val pdfiumCore: PdfiumCore,
-    val pdfDocument: PdfDocument,
-    val pageIndex: Int,
-    val action: () -> Unit
-)
+interface PdfRecyclerItem {
+    val type: Int
+
+    companion object {
+        val TYPE_NAVIGATE = R.layout.recycler_item_navigation_pdf_page
+        val TYPE_SPLIT = R.layout.recycler_item_split_pdf_page
+    }
+}

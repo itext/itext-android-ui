@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="navigate_pdf">Navigate pdf</string>
+    <string name="split_document">Split document</string>
+    <string name="split_document_success">Successfully split document. Files stored in: %1$s</string>
+    <string name="split_document_error">There was an error splitting the document.</string>
 </resources>

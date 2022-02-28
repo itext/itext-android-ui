@@ -76,6 +76,24 @@ fun Context.pdfDocumentReader(fileName: String): PdfDocument? {
 }
 
 /**
+ * Returns a pdfDocument object with the given uri in reading mode.
+ *
+ * @param uri  the uri of the pdf that should be read
+ * @return  the pdf document in reading mode
+ */
+fun Context.pdfDocumentReader(uri: Uri): PdfDocument? {
+    val inputStream = contentResolver.openInputStream(uri)
+    return try {
+        PdfDocument(PdfReader(inputStream))
+    } catch (e: FileNotFoundException) {
+        e.printStackTrace()
+        null
+    } finally {
+        inputStream?.close()
+    }
+}
+
+/**
  * Returns a pdfDocument object with the given filename in stamping mode.
  *
  * @param fileName  the filename of the pdf that should be written

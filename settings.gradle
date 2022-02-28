@@ -4,6 +4,9 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         jcenter()
+        maven {
+            url "https://repo.itextsupport.com/snapshot"
+        }
     }
 }
 rootProject.name = "iTextPDF"
