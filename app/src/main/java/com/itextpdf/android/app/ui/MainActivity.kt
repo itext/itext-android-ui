@@ -1,15 +1,17 @@
 package com.itextpdf.android.app.ui
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.itextpdf.android.app.BuildConfig
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityMainBinding
 import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
@@ -90,21 +92,58 @@ class MainActivity : AppCompatActivity() {
         )
         // check if uris were returned
         if (pdfUriList.isNotEmpty()) {
-            // create toast message with storage info of the new files
-            val file = pdfUriList.first().toFile()
-            val successText = getString(R.string.split_document_success, "${file.parent}/")
-            Toast.makeText(
-                this,
-                successText,
-                Toast.LENGTH_LONG
-            ).show()
-            Log.i(TAG, successText)
+            // open the share sheet to share the first pdf file which contains of the selected pages
+            sharePdf(pdfUriList.first())
         } else {
             Log.e(
                 TAG,
                 getString(com.itextpdf.android.library.R.string.split_document_error)
             )
         }
+    }
+
+    /**
+     * Use this function to open up the share sheet an share one pdf file
+     *
+     * @param pdfUri    the uri to the pdf that should be shared
+     */
+    private fun sharePdf(pdfUri: Uri) {
+        // prepare a sharable uri with the FileProvider (also make sure to setup provider_paths.xml and set FileProvider in Manifest)
+        val shareableUri = FileProvider.getUriForFile(
+            this,
+            BuildConfig.APPLICATION_ID + ".provider",
+            pdfUri.toFile()
+        )
+        val shareIntent = Intent(Intent.ACTION_SEND)
+        shareIntent.putExtra(Intent.EXTRA_STREAM, shareableUri)
+        shareIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        shareIntent.type = "application/pdf"
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.share_pdf_title)))
+    }
+
+    /**
+     * Use this function to open up the share sheet an share multiple pdf files
+     *
+     * @param pdfUriList    the list of uris to the pdfs that should be shared
+     */
+    private fun shareMultiplePdfs(pdfUriList: List<Uri>) {
+        // prepare a sharable list of uris with the FileProvider (also make sure to setup provider_paths.xml and set FileProvider in Manifest)
+        val shareableUriList = arrayListOf<Uri>()
+        pdfUriList.forEach {
+            shareableUriList.add(
+                FileProvider.getUriForFile(
+                    this,
+                    BuildConfig.APPLICATION_ID + ".provider",
+                    it.toFile()
+                )
+            )
+        }
+
+        val shareIntent = Intent(Intent.ACTION_SEND_MULTIPLE)
+        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, shareableUriList);
+        shareIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        shareIntent.type = "application/pdf"
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.share_pdf_title)))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -135,7 +174,7 @@ class MainActivity : AppCompatActivity() {
             "Pdf View: Sample 3",
             "Pdf View: Sample 4",
             "Pdf Split View: Sample 3",
-            "No UI Split: Sample 2"
+            "No UI Split + Share: Sample 2"
         )
 
         /**
@@ -147,7 +186,7 @@ class MainActivity : AppCompatActivity() {
             "Sample 3 shows the pdf view with it's default settings.",
             "Sample 4 shows the view without an option to open the thumbnail navigation view.",
             "Split Sample 3 opens the split document view directly for Sample 3.",
-            "No UI split Sample 2 directly splits the two-page document into two documents with one page each without showing a split document view."
+            "No UI split + Share Sample 2 directly splits the two-page document into two documents with one page each without showing a split document view and opens the share sheet."
         )
 
         /**
