@@ -1,6 +1,8 @@
 package com.itextpdf.android.library.fragments
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface.OnShowListener
 import android.content.res.ColorStateList
 import android.content.res.TypedArray
 import android.graphics.*
@@ -10,9 +12,7 @@ import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toFile
 import androidx.core.os.bundleOf
@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.ceil
 import kotlin.math.min
+
 
 /**
  * Fragment that can be used to split a pdf file into two pieces. One containing of the selected pages
@@ -69,6 +70,21 @@ open class SplitDocumentFragment : Fragment() {
      * A color string to set the secondary color of the view (affects: scroll indicator and navigation thumbnails). Default: #FFEFD8
      */
     private var secondaryColor: String? = PdfFragment.DEFAULT_SECONDARY_COLOR
+
+    /**
+     * A boolean flag to enable/disable the help dialog in the split view. Default: true
+     */
+    private var enableHelpDialog = DEFAULT_ENABLE_HELP_DIALOG
+
+    /**
+     * The title of the help dialog in the split view. If this is null but help dialog is displayed, a default title is used.
+     */
+    private var helpDialogTitle: String? = null
+
+    /**
+     * The text of the help dialog in the split view. If this is null but help dialog is displayed, a default text is used.
+     */
+    private var helpDialogText: String? = null
 
     private lateinit var binding: FragmentSplitDocumentBinding
 
@@ -157,6 +173,9 @@ open class SplitDocumentFragment : Fragment() {
             primaryColor = bundle.getString(PRIMARY_COLOR) ?: PdfFragment.DEFAULT_PRIMARY_COLOR
             secondaryColor =
                 bundle.getString(SECONDARY_COLOR) ?: PdfFragment.DEFAULT_SECONDARY_COLOR
+            enableHelpDialog = bundle.getBoolean(ENABLE_HELP_DIALOG, DEFAULT_ENABLE_HELP_DIALOG)
+            helpDialogTitle = bundle.getString(HELP_DIALOG_TITLE)
+            helpDialogText = bundle.getString(HELP_DIALOG_TEXT)
         }
     }
 
@@ -189,6 +208,16 @@ open class SplitDocumentFragment : Fragment() {
         a.getText(R.styleable.SplitDocumentFragment_secondary_color)?.let {
             secondaryColor = it.toString()
         }
+        enableHelpDialog = a.getBoolean(
+            R.styleable.SplitDocumentFragment_enable_help_dialog,
+            DEFAULT_ENABLE_HELP_DIALOG
+        )
+        a.getText(R.styleable.SplitDocumentFragment_help_dialog_title)?.let {
+            helpDialogTitle = it.toString()
+        }
+        a.getText(R.styleable.SplitDocumentFragment_help_dialog_text)?.let {
+            helpDialogText = it.toString()
+        }
         a.recycle()
     }
 
@@ -198,6 +227,9 @@ open class SplitDocumentFragment : Fragment() {
         outState.putString(FILE_NAME, fileName)
         outState.putString(PRIMARY_COLOR, primaryColor)
         outState.putString(SECONDARY_COLOR, secondaryColor)
+        outState.putBoolean(ENABLE_HELP_DIALOG, enableHelpDialog)
+        outState.putString(HELP_DIALOG_TITLE, helpDialogTitle)
+        outState.putString(HELP_DIALOG_TEXT, helpDialogText)
     }
 
     private fun setupToolbar() {
@@ -207,6 +239,40 @@ open class SplitDocumentFragment : Fragment() {
             binding.tbSplitDocumentFragment.setNavigationIcon(R.drawable.ic_close)
             binding.tbSplitDocumentFragment.setNavigationOnClickListener { requireActivity().onBackPressed() }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_split_document, menu)
+        menu.getItem(0).isVisible = enableHelpDialog
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.action_split_help -> {
+            showHelpDialog()
+            true
+        }
+        else -> {
+            super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun showHelpDialog() {
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle(helpDialogTitle ?: getString(R.string.help_dialog_title))
+            .setMessage(helpDialogText ?: getString(R.string.help_dialog_text))
+            .setPositiveButton(android.R.string.ok, null)
+            .create()
+
+        // change color to primary if it was set
+        if (primaryColor != null) {
+            dialog.setOnShowListener {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                    .setTextColor(Color.parseColor(primaryColor))
+            }
+        }
+
+        dialog.show()
     }
 
     private fun setupSplitSelectionList() {
@@ -300,7 +366,8 @@ open class SplitDocumentFragment : Fragment() {
      */
     open fun splitPdfDocument() {
         pdfUri?.let { uri ->
-            val storageFolderPath = (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
+            val storageFolderPath =
+                (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
             val name = if (!fileName.isNullOrEmpty()) fileName!! else UNNAMED_FILE
             val pdfUriList = PdfManipulator.splitPdfWithSelection(
                 requireContext(),
@@ -327,6 +394,9 @@ open class SplitDocumentFragment : Fragment() {
         private const val FILE_NAME = "FILE_NAME"
         private const val PRIMARY_COLOR = "PRIMARY_COLOR"
         private const val SECONDARY_COLOR = "SECONDARY_COLOR"
+        private const val ENABLE_HELP_DIALOG = "ENABLE_HELP_DIALOG"
+        private const val HELP_DIALOG_TITLE = "HELP_DIALOG_TITLE"
+        private const val HELP_DIALOG_TEXT = "HELP_DIALOG_TEXT"
 
         private const val THUMBNAIL_WIDTH_BASE = 1080
         private const val MAX_THUMBNAIL_WIDTH = 150
@@ -338,6 +408,8 @@ open class SplitDocumentFragment : Fragment() {
         const val SPLIT_DOCUMENT_RESULT = "SPLIT_DOCUMENT_RESULT"
         const val SPLIT_PDF_URI_LIST = "SPLIT_PDF_URI_LIST"
 
+        const val DEFAULT_ENABLE_HELP_DIALOG = true
+
         /**
          * Static function to create a new instance of the SplitDocumentFragment with the given settings
          *
@@ -345,13 +417,19 @@ open class SplitDocumentFragment : Fragment() {
          * @param fileName  The name of the file that should be split
          * @param primaryColor  A color string to set the primary color of the view (affects: thumbnail selection and loading indicator). Default: #FF9400
          * @param secondaryColor    A color string to set the secondary color of the view (affects: thumbnail selection and loading indicator). Default: #FFEFD8
+         * @param enableHelpDialog  A boolean flag to enable/disable the help dialog
+         * @param helpDialogTitle  The title of the help dialog. If this is null but help dialog is displayed, a default title is used.
+         * @param helpDialogText  The text of the help dialog. If this is null but help dialog is displayed, a default text is used.
          * @return  in instance of SplitDocumentFragment with the given settings
          */
         fun newInstance(
             pdfUri: Uri,
             fileName: String? = null,
             primaryColor: String? = null,
-            secondaryColor: String? = null
+            secondaryColor: String? = null,
+            enableHelpDialog: Boolean? = null,
+            helpDialogTitle: String? = null,
+            helpDialogText: String? = null
         ): SplitDocumentFragment {
             val fragment = SplitDocumentFragment()
 
@@ -360,6 +438,10 @@ open class SplitDocumentFragment : Fragment() {
             args.putString(FILE_NAME, fileName)
             args.putString(PRIMARY_COLOR, primaryColor)
             args.putString(SECONDARY_COLOR, secondaryColor)
+            if (enableHelpDialog != null)
+                args.putBoolean(ENABLE_HELP_DIALOG, enableHelpDialog)
+            args.putString(HELP_DIALOG_TITLE, helpDialogTitle)
+            args.putString(HELP_DIALOG_TEXT, helpDialogText)
 
             fragment.arguments = args
             return fragment

@@ -107,6 +107,21 @@ open class PdfFragment : Fragment() {
      */
     private var backgroundColor: String? = DEFAULT_BACKGROUND_COLOR
 
+    /**
+     * A boolean flag to enable/disable the help dialog. Default: true
+     */
+    private var enableHelpDialog = SplitDocumentFragment.DEFAULT_ENABLE_HELP_DIALOG
+
+    /**
+     * The title of the help dialog. If this is null but help dialog is displayed, a default title is used.
+     */
+    private var helpDialogTitle: String? = null
+
+    /**
+     * The text of the help dialog. If this is null but help dialog is displayed, a default text is used.
+     */
+    private var helpDialogText: String? = null
+
     private lateinit var binding: FragmentPdfBinding
     private lateinit var pdfNavigationAdapter: PdfAdapter
 
@@ -204,6 +219,12 @@ open class PdfFragment : Fragment() {
             primaryColor = bundle.getString(PRIMARY_COLOR) ?: DEFAULT_PRIMARY_COLOR
             secondaryColor = bundle.getString(SECONDARY_COLOR) ?: DEFAULT_SECONDARY_COLOR
             backgroundColor = bundle.getString(BACKGROUND_COLOR) ?: DEFAULT_BACKGROUND_COLOR
+            enableHelpDialog = bundle.getBoolean(
+                ENABLE_HELP_DIALOG,
+                SplitDocumentFragment.DEFAULT_ENABLE_HELP_DIALOG
+            )
+            helpDialogTitle = bundle.getString(HELP_DIALOG_TITLE)
+            helpDialogText = bundle.getString(HELP_DIALOG_TEXT)
         }
     }
 
@@ -271,6 +292,16 @@ open class PdfFragment : Fragment() {
         a.getText(R.styleable.PdfFragment_background_color)?.let {
             backgroundColor = it.toString()
         }
+        enableHelpDialog = a.getBoolean(
+            R.styleable.PdfFragment_enable_help_dialog,
+            SplitDocumentFragment.DEFAULT_ENABLE_HELP_DIALOG
+        )
+        a.getText(R.styleable.PdfFragment_help_dialog_title)?.let {
+            helpDialogTitle = it.toString()
+        }
+        a.getText(R.styleable.PdfFragment_help_dialog_text)?.let {
+            helpDialogText = it.toString()
+        }
         a.recycle()
     }
 
@@ -290,6 +321,9 @@ open class PdfFragment : Fragment() {
         outState.putString(PRIMARY_COLOR, primaryColor)
         outState.putString(SECONDARY_COLOR, secondaryColor)
         outState.putString(BACKGROUND_COLOR, backgroundColor)
+        outState.putBoolean(ENABLE_HELP_DIALOG, enableHelpDialog)
+        outState.putString(HELP_DIALOG_TITLE, helpDialogTitle)
+        outState.putString(HELP_DIALOG_TEXT, helpDialogText)
     }
 
     private fun setupToolbar() {
@@ -433,7 +467,15 @@ open class PdfFragment : Fragment() {
             val fragmentManager = requireActivity().supportFragmentManager
             val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
             val fragment =
-                SplitDocumentFragment.newInstance(uri, fileName, primaryColor, secondaryColor)
+                SplitDocumentFragment.newInstance(
+                    uri,
+                    fileName,
+                    primaryColor,
+                    secondaryColor,
+                    enableHelpDialog,
+                    helpDialogTitle,
+                    helpDialogText
+                )
             fragmentTransaction.hide(this)
             fragmentTransaction.add(android.R.id.content, fragment, SplitDocumentFragment.TAG)
             fragmentTransaction.commit()
@@ -525,6 +567,9 @@ open class PdfFragment : Fragment() {
         private const val PRIMARY_COLOR = "PRIMARY_COLOR"
         private const val SECONDARY_COLOR = "SECONDARY_COLOR"
         private const val BACKGROUND_COLOR = "BACKGROUND_COLOR"
+        private const val ENABLE_HELP_DIALOG = "ENABLE_HELP_DIALOG"
+        private const val HELP_DIALOG_TITLE = "HELP_DIALOG_TITLE"
+        private const val HELP_DIALOG_TEXT = "HELP_DIALOG_TEXT"
 
         const val DEFAULT_DISPLAY_FILE_NAME = false
         const val DEFAULT_PAGE_SPACING = 10
@@ -554,6 +599,9 @@ open class PdfFragment : Fragment() {
          * @param primaryColor  A color string to set the primary color of the view (affects: scroll indicator, navigation thumbnails and loading indicator). Default: #FF9400
          * @param secondaryColor    A color string to set the secondary color of the view (affects: scroll indicator and navigation thumbnails). Default: #FFEFD8
          * @param backgroundColor   A color string to set the background of the pdf view that will be visible between the pages if pageSpacing > 0. Default: #EAEAEA@
+         * @param enableHelpDialog  A boolean flag to enable/disable the help dialog on the split view
+         * @param helpDialogTitle  The title of the help dialog on the split view. If this is null but help dialog is displayed, a default title is used.
+         * @param helpDialogText  The text of the help dialog on the split view. If this is null but help dialog is displayed, a default text is used.
          * @return  in instance of PdfFragment with the given settings
          */
         fun newInstance(
@@ -569,7 +617,10 @@ open class PdfFragment : Fragment() {
             showScrollIndicatorPageNumber: Boolean? = null,
             primaryColor: String? = null,
             secondaryColor: String? = null,
-            backgroundColor: String? = null
+            backgroundColor: String? = null,
+            enableHelpDialog: Boolean? = null,
+            helpDialogTitle: String? = null,
+            helpDialogText: String? = null
         ): PdfFragment {
             val fragment = PdfFragment()
 
@@ -595,6 +646,10 @@ open class PdfFragment : Fragment() {
             args.putString(PRIMARY_COLOR, primaryColor)
             args.putString(SECONDARY_COLOR, secondaryColor)
             args.putString(BACKGROUND_COLOR, backgroundColor)
+            if (enableHelpDialog != null)
+                args.putBoolean(ENABLE_HELP_DIALOG, enableHelpDialog)
+            args.putString(HELP_DIALOG_TITLE, helpDialogTitle)
+            args.putString(HELP_DIALOG_TEXT, helpDialogText)
             fragment.arguments = args
 
             return fragment
