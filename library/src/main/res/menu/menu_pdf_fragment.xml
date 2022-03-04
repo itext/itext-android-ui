@@ -9,6 +9,18 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_highlight"
+        android:icon="@drawable/ic_highlight"
+        android:title="@string/highlight_text"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_annotations"
+        android:icon="@drawable/ic_annotation"
+        android:title="@string/add_annotation"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_split_pdf"
         android:icon="@drawable/ic_split"
         android:title="@string/split_document"

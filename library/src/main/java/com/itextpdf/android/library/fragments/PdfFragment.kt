@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
+import android.util.Log
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -339,7 +340,9 @@ open class PdfFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_pdf_fragment, menu)
         menu.getItem(0).isVisible = enableThumbnailNavigationView
-        menu.getItem(1).isVisible = enableSplitView
+        menu.getItem(1).isVisible = true //TODO: highlight
+        menu.getItem(2).isVisible = true //TODO: annotate
+        menu.getItem(3).isVisible = enableSplitView
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -347,6 +350,14 @@ open class PdfFragment : Fragment() {
         R.id.action_navigate_pdf -> {
             if (navViewSetupComplete)
                 toggleThumbnailNavigationViewVisibility()
+            true
+        }
+        R.id.action_highlight -> {
+            Log.i(TAG, "highlight selected")
+            true
+        }
+        R.id.action_annotations -> {
+            Log.i(TAG, "annotation selected")
             true
         }
         R.id.action_split_pdf -> {

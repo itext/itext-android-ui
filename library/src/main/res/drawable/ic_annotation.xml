@@ -7,5 +7,5 @@
     android:autoMirrored="true">
   <path
       android:fillColor="@color/navigation_item_color"
-      android:pathData="M14,4l2.29,2.29 -2.88,2.88 1.42,1.42 2.88,-2.88L20,10L20,4zM10,4L4,4v6l2.29,-2.29 4.71,4.7L11,20h2v-8.41l-5.29,-5.3z"/>
+      android:pathData="M21.99,4c0,-1.1 -0.89,-2 -1.99,-2L4,2c-1.1,0 -2,0.9 -2,2v12c0,1.1 0.9,2 2,2h14l4,4 -0.01,-18zM18,14L6,14v-2h12v2zM18,11L6,11L6,9h12v2zM18,8L6,8L6,6h12v2z"/>
 </vector>
