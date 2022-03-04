@@ -44,20 +44,23 @@ class PdfViewerActivity : AppCompatActivity() {
                                     enableDoubleTapZoom = false,
                                     primaryColor = "#295819",
                                     secondaryColor = "#950178",
-                                    backgroundColor = "#119191"
+                                    backgroundColor = "#119191",
+                                    helpDialogText = getString(R.string.custom_help_text)
                                 )
                             }
                             3 -> { // Sample 4
                                 fragment = PdfFragment.newInstance(
                                     pdfUri = pdfUri,
                                     fileName = fileName,
-                                    enableThumbnailNavigationView = false
+                                    enableThumbnailNavigationView = false,
+                                    enableHelpDialog = false
                                 )
                             }
                             else -> { // Sample 3 and pdfs from file explorer
                                 fragment = PdfFragment.newInstance(
                                     pdfUri = pdfUri,
-                                    fileName = fileName
+                                    fileName = fileName,
+                                    helpDialogTitle = getString(R.string.custom_help_title)
                                 )
                             }
                         }
