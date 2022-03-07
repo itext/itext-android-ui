@@ -33,7 +33,11 @@
         android:layout_gravity="center" />
 
     <include
-        android:id="@+id/includedBottomSheetActions"
-        layout="@layout/bottom_sheet_actions" />
+        android:id="@+id/includedBottomSheetNavigate"
+        layout="@layout/bottom_sheet_navigate" />
+
+    <include
+        android:id="@+id/includedBottomSheetAnnotations"
+        layout="@layout/bottom_sheet_annotations" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

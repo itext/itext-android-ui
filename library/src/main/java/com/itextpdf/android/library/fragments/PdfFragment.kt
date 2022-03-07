@@ -126,8 +126,10 @@ open class PdfFragment : Fragment() {
     private lateinit var binding: FragmentPdfBinding
     private lateinit var pdfNavigationAdapter: PdfAdapter
 
-    private val actionsBottomSheet by lazy { binding.includedBottomSheetActions.bottomSheetActions }
-    private lateinit var actionsBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+    private val navigateBottomSheet by lazy { binding.includedBottomSheetNavigate.bottomSheetNavigate }
+    private lateinit var navigateBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+    private val annotationsBottomSheet by lazy { binding.includedBottomSheetAnnotations.bottomSheetAnnotations }
+    private lateinit var annotationsBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     private lateinit var pdfiumCore: PdfiumCore
 
@@ -238,8 +240,11 @@ open class PdfFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        actionsBottomSheetBehavior = BottomSheetBehavior.from(actionsBottomSheet)
+        navigateBottomSheetBehavior = BottomSheetBehavior.from(navigateBottomSheet)
         setThumbnailNavigationViewVisibility(false)
+
+        annotationsBottomSheetBehavior = BottomSheetBehavior.from(annotationsBottomSheet)
+        setAnnotationsViewVisibility(false)
     }
 
     /**
@@ -340,7 +345,7 @@ open class PdfFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_pdf_fragment, menu)
         menu.getItem(0).isVisible = enableThumbnailNavigationView
-        menu.getItem(1).isVisible = true //TODO: highlight
+        menu.getItem(1).isVisible = false //TODO: highlight
         menu.getItem(2).isVisible = true //TODO: annotate
         menu.getItem(3).isVisible = enableSplitView
         super.onCreateOptionsMenu(menu, inflater)
@@ -357,7 +362,7 @@ open class PdfFragment : Fragment() {
             true
         }
         R.id.action_annotations -> {
-            Log.i(TAG, "annotation selected")
+            toggleAnnotationsViewVisibility()
             true
         }
         R.id.action_split_pdf -> {
@@ -386,8 +391,8 @@ open class PdfFragment : Fragment() {
             }
 
             pdfNavigationAdapter = PdfAdapter(data, false, primaryColor, secondaryColor)
-            binding.includedBottomSheetActions.rvPdfPages.adapter = pdfNavigationAdapter
-            binding.includedBottomSheetActions.rvPdfPages.layoutManager =
+            binding.includedBottomSheetNavigate.rvPdfPages.adapter = pdfNavigationAdapter
+            binding.includedBottomSheetNavigate.rvPdfPages.layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
             // make selection snappier as view holder can be reused
@@ -396,7 +401,7 @@ open class PdfFragment : Fragment() {
                     return true
                 }
             }
-            binding.includedBottomSheetActions.rvPdfPages.itemAnimator = itemAnimator
+            binding.includedBottomSheetNavigate.rvPdfPages.itemAnimator = itemAnimator
 
             navViewSetupComplete = true
         }
@@ -512,7 +517,15 @@ open class PdfFragment : Fragment() {
      */
     open fun toggleThumbnailNavigationViewVisibility() {
         // if bottom sheet is collapsed, set it to visible, if not set it to invisible
-        setThumbnailNavigationViewVisibility(actionsBottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+        setThumbnailNavigationViewVisibility(navigateBottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+    }
+
+    /**
+     * Toggles the visibility state of the annotations view
+     */
+    open fun toggleAnnotationsViewVisibility() {
+        // if bottom sheet is collapsed, set it to visible, if not set it to invisible
+        setAnnotationsViewVisibility(annotationsBottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
     }
 
     /**
@@ -522,12 +535,27 @@ open class PdfFragment : Fragment() {
      */
     open fun setThumbnailNavigationViewVisibility(isVisible: Boolean) {
         if (isVisible) {
+            setAnnotationsViewVisibility(false)
             scrollThumbnailNavigationViewToPage(getCurrentItemPosition())
         }
         val updatedState =
             if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
-        actionsBottomSheetBehavior.state = updatedState
+        navigateBottomSheetBehavior.state = updatedState
         navViewOpen = isVisible
+    }
+
+    /**
+     * Sets the visibility state of the annotations view
+     *
+     * @param isVisible True when the view should be visible, false if it shouldn't.
+     */
+    open fun setAnnotationsViewVisibility(isVisible: Boolean) {
+        if (isVisible) {
+            setThumbnailNavigationViewVisibility(false)
+        }
+        val updatedState =
+            if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
+        annotationsBottomSheetBehavior.state = updatedState
     }
 
     /**
@@ -547,7 +575,7 @@ open class PdfFragment : Fragment() {
      */
     open fun scrollThumbnailNavigationViewToPage(position: Int) {
         pdfNavigationAdapter.updateSelectedItem(position)
-        (binding.includedBottomSheetActions.rvPdfPages.layoutManager as LinearLayoutManager).scrollToPosition(
+        (binding.includedBottomSheetNavigate.rvPdfPages.layoutManager as LinearLayoutManager).scrollToPosition(
             position
         )
     }
