@@ -31,6 +31,8 @@ import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
 import com.itextpdf.android.library.lists.PdfAdapter
 import com.itextpdf.android.library.lists.PdfRecyclerItem
+import com.itextpdf.android.library.lists.annotations.AnnotationRecyclerItem
+import com.itextpdf.android.library.lists.annotations.AnnotationsAdapter
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.shockwave.pdfium.PdfDocument
@@ -125,6 +127,7 @@ open class PdfFragment : Fragment() {
 
     private lateinit var binding: FragmentPdfBinding
     private lateinit var pdfNavigationAdapter: PdfAdapter
+    private lateinit var annotationAdapter: AnnotationsAdapter
 
     private val navigateBottomSheet by lazy { binding.includedBottomSheetNavigate.bottomSheetNavigate }
     private lateinit var navigateBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
@@ -133,8 +136,10 @@ open class PdfFragment : Fragment() {
 
     private lateinit var pdfiumCore: PdfiumCore
 
-    private var navigationPdfDocument: PdfDocument? = null
+    private var pdfDocument: PdfDocument? = null
     private var navViewSetupComplete = false
+    private var annotationViewSetupComplete = false
+
     private var navPageSelected = false
     private var navViewOpen = false
     private var currentPage = 0
@@ -160,7 +165,7 @@ open class PdfFragment : Fragment() {
                 requireContext().contentResolver.openFileDescriptor(it, "r")
             if (fileDescriptor != null) {
                 try {
-                    navigationPdfDocument = pdfiumCore.newDocument(fileDescriptor)
+                    pdfDocument = pdfiumCore.newDocument(fileDescriptor)
                 } catch (exception: Exception) {
                     exception.printStackTrace()
                 }
@@ -233,8 +238,8 @@ open class PdfFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (navigationPdfDocument != null) {
-            pdfiumCore.closeDocument(navigationPdfDocument)
+        if (pdfDocument != null) {
+            pdfiumCore.closeDocument(pdfDocument)
         }
     }
 
@@ -362,7 +367,8 @@ open class PdfFragment : Fragment() {
             true
         }
         R.id.action_annotations -> {
-            toggleAnnotationsViewVisibility()
+            if (annotationViewSetupComplete)
+                toggleAnnotationsViewVisibility()
             true
         }
         R.id.action_split_pdf -> {
@@ -375,7 +381,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setupThumbnailNavigationView() {
-        navigationPdfDocument?.let {
+        pdfDocument?.let {
             val data = mutableListOf<PdfRecyclerItem>()
             for (i in 0 until binding.pdfView.pageCount) {
                 data.add(PdfNavigationRecyclerItem(
@@ -404,6 +410,35 @@ open class PdfFragment : Fragment() {
             binding.includedBottomSheetNavigate.rvPdfPages.itemAnimator = itemAnimator
 
             navViewSetupComplete = true
+        }
+    }
+
+    private fun setupAnnotationView() {
+        pdfDocument?.let {
+            val data = mutableListOf<AnnotationRecyclerItem>()
+            val annotations = pdfDocument
+            for (i in 0 until 10) {
+//                data.add(PdfNavigationRecyclerItem(
+//                    pdfiumCore,
+//                    it,
+//                    i
+//                ) {
+//                    navPageSelected = true
+//                    scrollThumbnailNavigationViewToPage(i)
+//                    scrollToPage(i)
+//                    navPageSelected = false
+//                })
+                data.add(AnnotationRecyclerItem("Test title", "My test text!!") {
+                    Log.i("######", "Annotation selected!")
+                })
+            }
+
+            annotationAdapter = AnnotationsAdapter(data, primaryColor, secondaryColor)
+            binding.includedBottomSheetAnnotations.rvAnnotations.adapter = annotationAdapter
+            binding.includedBottomSheetAnnotations.rvAnnotations.layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+            annotationViewSetupComplete = true
         }
     }
 
@@ -444,6 +479,7 @@ open class PdfFragment : Fragment() {
             }
             .onLoad {
                 setupThumbnailNavigationView()
+                setupAnnotationView()
                 binding.pdfLoadingIndicator.visibility = GONE
             }
             .enableAnnotationRendering(enableAnnotationRendering)
