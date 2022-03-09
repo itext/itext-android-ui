@@ -49,7 +49,7 @@ fun Context.getFileName(uri: Uri): String? {
  *                  which only allows the calling application to access the file.
  * @return  the pdf document in writing mode
  */
-fun Context.pdfDocumentWriter(fileName: String, mode: Int = Context.MODE_PRIVATE): PdfDocument? {
+fun Context.pdfDocumentInWritingMode(fileName: String, mode: Int = Context.MODE_PRIVATE): PdfDocument? {
     return try {
         val output = openFileOutput(fileName, mode)
         PdfDocument(PdfWriter(output))
@@ -65,7 +65,7 @@ fun Context.pdfDocumentWriter(fileName: String, mode: Int = Context.MODE_PRIVATE
  * @param fileName  the filename of the pdf that should be read
  * @return  the pdf document in reading mode
  */
-fun Context.pdfDocumentReader(fileName: String): PdfDocument? {
+fun Context.pdfDocumentInReadingMode(fileName: String): PdfDocument? {
     return try {
         val file = getFileStreamPath(fileName).absoluteFile
         PdfDocument(PdfReader(file))
@@ -81,10 +81,19 @@ fun Context.pdfDocumentReader(fileName: String): PdfDocument? {
  * @param uri  the uri of the pdf that should be read
  * @return  the pdf document in reading mode
  */
-fun Context.pdfDocumentReader(uri: Uri): PdfDocument? {
+fun Context.pdfDocumentInReadingMode(uri: Uri): PdfDocument? {
+    val pdfReader = pdfReader(uri)
+    return if (pdfReader != null) {
+        PdfDocument(pdfReader)
+    } else {
+        null
+    }
+}
+
+fun Context.pdfReader(uri: Uri): PdfReader? {
     val inputStream = contentResolver.openInputStream(uri)
     return try {
-        PdfDocument(PdfReader(inputStream))
+        PdfReader(inputStream)
     } catch (e: FileNotFoundException) {
         e.printStackTrace()
         null
@@ -101,7 +110,7 @@ fun Context.pdfDocumentReader(uri: Uri): PdfDocument? {
  *                  which only allows the calling application to access the file.
  * @return  the pdf document in stamping mode
  */
-fun Context.pdfDocumentStamping(fileName: String, mode: Int = Context.MODE_PRIVATE): PdfDocument? {
+fun Context.pdfDocumentInStampingMode(fileName: String, mode: Int = Context.MODE_PRIVATE): PdfDocument? {
     return try {
         val readFile = getFileStreamPath(fileName).absoluteFile
         val output = openFileOutput(fileName, mode)

@@ -3,7 +3,7 @@ package com.itextpdf.android.library.util
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
-import com.itextpdf.android.library.extensions.pdfDocumentReader
+import com.itextpdf.android.library.extensions.pdfDocumentInReadingMode
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.utils.PageRange
 import com.itextpdf.kernel.utils.PdfSplitter
@@ -32,7 +32,7 @@ object PdfManipulator {
         selectedPageIndices: List<Int>,
         storageFolderPath: String
     ): List<Uri> {
-        val pdfDocument = context.pdfDocumentReader(fileUri)
+        val pdfDocument = context.pdfDocumentInReadingMode(fileUri)
         val pdfUriList = mutableListOf<Uri>()
         if (pdfDocument != null) {
             val selectedPagesNumbers = mutableListOf<Int>()

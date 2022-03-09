@@ -28,6 +28,8 @@ class AnnotationsAdapter(
 ) :
     RecyclerView.Adapter<AnnotationsViewHolder>() {
 
+    var selectedPosition = 0
+
     private val primaryColor: Int? = if (primaryColorString != null) {
         Color.parseColor(primaryColorString)
     } else {

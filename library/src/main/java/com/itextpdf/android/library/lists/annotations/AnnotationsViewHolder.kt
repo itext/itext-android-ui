@@ -1,6 +1,7 @@
 package com.itextpdf.android.library.lists.annotations
 
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
@@ -19,12 +20,13 @@ class AnnotationsViewHolder(view: View): RecyclerView.ViewHolder(view) {
 
     private val tvTitle: TextView = view.findViewById(R.id.tvTitle)
     private val tvText: TextView = view.findViewById(R.id.tvText)
+    private val ivMore: ImageView = view.findViewById(R.id.ivMore)
 
     fun bind(item: AnnotationRecyclerItem) {
         tvTitle.text = item.title
         tvText.text = item.text
 
-        itemView.setOnClickListener {
+        ivMore.setOnClickListener {
             item.action()
         }
     }
