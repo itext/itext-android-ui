@@ -10,6 +10,7 @@ import com.itextpdf.kernel.pdf.PdfReader
 import com.itextpdf.kernel.pdf.PdfWriter
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.FileOutputStream
 
 /**
  * Returns the fileName of the file at the given uri.
@@ -102,21 +103,16 @@ fun Context.pdfReader(uri: Uri): PdfReader? {
     }
 }
 
-/**
- * Returns a pdfDocument object with the given filename in stamping mode.
- *
- * @param fileName  the filename of the pdf that should be written
- * @param mode      the file creation mode that defines who can access the file. Default is MODE_PRIVATE
- *                  which only allows the calling application to access the file.
- * @return  the pdf document in stamping mode
- */
-fun Context.pdfDocumentInStampingMode(fileName: String, mode: Int = Context.MODE_PRIVATE): PdfDocument? {
+//TODO
+fun Context.pdfDocumentInStampingMode(srcUri: Uri, destFile: File): PdfDocument? {
+    val inputStream = contentResolver.openInputStream(srcUri)
     return try {
-        val readFile = getFileStreamPath(fileName).absoluteFile
-        val output = openFileOutput(fileName, mode)
-        PdfDocument(PdfReader(readFile), PdfWriter(output))
+        val outputStream = FileOutputStream(destFile)
+        PdfDocument(PdfReader(inputStream), PdfWriter(outputStream))
     } catch (e: FileNotFoundException) {
         e.printStackTrace()
         null
+    } finally {
+        inputStream?.close()
     }
 }

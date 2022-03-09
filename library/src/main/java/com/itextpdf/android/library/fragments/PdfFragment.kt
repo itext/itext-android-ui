@@ -3,10 +3,7 @@ package com.itextpdf.android.library.fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.res.TypedArray
-import android.graphics.BlendMode
-import android.graphics.BlendModeColorFilter
-import android.graphics.Color
-import android.graphics.PorterDuff
+import android.graphics.*
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -18,27 +15,44 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toFile
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.barteksc.pdfviewer.link.DefaultLinkHandler
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
 import com.itextpdf.android.library.extensions.pdfDocumentInReadingMode
+import com.itextpdf.android.library.extensions.pdfDocumentInStampingMode
 import com.itextpdf.android.library.lists.PdfAdapter
 import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.annotations.AnnotationRecyclerItem
 import com.itextpdf.android.library.lists.annotations.AnnotationsAdapter
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.views.PdfViewScrollHandle
+import com.itextpdf.io.image.ImageDataFactory
+import com.itextpdf.kernel.geom.Rectangle
+import com.itextpdf.kernel.pdf.*
+import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas
+import com.itextpdf.kernel.pdf.xobject.PdfFormXObject
+import com.itextpdf.layout.Document
+import com.itextpdf.layout.element.Paragraph
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 
 
 /**
@@ -354,7 +368,7 @@ open class PdfFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_pdf_fragment, menu)
         menu.getItem(0).isVisible = enableThumbnailNavigationView
-        menu.getItem(1).isVisible = false //TODO: highlight
+        menu.getItem(1).isVisible = true //TODO: highlight
         menu.getItem(2).isVisible = true //TODO: annotate
         menu.getItem(3).isVisible = enableSplitView
         super.onCreateOptionsMenu(menu, inflater)
@@ -367,7 +381,29 @@ open class PdfFragment : Fragment() {
             true
         }
         R.id.action_highlight -> {
-            Log.i(TAG, "highlight selected")
+            // only for testing (Create pdf file with dummy content)
+//            val name = "writePdfTest.pdf"
+//            val storageFolderPath =
+//                (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
+//            val pdfFile = File("$storageFolderPath/$name")
+//
+//            val newOutput = FileOutputStream(pdfFile)
+//            writePdf(newOutput)
+//
+//            setupPdfView(pdfFile.toUri())
+
+            //TODO: create dummy annotation
+            fileName?.let {
+                addTextAnnotationToPdf(
+                    it,
+                    "Test Annotation",
+                    "This is my very first test annotation",
+                    currentPage,
+                    100f,
+                    100f,
+                    30f
+                )
+            }
             true
         }
         R.id.action_annotations -> {
@@ -516,6 +552,7 @@ open class PdfFragment : Fragment() {
                 setupAnnotationView()
                 binding.pdfLoadingIndicator.visibility = GONE
             }
+            .linkHandler(DefaultLinkHandler(binding.pdfView))
             .enableAnnotationRendering(enableAnnotationRendering)
             .spacing(pageSpacing)
             .enableDoubletap(enableDoubleTapZoom)
@@ -537,6 +574,42 @@ open class PdfFragment : Fragment() {
         }
     }
 
+    private var commentXObj: PdfFormXObject? = null
+
+    private fun getCommentAppearance(
+        pdfDocument: com.itextpdf.kernel.pdf.PdfDocument,
+        bubbleSize: Float
+    ): PdfFormXObject? {
+        if (commentXObj != null) {
+            return commentXObj
+        }
+
+        val d = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_annotation)
+        if (d != null) {
+            val imageSize = bubbleSize * 3
+
+            val wrappedDrawable = DrawableCompat.wrap(d)
+            DrawableCompat.setTint(
+                wrappedDrawable,
+                Color.parseColor(primaryColor ?: DEFAULT_PRIMARY_COLOR)
+            )
+
+            val bitmap = d.toBitmap(imageSize.toInt(), imageSize.toInt(), Bitmap.Config.ARGB_8888)
+            val stream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            val imageByteArray: ByteArray = stream.toByteArray()
+            val itextImageData = ImageDataFactory.createPng(imageByteArray)
+
+            // draw a speech bubble on a 30x30 canvas
+            commentXObj = PdfFormXObject(Rectangle(imageSize, imageSize))
+            commentXObj?.let {
+                val canvas = PdfCanvas(it, pdfDocument)
+                canvas.addImageAt(itextImageData, 0f, 0f, true)
+            }
+        }
+        return commentXObj
+    }
+
     private fun showPdfLoadError(reason: String) {
         AlertDialog.Builder(requireContext())
             .setTitle("Error")
@@ -544,6 +617,96 @@ open class PdfFragment : Fragment() {
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
+
+    private val annotationTestFile = "annotation_test.pdf"
+
+    @Throws(java.lang.Exception::class)
+    protected open fun addTextAnnotationToPdf(
+        fileName: String,
+        title: String,
+        text: String,
+        pageNumber: Int,
+        x: Float,
+        y: Float,
+        bubbleSize: Float
+    ) {
+        val storageFolderPath =
+            (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
+        val destPdfFile = File("$storageFolderPath/$annotationTestFile")
+
+        val pdfDocument = requireContext().pdfDocumentInStampingMode(pdfUri!!, destPdfFile)
+        pdfDocument?.let { pdfDoc ->
+//            val page: PdfPage = pdfDoc.firstPage
+//            val sticky = page.annotations[0]
+//            val stickyRectangle: Rectangle = sticky.rectangle.toRectangle()
+//            val replySticky = PdfTextAnnotation(stickyRectangle)
+//                .setStateModel(PdfString("Review"))
+//                .setState(PdfString("Accepted"))
+//                .setIconName(PdfName("Comment")) // This method sets an annotation to which the current annotation is "in reply".
+//                // Both annotations shall be on the same page of the document.
+//                .setInReplyTo(sticky) // This method sets the text label that will be displayed in the title bar of the annotation's pop-up window
+//                // when open and active. This entry shall identify the user who added the annotation.
+//                .setText(PdfString("Bruno")) // This method sets the text that will be displayed for the annotation or the alternate description,
+//                // if this type of annotation does not display text.
+//                .setContents("Accepted by Bruno") // This method sets a complete set of enabled and disabled flags at once. If not set specifically
+//                // the default value is 0.
+//                // The argument is an integer interpreted as set of one-bit flags
+//                // specifying various characteristics of the annotation.
+//                .setFlags(sticky.flags + PdfAnnotation.HIDDEN)
+//            pdfDoc.firstPage.addAnnotation(replySticky)
+//            pdfDoc.close()
+
+
+//            val rect = Rectangle(150f, 770f, 50f, 50f)
+//            val annotation: PdfAnnotation = PdfCircleAnnotation(rect)
+//                .setBorderStyle(PdfAnnotation.STYLE_DASHED)
+//                .setDashPattern(
+//                    PdfArray(
+//                        intArrayOf(
+//                            3,
+//                            2
+//                        )
+//                    )
+//                ) // This method sets the text that will be displayed for the annotation or the alternate description,
+//                // if this type of annotation does not display text.
+//                .setContents("Circle")
+//                .setTitle(PdfString("Circle"))
+//                .setColor(ColorConstants.BLUE) // Set to print the annotation when the page is printed
+//                .setFlags(PdfAnnotation.PRINT)
+//                .setBorder(PdfArray(floatArrayOf(0f, 0f, 2f))) // Set the interior color
+//                .put(PdfName.IC, PdfArray(intArrayOf(1, 0, 0)))
+
+            val ann: PdfAnnotation =
+                PdfTextAnnotation(Rectangle(x, y, bubbleSize, bubbleSize))
+                    .setTitle(PdfString(title))
+                    .setContents(text)
+                    .setNormalAppearance(getCommentAppearance(pdfDoc, bubbleSize)?.pdfObject)
+
+            pdfDoc.getPage(pageNumber).addAnnotation(ann)
+            pdfDoc.close()
+
+            setupPdfView(destPdfFile.toUri())
+        }
+    }
+
+
+    //TODO: only for testing
+    private fun writePdf(output: FileOutputStream) {
+        try {
+            val pdf = PdfDocument(PdfWriter(output))
+            val document = Document(pdf)
+
+            val paragraph = Paragraph("Test paragraph")
+            paragraph.setFontSize(50f)
+            document.add(paragraph)
+
+            document.close()
+            pdf.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
 
     /**
      * Opens the split document view for the currently visible pdf document
