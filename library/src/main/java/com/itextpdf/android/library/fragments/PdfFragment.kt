@@ -399,7 +399,7 @@ open class PdfFragment : Fragment() {
                     x = 100f,
                     y = 100f,
                     bubbleSize = 30f,
-                    bubbleColor = primaryColor ?: PdfFragment.DEFAULT_PRIMARY_COLOR
+                    bubbleColor = primaryColor ?: DEFAULT_PRIMARY_COLOR
                 )
 
                 setupPdfView(destPdfFile.toUri())
@@ -546,6 +546,12 @@ open class PdfFragment : Fragment() {
             }
             .onPageChange { page, _ ->
                 currentPageIndex = page
+            }
+            .onTap { event ->
+                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                    Log.i("#####", "x: ${event.x}, y: ${event.y}, page: $currentPageIndex")
+                }
+                true
             }
             .onLoad {
                 setupThumbnailNavigationView()

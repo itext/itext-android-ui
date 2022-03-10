@@ -8,6 +8,7 @@ import com.itextpdf.android.library.Constants
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfReader
 import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.kernel.pdf.StampingProperties
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -50,7 +51,10 @@ fun Context.getFileName(uri: Uri): String? {
  *                  which only allows the calling application to access the file.
  * @return  the pdf document in writing mode
  */
-fun Context.pdfDocumentInWritingMode(fileName: String, mode: Int = Context.MODE_PRIVATE): PdfDocument? {
+fun Context.pdfDocumentInWritingMode(
+    fileName: String,
+    mode: Int = Context.MODE_PRIVATE
+): PdfDocument? {
     return try {
         val output = openFileOutput(fileName, mode)
         PdfDocument(PdfWriter(output))
@@ -108,7 +112,10 @@ fun Context.pdfDocumentInStampingMode(srcUri: Uri, destFile: File): PdfDocument?
     val inputStream = contentResolver.openInputStream(srcUri)
     return try {
         val outputStream = FileOutputStream(destFile)
-        PdfDocument(PdfReader(inputStream), PdfWriter(outputStream))
+        PdfDocument(
+            PdfReader(inputStream),
+            PdfWriter(outputStream)
+        )
     } catch (e: Exception) {
         e.printStackTrace()
         null
