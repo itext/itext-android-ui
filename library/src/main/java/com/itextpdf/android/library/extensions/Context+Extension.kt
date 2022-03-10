@@ -109,7 +109,7 @@ fun Context.pdfDocumentInStampingMode(srcUri: Uri, destFile: File): PdfDocument?
     return try {
         val outputStream = FileOutputStream(destFile)
         PdfDocument(PdfReader(inputStream), PdfWriter(outputStream))
-    } catch (e: FileNotFoundException) {
+    } catch (e: Exception) {
         e.printStackTrace()
         null
     } finally {
