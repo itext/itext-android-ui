@@ -18,7 +18,9 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
@@ -43,6 +45,7 @@ import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import java.io.File
+import java.lang.reflect.Method
 
 
 /**
@@ -210,6 +213,51 @@ open class PdfFragment : Fragment() {
             }
         }
         return binding.root
+    }
+
+    private fun showAnnotationContextMenu(
+        v: View,
+        @MenuRes menuRes: Int,
+        annotation: PdfTextAnnotation
+    ) {
+        val popup = PopupMenu(requireContext(), v)
+        popup.menuInflater.inflate(menuRes, popup.menu)
+
+        enableAnnotationContextMenuIcons(popup)
+
+        popup.setOnMenuItemClickListener { item: MenuItem? ->
+            when (item!!.itemId) {
+                R.id.optionEdit -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "TODO: " + item.title + " -> " + annotation.contents.value,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                R.id.optionDelete -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "TODO: " + item.title + " -> " + annotation.contents.value,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            true
+        }
+        popup.show()
+    }
+
+    private fun enableAnnotationContextMenuIcons(popup: PopupMenu) {
+        try {
+            val method: Method = popup.menu.javaClass.getDeclaredMethod(
+                "setOptionalIconsVisible",
+                Boolean::class.javaPrimitiveType
+            )
+            method.isAccessible = true
+            method.invoke(popup.menu, true)
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun setParamsFromBundle(bundle: Bundle?) {
@@ -511,6 +559,22 @@ open class PdfFragment : Fragment() {
         }
     }
 
+    override fun onCreateContextMenu(
+        menu: ContextMenu,
+        v: View,
+        menuInfo: ContextMenu.ContextMenuInfo?
+    ) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        menu.setHeaderTitle("Context Menu")
+        menu.add(0, v.id, 0, "Upload")
+        menu.add(0, v.id, 0, "Search")
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        Toast.makeText(requireContext(), "Selected Item: " + item.title, Toast.LENGTH_SHORT).show()
+        return true
+    }
+
     private fun setupAnnotationView() {
         pdfUri?.let { uri ->
             requireContext().pdfDocumentInReadingMode(uri)?.let { pdfDocument ->
@@ -531,7 +595,11 @@ open class PdfFragment : Fragment() {
                                     title,
                                     text
                                 ) {
-                                    Log.i("####", "Annotation options selected!")
+                                    showAnnotationContextMenu(
+                                        it,
+                                        R.menu.popup_menu_annotation,
+                                        annotation
+                                    )
                                 })
                         }
                     }

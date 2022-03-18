@@ -27,7 +27,7 @@ class AnnotationsViewHolder(view: View): RecyclerView.ViewHolder(view) {
         tvText.text = item.text
 
         ivMore.setOnClickListener {
-            item.action()
+            item.action(it)
         }
     }
 }
@@ -40,5 +40,5 @@ class AnnotationsViewHolder(view: View): RecyclerView.ViewHolder(view) {
 data class AnnotationRecyclerItem(
     val title: String?,
     val text: String?,
-    val action: () -> Unit
+    val action: (View) -> (Unit)
 )
