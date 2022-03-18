@@ -18,6 +18,37 @@
         app:layout_constraintTop_toTopOf="parent"
         android:background="@color/medium_grey" />
 
+    <LinearLayout
+        android:id="@+id/llNoAnnotations"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="58dp"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/topSeparator"
+        app:layout_constraintBottom_toBottomOf="parent" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:text="@string/no_annotations_title"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textStyle="normal"
+            android:text="@string/no_annotations_description"/>
+    </LinearLayout>
+
+
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvAnnotations"
         android:layout_width="match_parent"

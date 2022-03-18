@@ -10,4 +10,6 @@
     <string name="highlight_text">Highlight text</string>
     <string name="add_annotation">Add annotation</string>
     <string name="annotation_hint">Add a note</string>
+    <string name="no_annotations_title">This file doesn\'t have any annotations.</string>
+    <string name="no_annotations_description">You can add one by long-pressing the pdf document at the location where you want to add the annotation to.</string>
 </resources>

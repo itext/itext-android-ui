@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -258,6 +259,16 @@ open class PdfFragment : Fragment() {
         if (pdfiumPdfDocument != null) {
             pdfiumCore.closeDocument(pdfiumPdfDocument)
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        showKeyboard(false)
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        setAnnotationTextViewVisibility(false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -510,18 +521,28 @@ open class PdfFragment : Fragment() {
                     for (annotation in annotations) {
                         if (annotation is PdfTextAnnotation) {
                             textAnnotations.add(annotation)
-                            val title = if (annotation.title != null) annotation.title.value else null
-                            val text = if (annotation.contents != null) annotation.contents.value else null
+                            val title =
+                                if (annotation.title != null) annotation.title.value else null
+                            val text =
+                                if (annotation.contents != null) annotation.contents.value else null
 
                             data.add(
-                            AnnotationRecyclerItem(
-                                title,
-                                text
-                            ) {
-                                Log.i("####", "Annotation options selected!")
-                            })
+                                AnnotationRecyclerItem(
+                                    title,
+                                    text
+                                ) {
+                                    Log.i("####", "Annotation options selected!")
+                                })
                         }
                     }
+                }
+
+                if (textAnnotations.size > 0) {
+                    binding.includedBottomSheetAnnotations.rvAnnotations.visibility = VISIBLE
+                    binding.includedBottomSheetAnnotations.llNoAnnotations.visibility = GONE
+                } else {
+                    binding.includedBottomSheetAnnotations.rvAnnotations.visibility = GONE
+                    binding.includedBottomSheetAnnotations.llNoAnnotations.visibility = VISIBLE
                 }
 
                 annotationAdapter = AnnotationsAdapter(data, primaryColor, secondaryColor)
@@ -643,6 +664,18 @@ open class PdfFragment : Fragment() {
             .show()
     }
 
+    private fun showKeyboard(show: Boolean) {
+        val imm =
+            requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        if (show) {
+            imm?.showSoftInput(binding.etTextAnnotation, InputMethodManager.SHOW_FORCED)
+        } else {
+            requireActivity().currentFocus?.let { view ->
+                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+            }
+        }
+    }
+
     /**
      * Opens the split document view for the currently visible pdf document
      */
@@ -714,10 +747,12 @@ open class PdfFragment : Fragment() {
             setAnnotationTextViewVisibility(false)
             scrollThumbnailNavigationViewToPage(getCurrentItemPosition())
         }
-        val updatedState =
-            if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
-        navigateBottomSheetBehavior.state = updatedState
-        navViewOpen = isVisible
+        view?.postDelayed({
+            val updatedState =
+                if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
+            navigateBottomSheetBehavior.state = updatedState
+            navViewOpen = isVisible
+        }, OPEN_BOTTOM_SHEET_DELAY_MS)
     }
 
     /**
@@ -730,9 +765,11 @@ open class PdfFragment : Fragment() {
             setThumbnailNavigationViewVisibility(false)
             setAnnotationTextViewVisibility(false)
         }
-        val updatedState =
-            if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
-        annotationsBottomSheetBehavior.state = updatedState
+        view?.postDelayed({
+            val updatedState =
+                if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
+            annotationsBottomSheetBehavior.state = updatedState
+        }, OPEN_BOTTOM_SHEET_DELAY_MS)
     }
 
     /**
@@ -744,15 +781,9 @@ open class PdfFragment : Fragment() {
         if (isVisible) {
             setThumbnailNavigationViewVisibility(false)
             setAnnotationsViewVisibility(false)
-        } else {
-            //TODO: this also closes other bottomsheet (e.g. navView) which actually should be opened
-            // hide keyboard
-//            requireActivity().currentFocus?.let { view ->
-//                val imm =
-//                    requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-//                imm?.hideSoftInputFromWindow(view.windowToken, 0)
-//            }
+            binding.etTextAnnotation.requestFocus()
         }
+        showKeyboard(isVisible)
         binding.clAnnotationInput.visibility = if (isVisible) VISIBLE else GONE
     }
 
@@ -802,6 +833,8 @@ open class PdfFragment : Fragment() {
     companion object {
         const val TAG = "PdfFragment"
 
+        private const val OPEN_BOTTOM_SHEET_DELAY_MS = 200L
+
         private const val CURRENT_PAGE = "CURRENT_PAGE"
         private const val FILE_NAME = "FILE_NAME"
         private const val PDF_URI = "PDF_URI"
@@ -812,7 +845,8 @@ open class PdfFragment : Fragment() {
         private const val ENABLE_ANNOTATION_RENDERING = "ENABLE_ANNOTATION_RENDERING"
         private const val ENABLE_DOUBLE_TAP_ZOOM = "ENABLE_DOUBLE_TAP_ZOOM"
         private const val SHOW_SCROLL_INDICATOR = "SHOW_SCROLL_INDICATOR"
-        private const val SHOW_SCROLL_INDICATOR_PAGE_NUMBER = "SHOW_SCROLL_INDICATOR_PAGE_NUMBER"
+        private const val SHOW_SCROLL_INDICATOR_PAGE_NUMBER =
+            "SHOW_SCROLL_INDICATOR_PAGE_NUMBER"
         private const val PRIMARY_COLOR = "PRIMARY_COLOR"
         private const val SECONDARY_COLOR = "SECONDARY_COLOR"
         private const val BACKGROUND_COLOR = "BACKGROUND_COLOR"
@@ -891,7 +925,10 @@ open class PdfFragment : Fragment() {
             if (showScrollIndicator != null)
                 args.putBoolean(SHOW_SCROLL_INDICATOR, showScrollIndicator)
             if (showScrollIndicatorPageNumber != null)
-                args.putBoolean(SHOW_SCROLL_INDICATOR_PAGE_NUMBER, showScrollIndicatorPageNumber)
+                args.putBoolean(
+                    SHOW_SCROLL_INDICATOR_PAGE_NUMBER,
+                    showScrollIndicatorPageNumber
+                )
             args.putString(PRIMARY_COLOR, primaryColor)
             args.putString(SECONDARY_COLOR, secondaryColor)
             args.putString(BACKGROUND_COLOR, backgroundColor)
