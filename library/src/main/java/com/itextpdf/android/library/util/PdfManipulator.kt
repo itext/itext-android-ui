@@ -9,6 +9,7 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import com.itextpdf.android.library.R
+import com.itextpdf.android.library.extensions.isSameAs
 import com.itextpdf.android.library.extensions.pdfDocumentInReadingMode
 import com.itextpdf.android.library.extensions.pdfDocumentInStampingMode
 import com.itextpdf.io.image.ImageDataFactory
@@ -257,6 +258,25 @@ object PdfManipulator {
 //                .setFlags(PdfAnnotation.PRINT)
 //                .setBorder(PdfArray(floatArrayOf(0f, 0f, 2f))) // Set the interior color
 //                .put(PdfName.IC, PdfArray(intArrayOf(1, 0, 0)))
+        }
+    }
+
+    fun removeAnnotationFromPdf(
+        context: Context,
+        fileUri: Uri,
+        destinationFile: File,
+        pageNumber: Int,
+        annotation: PdfTextAnnotation
+    ) {
+        val pdfDocument = context.pdfDocumentInStampingMode(fileUri, destinationFile)
+        pdfDocument?.let { pdfDoc ->
+            val page = pdfDoc.getPage(pageNumber)
+            for (ann in page.annotations) {
+                if (annotation.isSameAs(ann)) {
+                    page.removeAnnotation(ann)
+                }
+            }
+            pdfDoc.close()
         }
     }
 

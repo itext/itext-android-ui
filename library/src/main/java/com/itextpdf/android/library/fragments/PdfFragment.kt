@@ -240,6 +240,7 @@ open class PdfFragment : Fragment() {
                         "TODO: " + item.title + " -> " + annotation.contents.value,
                         Toast.LENGTH_SHORT
                     ).show()
+                    removeAnnotation(annotation)
                 }
             }
             true
@@ -491,6 +492,23 @@ open class PdfFragment : Fragment() {
             )
 
             cleanupAndReload(destPdfFile)
+        }
+    }
+
+    private fun removeAnnotation(annotation: PdfTextAnnotation) {
+        pdfUri?.let {
+            val originalFile = File(it.path)
+            val storageFolderPath =
+                (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
+            val destPdfFile = File("$storageFolderPath/a_${originalFile.name}")
+
+            PdfManipulator.removeAnnotationFromPdf(
+                context = requireContext(),
+                fileUri = it,
+                destinationFile = destPdfFile,
+                pageNumber = currentPageIndex + 1,
+                annotation
+            )
         }
     }
 
