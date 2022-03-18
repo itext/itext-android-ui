@@ -2,7 +2,6 @@ package com.itextpdf.android.library.fragments
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface.OnShowListener
 import android.content.res.ColorStateList
 import android.content.res.TypedArray
 import android.graphics.*
@@ -17,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toFile
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -237,7 +237,20 @@ open class SplitDocumentFragment : Fragment() {
         if (::binding.isInitialized) {
             (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbSplitDocumentFragment)
             binding.tbSplitDocumentFragment.setNavigationIcon(R.drawable.ic_close)
-            binding.tbSplitDocumentFragment.setNavigationOnClickListener { requireActivity().onBackPressed() }
+            binding.tbSplitDocumentFragment.setNavigationOnClickListener {
+                val fragmentManager = requireActivity().supportFragmentManager
+                val pdfFragment = fragmentManager.findFragmentByTag(PdfFragment.TAG)
+                // if pdfFragment can be found, show it again, else close activity
+                if (pdfFragment != null) {
+                    val fragmentTransaction: FragmentTransaction =
+                        fragmentManager.beginTransaction()
+                    fragmentTransaction.remove(this)
+                    fragmentTransaction.show(pdfFragment)
+                    fragmentTransaction.commit()
+                } else {
+                    requireActivity().onBackPressed()
+                }
+            }
         }
     }
 
