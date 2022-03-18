@@ -29,6 +29,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 
+
 object PdfManipulator {
 
     /**
@@ -194,7 +195,7 @@ object PdfManipulator {
         context: Context,
         fileUri: Uri,
         destinationFile: File,
-        title: String,
+        title: String?,
         text: String,
         pageNumber: Int,
         x: Float,
@@ -207,9 +208,12 @@ object PdfManipulator {
             val appearance = getCommentAppearance(context, pdfDoc, bubbleColor, bubbleSize)
             val ann: PdfAnnotation =
                 PdfTextAnnotation(Rectangle(x, y, bubbleSize, bubbleSize))
-                    .setTitle(PdfString(title))
                     .setContents(text)
                     .setNormalAppearance(appearance?.pdfObject)
+
+            if (title != null) {
+                ann.title = PdfString(title)
+            }
 
             pdfDoc.getPage(pageNumber).addAnnotation(ann)
             pdfDoc.close()
@@ -263,7 +267,11 @@ object PdfManipulator {
         bubbleSize: Float
     ): PdfFormXObject? {
         var commentXObj: PdfFormXObject? = null
-        val d = AppCompatResources.getDrawable(context, R.drawable.ic_annotation)
+
+        val d = AppCompatResources.getDrawable(
+            context,
+            R.drawable.ic_annotation
+        )?.constantState?.newDrawable()?.mutate()
         if (d != null) {
             val imageSize = bubbleSize * 3
 

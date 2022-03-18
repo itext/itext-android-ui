@@ -20,7 +20,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toFile
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.setFragmentResultListener
@@ -151,6 +150,7 @@ open class PdfFragment : Fragment() {
     private var currentPageIndex = 0
 
     private var textAnnotations = mutableListOf<PdfTextAnnotation>()
+    private var annotationLongPressEvent: MotionEvent? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -198,6 +198,15 @@ open class PdfFragment : Fragment() {
             }
             // close SplitDocumentFragment to show PdfFragment again
             closeSplitDocumentView()
+        }
+
+        binding.btnSaveAnnotation.setOnClickListener {
+            annotationLongPressEvent?.let {
+                val annotationText = binding.etTextAnnotation.text.toString()
+                createAnnotation(null, annotationText, it)
+                setAnnotationTextViewVisibility(false)
+                binding.etTextAnnotation.text.clear()
+            }
         }
         return binding.root
     }
@@ -358,7 +367,7 @@ open class PdfFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_pdf_fragment, menu)
         menu.getItem(0).isVisible = enableThumbnailNavigationView
-        menu.getItem(1).isVisible = true //TODO: highlight
+        menu.getItem(1).isVisible = false //TODO: highlight
         menu.getItem(2).isVisible = true //TODO: annotate
         menu.getItem(3).isVisible = enableSplitView
         super.onCreateOptionsMenu(menu, inflater)
@@ -381,29 +390,6 @@ open class PdfFragment : Fragment() {
 //            writePdf(newOutput)
 //
 //            setupPdfView(pdfFile.toUri())
-
-            //TODO: create dummy annotation
-            pdfUri?.let {
-                val annotationTestFile = "annotation_test.pdf"
-                val storageFolderPath =
-                    (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
-                val destPdfFile = File("$storageFolderPath/${annotationTestFile}")
-
-                PdfManipulator.addTextAnnotationToPdf(
-                    context = requireContext(),
-                    fileUri = it,
-                    destinationFile = destPdfFile,
-                    title = "Test Annotation",
-                    text = "This is my very first test annotation",
-                    pageNumber = currentPageIndex + 1,
-                    x = 100f,
-                    y = 100f,
-                    bubbleSize = 30f,
-                    bubbleColor = primaryColor ?: DEFAULT_PRIMARY_COLOR
-                )
-
-                setupPdfView(destPdfFile.toUri())
-            }
             true
         }
         R.id.action_annotations -> {
@@ -417,6 +403,67 @@ open class PdfFragment : Fragment() {
         }
         else -> {
             super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun createAnnotation(title: String?, text: String, motionEvent: MotionEvent) {
+        pdfUri?.let {
+            val annotationTestFile = "annotation_test.pdf"
+            val originalFile = File(it.path)
+            val storageFolderPath =
+                (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
+            val destPdfFile = File("$storageFolderPath/a_${originalFile.name}")
+
+            //TODO: get pdf page coordinates (for now create dummy coordinates)
+            val x = (100..300).random().toFloat() // generated random from 0 to 10 included
+            val y = (100..600).random().toFloat() // generated random from 0 to 10 included
+
+            PdfManipulator.addTextAnnotationToPdf(
+                context = requireContext(),
+                fileUri = it,
+                destinationFile = destPdfFile,
+                title = title,
+                text = text,
+                pageNumber = currentPageIndex + 1,
+                x = x,
+                y = y,
+                bubbleSize = 30f,
+                bubbleColor = primaryColor ?: DEFAULT_PRIMARY_COLOR
+            )
+
+            cleanupAndReload(destPdfFile)
+        }
+    }
+
+    private fun cleanupAndReload(destPdfFile: File) {
+        pdfUri?.let { uri ->
+            // delete original file
+            //TODO: NOT WORKING: delete test 1
+//            requireContext().contentResolver.delete(uri, null, null)
+
+            //TODO: NOT WORKING: delete test 2
+//            val file: File = File(uri.path)
+//            file.delete()
+//            if (file.exists()) {
+//                file.canonicalFile.delete()
+//                if (file.exists()) {
+//                    requireContext().deleteFile(file.name)
+//                }
+//            }
+
+
+            //TODO: ALSO NOT WORKING
+//            // rename file to old file name
+//            val latestname = File(uri.path)
+//
+//            Log.i("######", "old: ${destPdfFile.path}")
+//            Log.i("######", "new: ${latestname.path}")
+//
+//            val success = destPdfFile.renameTo(latestname)
+//
+//            if (success) println("file is renamed..")
+
+            setupPdfView(uri)
         }
     }
 
@@ -463,13 +510,16 @@ open class PdfFragment : Fragment() {
                     for (annotation in annotations) {
                         if (annotation is PdfTextAnnotation) {
                             textAnnotations.add(annotation)
+                            val title = if (annotation.title != null) annotation.title.value else null
+                            val text = if (annotation.contents != null) annotation.contents.value else null
+
                             data.add(
-                                AnnotationRecyclerItem(
-                                    annotation.title.value,
-                                    annotation.contents.value
-                                ) {
-                                    Log.i("####", "Annotation options selected!")
-                                })
+                            AnnotationRecyclerItem(
+                                title,
+                                text
+                            ) {
+                                Log.i("####", "Annotation options selected!")
+                            })
                         }
                     }
                 }
@@ -551,7 +601,12 @@ open class PdfFragment : Fragment() {
                 if (event.actionMasked == MotionEvent.ACTION_DOWN) {
                     Log.i("#####", "x: ${event.x}, y: ${event.y}, page: $currentPageIndex")
                 }
+                setAnnotationTextViewVisibility(false)
                 true
+            }
+            .onLongPress { event ->
+                annotationLongPressEvent = event
+                setAnnotationTextViewVisibility(true)
             }
             .onLoad {
                 setupThumbnailNavigationView()
@@ -642,6 +697,13 @@ open class PdfFragment : Fragment() {
     }
 
     /**
+     * Toggles the visibility state of the annotation text view
+     */
+    open fun toggleAnnotationTextViewVisibility() {
+        setAnnotationTextViewVisibility(binding.clAnnotationInput.visibility == GONE)
+    }
+
+    /**
      * Sets the visibility state of the thumbnail navigation view
      *
      * @param isVisible True when the view should be visible, false if it shouldn't.
@@ -649,6 +711,7 @@ open class PdfFragment : Fragment() {
     open fun setThumbnailNavigationViewVisibility(isVisible: Boolean) {
         if (isVisible) {
             setAnnotationsViewVisibility(false)
+            setAnnotationTextViewVisibility(false)
             scrollThumbnailNavigationViewToPage(getCurrentItemPosition())
         }
         val updatedState =
@@ -665,10 +728,32 @@ open class PdfFragment : Fragment() {
     open fun setAnnotationsViewVisibility(isVisible: Boolean) {
         if (isVisible) {
             setThumbnailNavigationViewVisibility(false)
+            setAnnotationTextViewVisibility(false)
         }
         val updatedState =
             if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
         annotationsBottomSheetBehavior.state = updatedState
+    }
+
+    /**
+     * Sets the visibility state of the annotation text view
+     *
+     * @param isVisible True when the view should be visible, false if it shouldn't.
+     */
+    open fun setAnnotationTextViewVisibility(isVisible: Boolean) {
+        if (isVisible) {
+            setThumbnailNavigationViewVisibility(false)
+            setAnnotationsViewVisibility(false)
+        } else {
+            //TODO: this also closes other bottomsheet (e.g. navView) which actually should be opened
+            // hide keyboard
+//            requireActivity().currentFocus?.let { view ->
+//                val imm =
+//                    requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+//                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+//            }
+        }
+        binding.clAnnotationInput.visibility = if (isVisible) VISIBLE else GONE
     }
 
     /**

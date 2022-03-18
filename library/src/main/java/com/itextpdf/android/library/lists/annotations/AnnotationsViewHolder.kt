@@ -38,7 +38,7 @@ class AnnotationsViewHolder(view: View): RecyclerView.ViewHolder(view) {
  * @property action the action that should happen when the item is clicked
  */
 data class AnnotationRecyclerItem(
-    val title: String,
-    val text: String,
+    val title: String?,
+    val text: String?,
     val action: () -> Unit
 )
