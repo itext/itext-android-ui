@@ -1,29 +1,5 @@
-//dependencyResolutionManagement {
-//    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-//
-//    buildscript {
-//        repositories {
-//            google()
-//            mavenCentral()
-//        }
-//    }
-//
-//    repositories {
-//        google()
-//        mavenCentral()
-//        jcenter()
-//        maven {
-//            url "https://repo.itextsupport.com/snapshot"
-//        }
-////        maven { url 'https://jitpack.io' }
-//    }
-// }
 rootProject.name = "iTextPDF"
 include ':app'
 include ':library'
-
 include ':android-pdf-viewer'
-project(':android-pdf-viewer').projectDir= new File('../AndroidPdfViewer/android-pdf-viewer')
-
 include ':android-pdfium'
-project(':android-pdfium').projectDir= new File('../PdfiumAndroid')

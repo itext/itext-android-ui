@@ -11,9 +11,9 @@
         <option name="gradleJvm" value="11" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/../AndroidPdfViewer/android-pdf-viewer" />
-            <option value="$PROJECT_DIR$/../PdfiumAndroid" />
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/android-pdf-viewer" />
+            <option value="$PROJECT_DIR$/android-pdfium" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/library" />
           </set>
