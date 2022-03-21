@@ -42,7 +42,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
+            minifyEnabled false
             testCoverageEnabled = true
+        }
+        innerTest {
+            matchingFallbacks = ['debug', 'release']
         }
     }
     compileOptions {
@@ -63,12 +67,16 @@ dependencies {
     // PDF
     //TODO: for some reason v7.2.0 not working with android
     // https://mvnrepository.com/artifact/com.itextpdf/kernel
-    implementation("com.itextpdf:kernel:7.2.2-SNAPSHOT")
+    api("com.itextpdf:kernel:7.2.2-SNAPSHOT")
     // https://mvnrepository.com/artifact/com.itextpdf/layout
-    implementation("com.itextpdf:layout:7.2.2-SNAPSHOT")
-    implementation("com.itextpdf:io:7.2.2-SNAPSHOT")
+    api("com.itextpdf:layout:7.2.2-SNAPSHOT")
+    api("com.itextpdf:io:7.2.2-SNAPSHOT")
 
-    implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
+//    implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
+//    implementation 'com.github.Lucasq95:AndroidPdfViewer:4.9.12'
+//    implementation 'com.github.ahoikapptn-dev:AndroidPdfViewer:master-SNAPSHOT'
+//    implementation 'com.github.barteksc:AndroidPdfViewer:master-SNAPSHOT'
+    implementation project(path: ':android-pdf-viewer')
 
     // Android X
     implementation 'androidx.core:core-ktx:1.7.0'

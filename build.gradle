@@ -4,9 +4,6 @@ buildscript {
         google()
         mavenCentral()
         jcenter()
-        maven {
-            url "https://repo.itextsupport.com/snapshot"
-        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.1.2'
@@ -16,6 +13,18 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+
+        maven {
+            url "https://repo.itextsupport.com/snapshot"
+        }
+    }
+}
+
 
 task clean(type: Delete) {
     delete rootProject.buildDir

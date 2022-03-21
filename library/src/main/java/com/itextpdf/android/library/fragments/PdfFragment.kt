@@ -3,10 +3,7 @@ package com.itextpdf.android.library.fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.res.TypedArray
-import android.graphics.BlendMode
-import android.graphics.BlendModeColorFilter
-import android.graphics.Color
-import android.graphics.PorterDuff
+import android.graphics.*
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -29,6 +26,7 @@ import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.barteksc.pdfviewer.PDFView
 import com.github.barteksc.pdfviewer.link.DefaultLinkHandler
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
@@ -44,6 +42,7 @@ import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
+import com.shockwave.pdfium.util.SizeF
 import java.io.File
 import java.lang.reflect.Method
 
@@ -466,32 +465,34 @@ open class PdfFragment : Fragment() {
         }
     }
 
+    private var lastTappedPosition: PointF? = null
+
     private fun createAnnotation(title: String?, text: String, motionEvent: MotionEvent) {
-        pdfUri?.let {
+        pdfUri?.let { uri ->
+
+            val position = convertScreenPointToPdfPagePoint(motionEvent, binding.pdfView) ?: return
+
             val annotationTestFile = "annotation_test.pdf"
-            val originalFile = File(it.path)
+            val originalFile = File(uri.path)
             val storageFolderPath =
                 (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
             val destPdfFile = File("$storageFolderPath/a_${originalFile.name}")
 
-            //TODO: get pdf page coordinates (for now create dummy coordinates)
-            val x = (100..300).random().toFloat() // generated random from 0 to 10 included
-            val y = (100..600).random().toFloat() // generated random from 0 to 10 included
-
             PdfManipulator.addTextAnnotationToPdf(
                 context = requireContext(),
-                fileUri = it,
+                fileUri = uri,
                 destinationFile = destPdfFile,
                 title = title,
                 text = text,
                 pageNumber = currentPageIndex + 1,
-                x = x,
-                y = y,
+                x = position.x,
+                y = position.y,
                 bubbleSize = 30f,
                 bubbleColor = primaryColor ?: DEFAULT_PRIMARY_COLOR
             )
 
             cleanupAndReload(destPdfFile)
+
         }
     }
 
@@ -705,8 +706,10 @@ open class PdfFragment : Fragment() {
                 currentPageIndex = page
             }
             .onTap { event ->
+                lastTappedPosition = convertScreenPointToPdfPagePoint(event, binding.pdfView)
                 if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                    Log.i("#####", "x: ${event.x}, y: ${event.y}, page: $currentPageIndex")
+                    Log.i("#####", "screen x: ${event.x}, y: ${event.y}, page: $currentPageIndex")
+                    Log.i("#####", "page x: ${event.x}, y: ${event.y}, page: $currentPageIndex")
                 }
                 setAnnotationTextViewVisibility(false)
                 true
@@ -760,6 +763,41 @@ open class PdfFragment : Fragment() {
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
         }
+    }
+
+    open fun startAnnotationPositionMode() {
+
+    }
+
+    fun convertScreenPointToPdfPagePoint(e: MotionEvent, pdfView: PDFView): PointF? {
+        val x = e.x
+        val y = e.y
+
+        val pdfFile = pdfView.pdfFile ?: return null
+        val mappedX = -pdfView.currentXOffset + x
+        val mappedY = -pdfView.currentYOffset + y
+        val page =
+            pdfFile.getPageAtOffset(if (pdfView.isSwipeVertical) mappedY else mappedX, pdfView.zoom)
+        val pageSize: SizeF = pdfFile.getScaledPageSize(page, pdfView.zoom)
+        val pageX: Int
+        val pageY: Int
+        if (pdfView.isSwipeVertical) {
+            pageX = pdfFile.getSecondaryPageOffset(page, pdfView.zoom).toInt()
+            pageY = pdfFile.getPageOffset(page, pdfView.zoom).toInt()
+        } else {
+            pageY = pdfFile.getSecondaryPageOffset(page, pdfView.zoom).toInt()
+            pageX = pdfFile.getPageOffset(page, pdfView.zoom).toInt()
+        }
+        return pdfFile.mapDeviceCoordsToPage(
+            page,
+            pageX,
+            pageY,
+            pageSize.width.toInt(),
+            pageSize.height.toInt(),
+            0, //TODO: use real rotation
+            mappedX.toInt(),
+            mappedY.toInt()
+        )
     }
 
     /**
