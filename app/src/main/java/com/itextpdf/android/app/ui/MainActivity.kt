@@ -25,6 +25,7 @@ import com.itextpdf.android.library.views.PdfThumbnailView
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val fileUtil = FileUtil.getInstance()
 
     /**
      * An ActivityResultLauncher<Intent> object that is used to launch the selectPdfIntent to select a
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         // prepare pre-defined pdf files from the assets folder to display them in a recyclerView
         val data = mutableListOf<PdfRecyclerItem>()
         pdfFileNames.forEachIndexed { i, fileName ->
-            val file = FileUtil.loadFileFromAssets(this, fileName)
+            val file = fileUtil.loadFileFromAssets(this, fileName)
             val uri = Uri.fromFile(file)
 
             data.add(PdfItem(pdfTitles[i], fileName, pdfDescriptions[i], uri) {

@@ -43,8 +43,6 @@ import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import com.shockwave.pdfium.util.SizeF
-import java.io.File
-import java.io.FileOutputStream
 import java.lang.reflect.Method
 
 
@@ -470,19 +468,10 @@ open class PdfFragment : Fragment() {
 
     private fun createAnnotation(title: String?, text: String, motionEvent: MotionEvent) {
         pdfUri?.let { uri ->
-
             val position = convertScreenPointToPdfPagePoint(motionEvent, binding.pdfView) ?: return
-
-            val annotationTestFile = "annotation_test.pdf"
-            val originalFile = File(uri.path)
-            val storageFolderPath =
-                (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
-            val destPdfFile = File("$storageFolderPath/a_${originalFile.name}")
-
-            val resultFile = PdfManipulator.addTextAnnotationToPdf(
+            val resultingFile = PdfManipulator.addTextAnnotationToPdf(
                 context = requireContext(),
                 fileUri = uri,
-                destinationFile = destPdfFile,
                 title = title,
                 text = text,
                 pageNumber = currentPageIndex + 1,
@@ -491,64 +480,19 @@ open class PdfFragment : Fragment() {
                 bubbleSize = 30f,
                 bubbleColor = primaryColor ?: DEFAULT_PRIMARY_COLOR
             )
-
-            FileOutputStream(originalFile, false).use { overWrite ->
-                overWrite.write(resultFile.readBytes())
-                overWrite.flush()
-            }
-
-            setupPdfView(Uri.fromFile(originalFile))
-//            cleanupAndReload(destPdfFile)
-
+            setupPdfView(Uri.fromFile(resultingFile))
         }
     }
 
     private fun removeAnnotation(annotation: PdfTextAnnotation) {
         pdfUri?.let {
-            val originalFile = File(it.path)
-            val storageFolderPath =
-                (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
-            val destPdfFile = File("$storageFolderPath/a_${originalFile.name}")
-
-            PdfManipulator.removeAnnotationFromPdf(
+            val resultingFile = PdfManipulator.removeAnnotationFromPdf(
                 context = requireContext(),
                 fileUri = it,
-                destinationFile = destPdfFile,
                 pageNumber = currentPageIndex + 1,
                 annotation
             )
-        }
-    }
-
-    private fun cleanupAndReload(destPdfFile: File) {
-        pdfUri?.let { uri ->
-            // delete original file
-            //TODO: NOT WORKING: delete test 1
-//            requireContext().contentResolver.delete(uri, null, null)
-
-            //TODO: NOT WORKING: delete test 2
-//            val file: File = File(uri.path)
-//            file.delete()
-//            if (file.exists()) {
-//                file.canonicalFile.delete()
-//                if (file.exists()) {
-//                    requireContext().deleteFile(file.name)
-//                }
-//            }
-
-
-            //TODO: ALSO NOT WORKING
-//            // rename file to old file name
-//            val latestname = File(uri.path)
-//
-//            Log.i("######", "old: ${destPdfFile.path}")
-//            Log.i("######", "new: ${latestname.path}")
-//
-//            val success = destPdfFile.renameTo(latestname)
-//
-//            if (success) println("file is renamed..")
-
-            setupPdfView(uri)
+            setupPdfView(Uri.fromFile(resultingFile))
         }
     }
 

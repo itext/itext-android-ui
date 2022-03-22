@@ -7,7 +7,6 @@ import android.net.Uri
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.toBitmap
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.isSameAs
@@ -33,6 +32,8 @@ import java.io.FileOutputStream
 
 
 object PdfManipulator {
+
+    private val fileUtil = FileUtil.getInstance()
 
     /**
      * Splits the pdf file at the given uri and creates a new document with the selected page indices and another one for the unselected indices.
@@ -196,7 +197,6 @@ object PdfManipulator {
     fun addTextAnnotationToPdf(
         context: Context,
         fileUri: Uri,
-        destinationFile: File,
         title: String?,
         text: String,
         pageNumber: Int,
@@ -205,8 +205,8 @@ object PdfManipulator {
         bubbleSize: Float,
         bubbleColor: String
     ): File {
-
-        val resultingFile: File = context.pdfDocumentInStampingMode(fileUri, destinationFile)
+        val tempFile = fileUtil.createTempCopy(context, File(fileUri.path))
+        val resultingFile: File = context.pdfDocumentInStampingMode(fileUri, tempFile)
             .use { pdfDoc ->
 
                 val appearance = getCommentAppearance(context, pdfDoc, bubbleColor, bubbleSize)
@@ -222,12 +222,10 @@ object PdfManipulator {
                 pdfDoc.getPage(pageNumber).addAnnotation(annotation)
                 pdfDoc.close()
 
-                destinationFile
+                tempFile
             }
 
-        fileUri.toFile()
-
-        return resultingFile
+        return fileUtil.overrideFile(resultingFile, fileUri)
 
 //            val page: PdfPage = pdfDoc.firstPage
 //            val sticky = page.annotations[0]
@@ -274,20 +272,22 @@ object PdfManipulator {
     fun removeAnnotationFromPdf(
         context: Context,
         fileUri: Uri,
-        destinationFile: File,
         pageNumber: Int,
         annotation: PdfTextAnnotation
-    ) {
-        val pdfDocument = context.pdfDocumentInStampingMode(fileUri, destinationFile)
-        pdfDocument?.let { pdfDoc ->
-            val page = pdfDoc.getPage(pageNumber)
-            for (ann in page.annotations) {
-                if (annotation.isSameAs(ann)) {
-                    page.removeAnnotation(ann)
+    ): File {
+        val tempFile = fileUtil.createTempCopy(context, File(fileUri.path))
+        val resultingFile: File =
+            context.pdfDocumentInStampingMode(fileUri, tempFile).use { pdfDocument ->
+                val page = pdfDocument.getPage(pageNumber)
+                for (ann in page.annotations) {
+                    if (annotation.isSameAs(ann)) {
+                        page.removeAnnotation(ann)
+                    }
                 }
+                tempFile
             }
-            pdfDoc.close()
-        }
+
+        return fileUtil.overrideFile(resultingFile, fileUri)
     }
 
     private fun getCommentAppearance(
