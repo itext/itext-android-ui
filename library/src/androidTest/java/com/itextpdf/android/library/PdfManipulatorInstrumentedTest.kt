@@ -21,7 +21,7 @@ class PdfManipulatorInstrumentedTest {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val fileName = "sample_3.pdf"
-        val file = FileUtil.loadFileFromAssets(appContext, fileName)
+        val file = FileUtil.getInstance().loadFileFromAssets(appContext, fileName)
         val uri = Uri.fromFile(file)
         val pdfFile = appContext.pdfDocumentInReadingMode(uri)!!
 
