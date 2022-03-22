@@ -152,7 +152,7 @@ open class PdfFragment : Fragment() {
     private var currentPageIndex = 0
 
     private var textAnnotations = mutableListOf<PdfTextAnnotation>()
-    private var annotationLongPressEvent: MotionEvent? = null
+    private var longPressPdfPagePosition: PointF? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -203,9 +203,9 @@ open class PdfFragment : Fragment() {
         }
 
         binding.btnSaveAnnotation.setOnClickListener {
-            annotationLongPressEvent?.let {
+            longPressPdfPagePosition?.let { pdfPagePosition ->
                 val annotationText = binding.etTextAnnotation.text.toString()
-                createAnnotation(null, annotationText, it)
+                createAnnotation(null, annotationText, pdfPagePosition)
                 setAnnotationTextViewVisibility(false)
                 binding.etTextAnnotation.text.clear()
             }
@@ -233,11 +233,6 @@ open class PdfFragment : Fragment() {
                     ).show()
                 }
                 R.id.optionDelete -> {
-                    Toast.makeText(
-                        requireContext(),
-                        "TODO: " + item.title + " -> " + annotation.contents.value,
-                        Toast.LENGTH_SHORT
-                    ).show()
                     removeAnnotation(annotation)
                 }
             }
@@ -464,19 +459,16 @@ open class PdfFragment : Fragment() {
         }
     }
 
-    private var lastTappedPosition: PointF? = null
-
-    private fun createAnnotation(title: String?, text: String, motionEvent: MotionEvent) {
+    private fun createAnnotation(title: String?, text: String, pdfPagePosition: PointF) {
         pdfUri?.let { uri ->
-            val position = convertScreenPointToPdfPagePoint(motionEvent, binding.pdfView) ?: return
             val resultingFile = PdfManipulator.addTextAnnotationToPdf(
                 context = requireContext(),
                 fileUri = uri,
                 title = title,
                 text = text,
                 pageNumber = currentPageIndex + 1,
-                x = position.x,
-                y = position.y,
+                x = pdfPagePosition.x,
+                y = pdfPagePosition.y,
                 bubbleSize = 30f,
                 bubbleColor = primaryColor ?: DEFAULT_PRIMARY_COLOR
             )
@@ -656,17 +648,12 @@ open class PdfFragment : Fragment() {
             .onPageChange { page, _ ->
                 currentPageIndex = page
             }
-            .onTap { event ->
-                lastTappedPosition = convertScreenPointToPdfPagePoint(event, binding.pdfView)
-                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                    Log.i("#####", "screen x: ${event.x}, y: ${event.y}, page: $currentPageIndex")
-                    Log.i("#####", "page x: ${event.x}, y: ${event.y}, page: $currentPageIndex")
-                }
+            .onTap {
                 setAnnotationTextViewVisibility(false)
                 true
             }
             .onLongPress { event ->
-                annotationLongPressEvent = event
+                longPressPdfPagePosition = convertScreenPointToPdfPagePoint(event, binding.pdfView)
                 setAnnotationTextViewVisibility(true)
             }
             .onLoad {
@@ -714,10 +701,6 @@ open class PdfFragment : Fragment() {
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
         }
-    }
-
-    open fun startAnnotationPositionMode() {
-
     }
 
     fun convertScreenPointToPdfPagePoint(e: MotionEvent, pdfView: PDFView): PointF? {
