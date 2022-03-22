@@ -12,6 +12,7 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry
 import com.itextpdf.android.app.R
 import org.hamcrest.Description
 import org.hamcrest.Matcher
@@ -32,6 +33,8 @@ class MainActivityTest {
     @Test
     fun mainActivityTest() {
 
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+
         // Click on first PDF entry in list
         onView(withId(R.id.rvPdfList))
             .perform(actionOnItemAtPosition<ViewHolder>(0, click()))
@@ -45,18 +48,18 @@ class MainActivityTest {
             .check(
                 matches(
                     allOf(
-                        withText("This file doesn't have any annotations."),
+                        withText(context.getString(R.string.no_annotations_title)),
                         isDisplayed()
                     )
                 )
             )
 
-        // Check that no-annotations message is shown
+        // Check that no-annotations description is shown
         onView(withId(R.id.no_annotations_message))
             .check(
                 matches(
                     allOf(
-                        withText("You can add one by long-pressing the pdf document at the location where you want to add the annotation to."),
+                        withText(context.getString(R.string.no_annotations_description)),
                         isDisplayed()
                     )
                 )
