@@ -31,6 +31,7 @@ import com.github.barteksc.pdfviewer.link.DefaultLinkHandler
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
+import com.itextpdf.android.library.extensions.isAtPosition
 import com.itextpdf.android.library.extensions.pdfDocumentInReadingMode
 import com.itextpdf.android.library.lists.PdfAdapter
 import com.itextpdf.android.library.lists.PdfRecyclerItem
@@ -39,6 +40,7 @@ import com.itextpdf.android.library.lists.annotations.AnnotationsAdapter
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfViewScrollHandle
+import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
@@ -649,6 +651,14 @@ open class PdfFragment : Fragment() {
                 currentPageIndex = page
             }
             .onTap {
+                val pdfPagePosition = convertScreenPointToPdfPagePoint(it, binding.pdfView)
+                if (pdfPagePosition != null) {
+                    val annotationIndex = findAnnotationIndexAtPosition(pdfPagePosition)
+                    if (annotationIndex != null) {
+                        scrollAnnotationsViewTo(annotationIndex)
+                        setAnnotationsViewVisibility(true)
+                    }
+                }
                 setAnnotationTextViewVisibility(false)
                 true
             }
@@ -681,6 +691,15 @@ open class PdfFragment : Fragment() {
                 )
             }
         }
+    }
+
+    private fun findAnnotationIndexAtPosition(position: PointF): Int? {
+        for ((index, annotation) in textAnnotations.withIndex()) {
+            if (annotation.isAtPosition(position)) {
+                return index
+            }
+        }
+        return null
     }
 
     private fun showPdfLoadError(reason: String) {
