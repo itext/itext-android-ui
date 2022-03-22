@@ -107,19 +107,15 @@ fun Context.pdfReader(uri: Uri): PdfReader? {
     }
 }
 
-//TODO
-fun Context.pdfDocumentInStampingMode(srcUri: Uri, destFile: File): PdfDocument? {
+fun Context.pdfDocumentInStampingMode(srcUri: Uri, destFile: File): PdfDocument {
+
     val inputStream = contentResolver.openInputStream(srcUri)
-    return try {
+    inputStream.use {
         val outputStream = FileOutputStream(destFile)
-        PdfDocument(
+        return PdfDocument(
             PdfReader(inputStream),
             PdfWriter(outputStream)
         )
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    } finally {
-        inputStream?.close()
     }
+
 }

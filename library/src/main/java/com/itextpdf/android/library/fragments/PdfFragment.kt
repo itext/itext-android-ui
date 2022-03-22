@@ -44,6 +44,7 @@ import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import com.shockwave.pdfium.util.SizeF
 import java.io.File
+import java.io.FileOutputStream
 import java.lang.reflect.Method
 
 
@@ -478,7 +479,7 @@ open class PdfFragment : Fragment() {
                 (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
             val destPdfFile = File("$storageFolderPath/a_${originalFile.name}")
 
-            PdfManipulator.addTextAnnotationToPdf(
+            val resultFile = PdfManipulator.addTextAnnotationToPdf(
                 context = requireContext(),
                 fileUri = uri,
                 destinationFile = destPdfFile,
@@ -491,7 +492,13 @@ open class PdfFragment : Fragment() {
                 bubbleColor = primaryColor ?: DEFAULT_PRIMARY_COLOR
             )
 
-            cleanupAndReload(destPdfFile)
+            FileOutputStream(originalFile, false).use { overWrite ->
+                overWrite.write(resultFile.readBytes())
+                overWrite.flush()
+            }
+
+            setupPdfView(Uri.fromFile(originalFile))
+//            cleanupAndReload(destPdfFile)
 
         }
     }

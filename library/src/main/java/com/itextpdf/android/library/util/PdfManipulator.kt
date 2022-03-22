@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.isSameAs
@@ -203,21 +204,30 @@ object PdfManipulator {
         y: Float,
         bubbleSize: Float,
         bubbleColor: String
-    ) {
-        val pdfDocument = context.pdfDocumentInStampingMode(fileUri, destinationFile)
-        pdfDocument?.let { pdfDoc ->
-            val appearance = getCommentAppearance(context, pdfDoc, bubbleColor, bubbleSize)
-            val ann: PdfAnnotation =
-                PdfTextAnnotation(Rectangle(x, y, bubbleSize, bubbleSize))
-                    .setContents(text)
-                    .setNormalAppearance(appearance?.pdfObject)
+    ): File {
 
-            if (title != null) {
-                ann.title = PdfString(title)
+        val resultingFile: File = context.pdfDocumentInStampingMode(fileUri, destinationFile)
+            .use { pdfDoc ->
+
+                val appearance = getCommentAppearance(context, pdfDoc, bubbleColor, bubbleSize)
+                val annotation: PdfAnnotation =
+                    PdfTextAnnotation(Rectangle(x, y, bubbleSize, bubbleSize))
+                        .setContents(text)
+                        .setNormalAppearance(appearance?.pdfObject)
+
+                if (title != null) {
+                    annotation.title = PdfString(title)
+                }
+
+                pdfDoc.getPage(pageNumber).addAnnotation(annotation)
+                pdfDoc.close()
+
+                destinationFile
             }
 
-            pdfDoc.getPage(pageNumber).addAnnotation(ann)
-            pdfDoc.close()
+        fileUri.toFile()
+
+        return resultingFile
 
 //            val page: PdfPage = pdfDoc.firstPage
 //            val sticky = page.annotations[0]
@@ -258,7 +268,7 @@ object PdfManipulator {
 //                .setFlags(PdfAnnotation.PRINT)
 //                .setBorder(PdfArray(floatArrayOf(0f, 0f, 2f))) // Set the interior color
 //                .put(PdfName.IC, PdfArray(intArrayOf(1, 0, 0)))
-        }
+
     }
 
     fun removeAnnotationFromPdf(
