@@ -5,14 +5,18 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions
+import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.itextpdf.android.library.R
+import com.itextpdf.android.library.PdfActivity
 import com.itextpdf.android.library.util.FileUtil
-import org.hamcrest.Matchers
+import org.hamcrest.Matchers.allOf
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -39,9 +43,16 @@ class PdfFragmentTest {
         )
 
         // Click on "annotations" menu-item
-        onView(Matchers.allOf(ViewMatchers.withId(R.id.pdfView), ViewMatchers.isDisplayed()))
-            .perform(ViewActions.longClick())
+        onView(allOf(ViewMatchers.withId(R.id.pdfView), isDisplayed()))
+            .perform(longClick())
 
+        onView(allOf(ViewMatchers.withId(R.id.etTextAnnotation)))
+            .check(matches(allOf(isDisplayed())))
+            .perform(typeText("Lorem Ipsum"))
+
+        onView(allOf(ViewMatchers.withId(R.id.btnSaveAnnotation)))
+            .check(matches(allOf(isDisplayed())))
+            .perform(click())
     }
 
     /**
