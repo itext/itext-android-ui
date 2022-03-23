@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
-import android.util.Log
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -20,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toFile
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.setFragmentResultListener
@@ -40,7 +40,6 @@ import com.itextpdf.android.library.lists.annotations.AnnotationsAdapter
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfViewScrollHandle
-import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
@@ -54,85 +53,7 @@ import java.lang.reflect.Method
  */
 open class PdfFragment : Fragment() {
 
-    /**
-     * The uri of the pdf that should be displayed
-     */
-    private var pdfUri: Uri? = null
-
-    /**
-     * The name of the file that should be displayed
-     */
-    private var fileName: String? = null
-
-    /**
-     * A boolean flag that defines if the given file name should be displayed in the toolbar. Default: false
-     */
-    private var displayFileName = DEFAULT_DISPLAY_FILE_NAME
-
-    /**
-     * The spacing in px between the pdf pages. Default: 20
-     */
-    private var pageSpacing = DEFAULT_PAGE_SPACING
-
-    /**
-     * A boolean flag to enable/disable pdf thumbnail navigation view. Default: true
-     */
-    private var enableThumbnailNavigationView = DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
-
-    /**
-     * A boolean flag to enable/disable pdf split view. Default: true
-     */
-    private var enableSplitView = DEFAULT_ENABLE_SPLIT_VIEW
-
-    /**
-     * A boolean flag to enable/disable annotation rendering. Default: true
-     */
-    private var enableAnnotationRendering = DEFAULT_ENABLE_ANNOTATION_RENDERING
-
-    /**
-     * A boolean flag to enable/disable double tap to zoom. Default: true
-     */
-    private var enableDoubleTapZoom = DEFAULT_ENABLE_DOUBLE_TAP_ZOOM
-
-    /**
-     * A boolean flag to enable/disable a scrolling indicator at the right of the page, that can be used fast scrolling. Default: true
-     */
-    private var showScrollIndicator = DEFAULT_SHOW_SCROLL_INDICATOR
-
-    /**
-     * A boolean flag to enable/disable the page number while the scroll indicator is tabbed. Default: true
-     */
-    private var showScrollIndicatorPageNumber = DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
-
-    /**
-     * A color string to set the primary color of the view (affects: scroll indicator, navigation thumbnails and loading indicator). Default: #FF9400
-     */
-    private var primaryColor: String? = DEFAULT_PRIMARY_COLOR
-
-    /**
-     * A color string to set the secondary color of the view (affects: scroll indicator and navigation thumbnails). Default: #FFEFD8
-     */
-    private var secondaryColor: String? = DEFAULT_SECONDARY_COLOR
-
-    /**
-     * A color string to set the background of the pdf view that will be visible between the pages if pageSpacing > 0. Default: #EAEAEA
-     */
-    private var backgroundColor: String? = DEFAULT_BACKGROUND_COLOR
-
-    /**
-     * A boolean flag to enable/disable the help dialog. Default: true
-     */
-    private var enableHelpDialog = SplitDocumentFragment.DEFAULT_ENABLE_HELP_DIALOG
-
-    /**
-     * The title of the help dialog. If this is null but help dialog is displayed, a default title is used.
-     */
-    private var helpDialogTitle: String? = null
-
-    /**
-     * The text of the help dialog. If this is null but help dialog is displayed, a default text is used.
-     */
-    private var helpDialogText: String? = null
+    private lateinit var config: PdfConfig
 
     private lateinit var binding: FragmentPdfBinding
     private lateinit var pdfNavigationAdapter: PdfAdapter
@@ -156,33 +77,31 @@ open class PdfFragment : Fragment() {
     private var textAnnotations = mutableListOf<PdfTextAnnotation>()
     private var longPressPdfPagePosition: PointF? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setParamsFromBundle(savedInstanceState ?: arguments)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+
         binding = FragmentPdfBinding.inflate(inflater, container, false)
         pdfiumCore = PdfiumCore(requireContext())
 
-        // set the parameter from the savedInstanceState, or if it's null, from the arguments
-        setParamsFromBundle(savedInstanceState ?: arguments)
         currentPageIndex = savedInstanceState?.getInt(CURRENT_PAGE) ?: 0
 
         setupToolbar()
+        setupPdfView()
 
-        pdfUri?.let {
-            setupPdfView(it)
-
-            val fileDescriptor: ParcelFileDescriptor? =
-                requireContext().contentResolver.openFileDescriptor(it, "r")
-            if (fileDescriptor != null) {
-                try {
-                    pdfiumPdfDocument = pdfiumCore.newDocument(fileDescriptor)
-                } catch (exception: Exception) {
-                    exception.printStackTrace()
-                }
+        val fileDescriptor: ParcelFileDescriptor? = requireContext().contentResolver.openFileDescriptor(config.pdfUri, "r")
+        if (fileDescriptor != null) {
+            try {
+                pdfiumPdfDocument = pdfiumCore.newDocument(fileDescriptor)
+            } catch (exception: Exception) {
+                exception.printStackTrace()
             }
         }
+
 
         // listen for the fragment result from the SplitDocumentFragment to get a list pdfUris resulting from the split
         setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT) { _, bundle ->
@@ -257,45 +176,11 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setParamsFromBundle(bundle: Bundle?) {
-        if (bundle != null) {
-            val storedUri = bundle.getString(PDF_URI)
-            if (!storedUri.isNullOrEmpty()) {
-                pdfUri = Uri.parse(storedUri)
-            }
-            fileName = bundle.getString(FILE_NAME) ?: ""
-            displayFileName = bundle.getBoolean(DISPLAY_FILE_NAME, DEFAULT_DISPLAY_FILE_NAME)
-            pageSpacing = bundle.getInt(PAGE_SPACING, DEFAULT_PAGE_SPACING)
-            enableThumbnailNavigationView = bundle.getBoolean(
-                ENABLE_THUMBNAIL_NAVIGATION_VIEW,
-                DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
-            )
-            enableSplitView = bundle.getBoolean(
-                ENABLE_SPLIT_VIEW,
-                DEFAULT_ENABLE_SPLIT_VIEW
-            )
-            enableAnnotationRendering =
-                bundle.getBoolean(
-                    ENABLE_ANNOTATION_RENDERING,
-                    DEFAULT_ENABLE_ANNOTATION_RENDERING
-                )
-            enableDoubleTapZoom =
-                bundle.getBoolean(ENABLE_DOUBLE_TAP_ZOOM, DEFAULT_ENABLE_DOUBLE_TAP_ZOOM)
-            showScrollIndicator =
-                bundle.getBoolean(SHOW_SCROLL_INDICATOR, DEFAULT_SHOW_SCROLL_INDICATOR)
-            showScrollIndicatorPageNumber = bundle.getBoolean(
-                SHOW_SCROLL_INDICATOR_PAGE_NUMBER,
-                DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
-            )
-            primaryColor = bundle.getString(PRIMARY_COLOR) ?: DEFAULT_PRIMARY_COLOR
-            secondaryColor = bundle.getString(SECONDARY_COLOR) ?: DEFAULT_SECONDARY_COLOR
-            backgroundColor = bundle.getString(BACKGROUND_COLOR) ?: DEFAULT_BACKGROUND_COLOR
-            enableHelpDialog = bundle.getBoolean(
-                ENABLE_HELP_DIALOG,
-                SplitDocumentFragment.DEFAULT_ENABLE_HELP_DIALOG
-            )
-            helpDialogTitle = bundle.getString(HELP_DIALOG_TITLE)
-            helpDialogText = bundle.getString(HELP_DIALOG_TEXT)
+
+        if (bundle != null && bundle.containsKey(EXTRA_PDF_CONFIG)) {
+            config = bundle.getParcelable(EXTRA_PDF_CONFIG)!!
         }
+
     }
 
     override fun onDestroy() {
@@ -331,82 +216,72 @@ open class PdfFragment : Fragment() {
     override fun onInflate(context: Context, attrs: AttributeSet, savedInstanceState: Bundle?) {
         super.onInflate(context, attrs, savedInstanceState)
 
+        val builder = PdfConfig.Builder()
+
         // get the attributes data set via xml
         val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.PdfFragment)
         a.getText(R.styleable.PdfFragment_file_uri)?.let {
-            pdfUri = Uri.parse(it.toString())
+            builder.pdfUri = Uri.parse(it.toString())
         }
         a.getText(R.styleable.PdfFragment_file_name)?.let {
-            fileName = it.toString()
+            builder.fileName = it.toString()
         }
-        displayFileName =
-            a.getBoolean(R.styleable.PdfFragment_display_file_name, DEFAULT_DISPLAY_FILE_NAME)
-        pageSpacing = a.getInteger(R.styleable.PdfFragment_page_spacing, DEFAULT_PAGE_SPACING)
-        enableThumbnailNavigationView = a.getBoolean(
+
+        builder.displayFileName = a.getBoolean(R.styleable.PdfFragment_display_file_name, DEFAULT_DISPLAY_FILE_NAME)
+        builder.pageSpacing = a.getInteger(R.styleable.PdfFragment_page_spacing, DEFAULT_PAGE_SPACING)
+        builder.enableThumbnailNavigationView = a.getBoolean(
             R.styleable.PdfFragment_enable_thumbnail_navigation_view,
             DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
         )
-        enableSplitView = a.getBoolean(
+        builder.enableSplitView = a.getBoolean(
             R.styleable.PdfFragment_enable_split_view,
             DEFAULT_ENABLE_SPLIT_VIEW
         )
-        enableAnnotationRendering = a.getBoolean(
+        builder.enableAnnotationRendering = a.getBoolean(
             R.styleable.PdfFragment_enable_annotation_rendering,
             DEFAULT_ENABLE_ANNOTATION_RENDERING
         )
-        enableDoubleTapZoom = a.getBoolean(
+        builder.enableDoubleTapZoom = a.getBoolean(
             R.styleable.PdfFragment_enable_double_tap_zoom,
             DEFAULT_ENABLE_DOUBLE_TAP_ZOOM
         )
-        showScrollIndicator = a.getBoolean(
+        builder.showScrollIndicator = a.getBoolean(
             R.styleable.PdfFragment_show_scroll_indicator,
             DEFAULT_SHOW_SCROLL_INDICATOR
         )
-        showScrollIndicatorPageNumber = a.getBoolean(
+        builder.showScrollIndicatorPageNumber = a.getBoolean(
             R.styleable.PdfFragment_show_scroll_indicator_page_number,
             DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
         )
         a.getText(R.styleable.PdfFragment_primary_color)?.let {
-            primaryColor = it.toString()
+            builder.primaryColor = it.toString()
         }
         a.getText(R.styleable.PdfFragment_secondary_color)?.let {
-            secondaryColor = it.toString()
+            builder.secondaryColor = it.toString()
         }
         a.getText(R.styleable.PdfFragment_background_color)?.let {
-            backgroundColor = it.toString()
+            builder.backgroundColor = it.toString()
         }
-        enableHelpDialog = a.getBoolean(
+        builder.enableHelpDialog = a.getBoolean(
             R.styleable.PdfFragment_enable_help_dialog,
             SplitDocumentFragment.DEFAULT_ENABLE_HELP_DIALOG
         )
         a.getText(R.styleable.PdfFragment_help_dialog_title)?.let {
-            helpDialogTitle = it.toString()
+            builder.helpDialogTitle = it.toString()
         }
         a.getText(R.styleable.PdfFragment_help_dialog_text)?.let {
-            helpDialogText = it.toString()
+            builder.helpDialogText = it.toString()
         }
         a.recycle()
+
+        config = builder.build()
+
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(CURRENT_PAGE, currentPageIndex)
-        outState.putString(PDF_URI, pdfUri.toString())
-        outState.putString(FILE_NAME, fileName)
-        outState.putBoolean(DISPLAY_FILE_NAME, displayFileName)
-        outState.putInt(PAGE_SPACING, pageSpacing)
-        outState.putBoolean(ENABLE_THUMBNAIL_NAVIGATION_VIEW, enableThumbnailNavigationView)
-        outState.putBoolean(ENABLE_SPLIT_VIEW, enableSplitView)
-        outState.putBoolean(ENABLE_ANNOTATION_RENDERING, enableAnnotationRendering)
-        outState.putBoolean(ENABLE_DOUBLE_TAP_ZOOM, enableDoubleTapZoom)
-        outState.putBoolean(SHOW_SCROLL_INDICATOR, showScrollIndicator)
-        outState.putBoolean(SHOW_SCROLL_INDICATOR_PAGE_NUMBER, showScrollIndicatorPageNumber)
-        outState.putString(PRIMARY_COLOR, primaryColor)
-        outState.putString(SECONDARY_COLOR, secondaryColor)
-        outState.putString(BACKGROUND_COLOR, backgroundColor)
-        outState.putBoolean(ENABLE_HELP_DIALOG, enableHelpDialog)
-        outState.putString(HELP_DIALOG_TITLE, helpDialogTitle)
-        outState.putString(HELP_DIALOG_TEXT, helpDialogText)
+        outState.putParcelable(EXTRA_PDF_CONFIG, config)
     }
 
     private fun setupToolbar() {
@@ -415,16 +290,16 @@ open class PdfFragment : Fragment() {
             (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbPdfFragment)
             binding.tbPdfFragment.setNavigationIcon(R.drawable.abc_ic_ab_back_material)
             binding.tbPdfFragment.setNavigationOnClickListener { requireActivity().onBackPressed() }
-            binding.tbPdfFragment.title = if (displayFileName) fileName else null
+            binding.tbPdfFragment.title = if (config.displayFileName) config.fileName else null
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_pdf_fragment, menu)
-        menu.getItem(0).isVisible = enableThumbnailNavigationView
+        menu.getItem(0).isVisible = config.enableThumbnailNavigationView
         menu.getItem(1).isVisible = false //TODO: highlight
         menu.getItem(2).isVisible = true //TODO: annotate
-        menu.getItem(3).isVisible = enableSplitView
+        menu.getItem(3).isVisible = config.enableSplitView
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -462,32 +337,34 @@ open class PdfFragment : Fragment() {
     }
 
     private fun createAnnotation(title: String?, text: String, pdfPagePosition: PointF) {
-        pdfUri?.let { uri ->
-            val resultingFile = PdfManipulator.addTextAnnotationToPdf(
-                context = requireContext(),
-                fileUri = uri,
-                title = title,
-                text = text,
-                pageNumber = currentPageIndex + 1,
-                x = pdfPagePosition.x,
-                y = pdfPagePosition.y,
-                bubbleSize = 30f,
-                bubbleColor = primaryColor ?: DEFAULT_PRIMARY_COLOR
-            )
-            setupPdfView(Uri.fromFile(resultingFile))
-        }
+
+        PdfManipulator.addTextAnnotationToPdf(
+            context = requireContext(),
+            fileUri = config.pdfUri,
+            title = title,
+            text = text,
+            pageNumber = currentPageIndex + 1,
+            x = pdfPagePosition.x,
+            y = pdfPagePosition.y,
+            bubbleSize = 30f,
+            bubbleColor = config.primaryColor
+        )
+
+        setupPdfView()
+
     }
 
     private fun removeAnnotation(annotation: PdfTextAnnotation) {
-        pdfUri?.let {
-            val resultingFile = PdfManipulator.removeAnnotationFromPdf(
-                context = requireContext(),
-                fileUri = it,
-                pageNumber = currentPageIndex + 1,
-                annotation
-            )
-            setupPdfView(Uri.fromFile(resultingFile))
-        }
+
+        PdfManipulator.removeAnnotationFromPdf(
+            context = requireContext(),
+            fileUri = config.pdfUri,
+            pageNumber = currentPageIndex + 1,
+            annotation
+        )
+
+        setupPdfView()
+
     }
 
     private fun setupThumbnailNavigationView() {
@@ -506,7 +383,7 @@ open class PdfFragment : Fragment() {
                 })
             }
 
-            pdfNavigationAdapter = PdfAdapter(data, false, primaryColor, secondaryColor)
+            pdfNavigationAdapter = PdfAdapter(data, false, config.primaryColor, config.secondaryColor)
             binding.includedBottomSheetNavigate.rvPdfPages.adapter = pdfNavigationAdapter
             binding.includedBottomSheetNavigate.rvPdfPages.layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -540,72 +417,72 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setupAnnotationView() {
-        pdfUri?.let { uri ->
-            requireContext().pdfDocumentInReadingMode(uri)?.let { pdfDocument ->
-                val data = mutableListOf<AnnotationRecyclerItem>()
 
-                for (i in 1..pdfDocument.numberOfPages) {
-                    val annotations = pdfDocument.getPage(i).annotations
-                    for (annotation in annotations) {
-                        if (annotation is PdfTextAnnotation) {
-                            textAnnotations.add(annotation)
-                            val title =
-                                if (annotation.title != null) annotation.title.value else null
-                            val text =
-                                if (annotation.contents != null) annotation.contents.value else null
+        requireContext().pdfDocumentInReadingMode(config.pdfUri)?.let { pdfDocument ->
+            val data = mutableListOf<AnnotationRecyclerItem>()
 
-                            data.add(
-                                AnnotationRecyclerItem(
-                                    title,
-                                    text
-                                ) {
-                                    showAnnotationContextMenu(
-                                        it,
-                                        R.menu.popup_menu_annotation,
-                                        annotation
-                                    )
-                                })
-                        }
+            for (i in 1..pdfDocument.numberOfPages) {
+                val annotations = pdfDocument.getPage(i).annotations
+                for (annotation in annotations) {
+                    if (annotation is PdfTextAnnotation) {
+                        textAnnotations.add(annotation)
+                        val title =
+                            if (annotation.title != null) annotation.title.value else null
+                        val text =
+                            if (annotation.contents != null) annotation.contents.value else null
+
+                        data.add(
+                            AnnotationRecyclerItem(
+                                title,
+                                text
+                            ) {
+                                showAnnotationContextMenu(
+                                    it,
+                                    R.menu.popup_menu_annotation,
+                                    annotation
+                                )
+                            })
                     }
                 }
+            }
 
-                if (textAnnotations.size > 0) {
-                    binding.includedBottomSheetAnnotations.rvAnnotations.visibility = VISIBLE
-                    binding.includedBottomSheetAnnotations.llNoAnnotations.visibility = GONE
-                } else {
-                    binding.includedBottomSheetAnnotations.rvAnnotations.visibility = GONE
-                    binding.includedBottomSheetAnnotations.llNoAnnotations.visibility = VISIBLE
+            if (textAnnotations.size > 0) {
+                binding.includedBottomSheetAnnotations.rvAnnotations.visibility = VISIBLE
+                binding.includedBottomSheetAnnotations.llNoAnnotations.visibility = GONE
+            } else {
+                binding.includedBottomSheetAnnotations.rvAnnotations.visibility = GONE
+                binding.includedBottomSheetAnnotations.llNoAnnotations.visibility = VISIBLE
+            }
+
+            annotationAdapter = AnnotationsAdapter(data, config.primaryColor, config.secondaryColor)
+            binding.includedBottomSheetAnnotations.rvAnnotations.adapter = annotationAdapter
+
+            // disable user scrolling (arrows are used for navigation
+            val layoutManager = object :
+                LinearLayoutManager(requireContext(), HORIZONTAL, false) {
+                override fun canScrollHorizontally(): Boolean {
+                    return false
                 }
+            }
+            binding.includedBottomSheetAnnotations.rvAnnotations.layoutManager = layoutManager
 
-                annotationAdapter = AnnotationsAdapter(data, primaryColor, secondaryColor)
-                binding.includedBottomSheetAnnotations.rvAnnotations.adapter = annotationAdapter
-
-                // disable user scrolling (arrows are used for navigation
-                val layoutManager = object :
-                    LinearLayoutManager(requireContext(), HORIZONTAL, false) {
-                    override fun canScrollHorizontally(): Boolean {
-                        return false
-                    }
+            updateAnnotationArrowVisibility()
+            binding.includedBottomSheetAnnotations.llLeftArrow.setOnClickListener {
+                if (annotationAdapter.selectedPosition > 0) {
+                    scrollAnnotationsViewTo(annotationAdapter.selectedPosition - 1)
                 }
-                binding.includedBottomSheetAnnotations.rvAnnotations.layoutManager = layoutManager
-
                 updateAnnotationArrowVisibility()
-                binding.includedBottomSheetAnnotations.llLeftArrow.setOnClickListener {
-                    if (annotationAdapter.selectedPosition > 0) {
-                        scrollAnnotationsViewTo(annotationAdapter.selectedPosition - 1)
-                    }
+            }
+            binding.includedBottomSheetAnnotations.llRightArrow.setOnClickListener {
+                if (annotationAdapter.selectedPosition < textAnnotations.size - 1) {
+                    scrollAnnotationsViewTo(annotationAdapter.selectedPosition + 1)
                     updateAnnotationArrowVisibility()
                 }
-                binding.includedBottomSheetAnnotations.llRightArrow.setOnClickListener {
-                    if (annotationAdapter.selectedPosition < textAnnotations.size - 1) {
-                        scrollAnnotationsViewTo(annotationAdapter.selectedPosition + 1)
-                        updateAnnotationArrowVisibility()
-                    }
-                }
-
-                annotationViewSetupComplete = true
             }
+
+            annotationViewSetupComplete = true
         }
+
     }
 
     private fun updateAnnotationArrowVisibility() {
@@ -615,22 +492,21 @@ open class PdfFragment : Fragment() {
             if (annotationAdapter.selectedPosition < textAnnotations.size - 1) VISIBLE else GONE
     }
 
-    private fun setupPdfView(pdfUri: Uri) {
-        this.pdfUri = pdfUri
-        val scrollHandle =
-            if (showScrollIndicator) {
-                PdfViewScrollHandle(
-                    requireContext(),
-                    primaryColor,
-                    secondaryColor,
-                    showScrollIndicatorPageNumber
-                )
-            } else {
-                null
-            }
+    private fun setupPdfView() {
+
+        val scrollHandle = if (config.showScrollIndicator) {
+            PdfViewScrollHandle(
+                requireContext(),
+                config.primaryColor,
+                config.secondaryColor,
+                config.showScrollIndicatorPageNumber
+            )
+        } else {
+            null
+        }
 
         binding.pdfLoadingIndicator.visibility = VISIBLE
-        binding.pdfView.fromUri(pdfUri)
+        binding.pdfView.fromUri(config.pdfUri)
             .defaultPage(currentPageIndex)
             .scrollHandle(scrollHandle)
             .onPageError { page, error ->
@@ -672,24 +548,20 @@ open class PdfFragment : Fragment() {
                 binding.pdfLoadingIndicator.visibility = GONE
             }
             .linkHandler(DefaultLinkHandler(binding.pdfView))
-            .enableAnnotationRendering(enableAnnotationRendering)
-            .spacing(pageSpacing)
-            .enableDoubletap(enableDoubleTapZoom)
+            .enableAnnotationRendering(config.enableAnnotationRendering)
+            .spacing(config.pageSpacing)
+            .enableDoubletap(config.enableDoubleTapZoom)
             .load()
 
-        if (backgroundColor != null) {
-            binding.pdfView.setBackgroundColor(Color.parseColor(backgroundColor))
-        }
-        if (primaryColor != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                binding.pdfLoadingIndicator.indeterminateDrawable.colorFilter =
-                    BlendModeColorFilter(Color.parseColor(primaryColor), BlendMode.SRC_ATOP)
-            } else {
-                binding.pdfLoadingIndicator.indeterminateDrawable.setColorFilter(
-                    Color.parseColor(primaryColor),
-                    PorterDuff.Mode.SRC_ATOP
-                )
-            }
+        binding.pdfView.setBackgroundColor(Color.parseColor(config.backgroundColor))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            binding.pdfLoadingIndicator.indeterminateDrawable.colorFilter =
+                BlendModeColorFilter(Color.parseColor(config.primaryColor), BlendMode.SRC_ATOP)
+        } else {
+            binding.pdfLoadingIndicator.indeterminateDrawable.setColorFilter(
+                Color.parseColor(config.primaryColor),
+                PorterDuff.Mode.SRC_ATOP
+            )
         }
     }
 
@@ -757,24 +629,24 @@ open class PdfFragment : Fragment() {
      * Opens the split document view for the currently visible pdf document
      */
     open fun openSplitDocumentView() {
-        pdfUri?.let { uri ->
-            val fragmentManager = requireActivity().supportFragmentManager
-            val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
-            val fragment =
-                SplitDocumentFragment.newInstance(
-                    uri,
-                    fileName,
-                    primaryColor,
-                    secondaryColor,
-                    enableHelpDialog,
-                    helpDialogTitle,
-                    helpDialogText
-                )
-            fragmentTransaction.hide(this)
-            fragmentTransaction.add(android.R.id.content, fragment, SplitDocumentFragment.TAG)
-            fragmentTransaction.commit()
-        }
+
+        val fragmentManager = requireActivity().supportFragmentManager
+        val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
+        val fragment =
+            SplitDocumentFragment.newInstance(
+                pdfUri = config.pdfUri,
+                fileName = config.fileName,
+                primaryColor = config.primaryColor,
+                secondaryColor = config.secondaryColor,
+                enableHelpDialog = config.enableHelpDialog,
+                helpDialogTitle = config.helpDialogTitle,
+                helpDialogText = config.helpDialogText
+            )
+        fragmentTransaction.hide(this)
+        fragmentTransaction.add(android.R.id.content, fragment, SplitDocumentFragment.TAG)
+        fragmentTransaction.commit()
     }
+
 
     /**
      * Closes the split document view if the SplitDocumentFragment TAG is found
@@ -912,24 +784,10 @@ open class PdfFragment : Fragment() {
 
         private const val OPEN_BOTTOM_SHEET_DELAY_MS = 200L
 
+        private const val EXTRA_PDF_CONFIG = "EXTRA_PDF_CONFIG"
+
         private const val CURRENT_PAGE = "CURRENT_PAGE"
-        private const val FILE_NAME = "FILE_NAME"
-        private const val PDF_URI = "PDF_URI"
-        private const val DISPLAY_FILE_NAME = "DISPLAY_FILE_NAME"
-        private const val PAGE_SPACING = "PAGE_SPACING"
-        private const val ENABLE_THUMBNAIL_NAVIGATION_VIEW = "ENABLE_THUMBNAIL_NAVIGATION_VIEW"
-        private const val ENABLE_SPLIT_VIEW = "ENABLE_SPLIT_VIEW"
-        private const val ENABLE_ANNOTATION_RENDERING = "ENABLE_ANNOTATION_RENDERING"
-        private const val ENABLE_DOUBLE_TAP_ZOOM = "ENABLE_DOUBLE_TAP_ZOOM"
-        private const val SHOW_SCROLL_INDICATOR = "SHOW_SCROLL_INDICATOR"
-        private const val SHOW_SCROLL_INDICATOR_PAGE_NUMBER =
-            "SHOW_SCROLL_INDICATOR_PAGE_NUMBER"
-        private const val PRIMARY_COLOR = "PRIMARY_COLOR"
-        private const val SECONDARY_COLOR = "SECONDARY_COLOR"
-        private const val BACKGROUND_COLOR = "BACKGROUND_COLOR"
-        private const val ENABLE_HELP_DIALOG = "ENABLE_HELP_DIALOG"
-        private const val HELP_DIALOG_TITLE = "HELP_DIALOG_TITLE"
-        private const val HELP_DIALOG_TEXT = "HELP_DIALOG_TEXT"
+        internal const val PDF_URI = "PDF_URI"
 
         const val DEFAULT_DISPLAY_FILE_NAME = false
         const val DEFAULT_PAGE_SPACING = 10
@@ -941,80 +799,14 @@ open class PdfFragment : Fragment() {
         const val DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER = true
         const val DEFAULT_PRIMARY_COLOR = "#FF9400"
         const val DEFAULT_SECONDARY_COLOR = "#FFEFD8"
-        const val DEFAULT_BACKGROUND_COLOR = "#EAEAEA"
 
         /**
          * Static function to create a new instance of the PdfFragment with the given settings
-         *
-         * @param pdfUri    The uri of the pdf that should be displayed. This is the only required param
-         * @param fileName  The name of the file that should be displayed
-         * @param displayFileName   A boolean flag that defines if the given file name should be displayed in the toolbar. Default: false
-         * @param pageSpacing   The spacing in px between the pdf pages. Default: 20
-         * @param enableThumbnailNavigationView A boolean flag to enable/disable pdf thumbnail navigation view. Default: true
-         * @param enableSplitView A boolean flag to enable/disable pdf split view. Default: true
-         * @param enableAnnotationRendering A boolean flag to enable/disable annotation rendering. Default: true
-         * @param enableDoubleTapZoom   A boolean flag to enable/disable double tap to zoom. Default: true
-         * @param showScrollIndicator   A boolean flag to enable/disable a scrolling indicator at the right of the page, that can be used fast scrolling. Default: true
-         * @param showScrollIndicatorPageNumber A boolean flag to enable/disable the page number while the scroll indicator is tabbed. Default: true
-         * @param primaryColor  A color string to set the primary color of the view (affects: scroll indicator, navigation thumbnails and loading indicator). Default: #FF9400
-         * @param secondaryColor    A color string to set the secondary color of the view (affects: scroll indicator and navigation thumbnails). Default: #FFEFD8
-         * @param backgroundColor   A color string to set the background of the pdf view that will be visible between the pages if pageSpacing > 0. Default: #EAEAEA@
-         * @param enableHelpDialog  A boolean flag to enable/disable the help dialog on the split view
-         * @param helpDialogTitle  The title of the help dialog on the split view. If this is null but help dialog is displayed, a default title is used.
-         * @param helpDialogText  The text of the help dialog on the split view. If this is null but help dialog is displayed, a default text is used.
          * @return  in instance of PdfFragment with the given settings
          */
-        fun newInstance(
-            pdfUri: Uri,
-            fileName: String? = null,
-            displayFileName: Boolean? = null,
-            pageSpacing: Int? = null,
-            enableThumbnailNavigationView: Boolean? = null,
-            enableSplitView: Boolean? = null,
-            enableAnnotationRendering: Boolean? = null,
-            enableDoubleTapZoom: Boolean? = null,
-            showScrollIndicator: Boolean? = null,
-            showScrollIndicatorPageNumber: Boolean? = null,
-            primaryColor: String? = null,
-            secondaryColor: String? = null,
-            backgroundColor: String? = null,
-            enableHelpDialog: Boolean? = null,
-            helpDialogTitle: String? = null,
-            helpDialogText: String? = null
-        ): PdfFragment {
+        fun newInstance(pdfConfig: PdfConfig): PdfFragment {
             val fragment = PdfFragment()
-
-            val args = Bundle()
-            args.putString(PDF_URI, pdfUri.toString())
-            args.putString(FILE_NAME, fileName)
-            if (displayFileName != null)
-                args.putBoolean(DISPLAY_FILE_NAME, displayFileName)
-            if (pageSpacing != null)
-                args.putInt(PAGE_SPACING, pageSpacing)
-            if (enableThumbnailNavigationView != null)
-                args.putBoolean(ENABLE_THUMBNAIL_NAVIGATION_VIEW, enableThumbnailNavigationView)
-            if (enableSplitView != null)
-                args.putBoolean(ENABLE_SPLIT_VIEW, enableSplitView)
-            if (enableAnnotationRendering != null)
-                args.putBoolean(ENABLE_ANNOTATION_RENDERING, enableAnnotationRendering)
-            if (enableDoubleTapZoom != null)
-                args.putBoolean(ENABLE_DOUBLE_TAP_ZOOM, enableDoubleTapZoom)
-            if (showScrollIndicator != null)
-                args.putBoolean(SHOW_SCROLL_INDICATOR, showScrollIndicator)
-            if (showScrollIndicatorPageNumber != null)
-                args.putBoolean(
-                    SHOW_SCROLL_INDICATOR_PAGE_NUMBER,
-                    showScrollIndicatorPageNumber
-                )
-            args.putString(PRIMARY_COLOR, primaryColor)
-            args.putString(SECONDARY_COLOR, secondaryColor)
-            args.putString(BACKGROUND_COLOR, backgroundColor)
-            if (enableHelpDialog != null)
-                args.putBoolean(ENABLE_HELP_DIALOG, enableHelpDialog)
-            args.putString(HELP_DIALOG_TITLE, helpDialogTitle)
-            args.putString(HELP_DIALOG_TEXT, helpDialogText)
-            fragment.arguments = args
-
+            fragment.arguments = bundleOf(EXTRA_PDF_CONFIG to pdfConfig)
             return fragment
         }
     }

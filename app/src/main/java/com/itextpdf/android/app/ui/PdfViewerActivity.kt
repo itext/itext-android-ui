@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityPdfViewerBinding
+import com.itextpdf.android.library.fragments.PdfConfig
 import com.itextpdf.android.library.fragments.PdfFragment
 
 class PdfViewerActivity : AppCompatActivity() {
@@ -35,33 +36,43 @@ class PdfViewerActivity : AppCompatActivity() {
                         // setup the fragment with different settings based on the index of the selected pdf
                         when (pdfIndex) {
                             1 -> { // Sample 2
-                                fragment = PdfFragment.newInstance(
-                                    pdfUri = pdfUri,
-                                    fileName = fileName,
-                                    displayFileName = true,
-                                    pageSpacing = 100,
-                                    enableAnnotationRendering = false,
-                                    enableDoubleTapZoom = false,
-                                    primaryColor = "#295819",
-                                    secondaryColor = "#950178",
-                                    backgroundColor = "#119191",
+
+                                val config = PdfConfig.build {
+                                    this.pdfUri = pdfUri
+                                    this.fileName = fileName
+                                    displayFileName = true
+                                    pageSpacing = 100
+                                    enableAnnotationRendering = false
+                                    enableDoubleTapZoom = false
+                                    primaryColor = "#295819"
+                                    secondaryColor = "#950178"
+                                    backgroundColor = "#119191"
                                     helpDialogText = getString(R.string.custom_help_text)
-                                )
+                                }
+
+                                fragment = PdfFragment.newInstance(config)
                             }
-                            3 -> { // Sample 4
-                                fragment = PdfFragment.newInstance(
-                                    pdfUri = pdfUri,
-                                    fileName = fileName,
-                                    enableThumbnailNavigationView = false,
+                            3 -> {
+                                // Sample 4
+
+                                val config = PdfConfig.build {
+                                    this.pdfUri = pdfUri
+                                    this.fileName = fileName
+                                    enableThumbnailNavigationView = false
                                     enableHelpDialog = false
-                                )
+                                }
+
+                                fragment = PdfFragment.newInstance(config)
                             }
                             else -> { // Sample 3 and pdfs from file explorer
-                                fragment = PdfFragment.newInstance(
-                                    pdfUri = pdfUri,
-                                    fileName = fileName,
+
+                                val config = PdfConfig.build {
+                                    this.pdfUri = pdfUri
+                                    this.fileName = fileName
                                     helpDialogTitle = getString(R.string.custom_help_title)
-                                )
+                                }
+
+                                fragment = PdfFragment.newInstance(config)
                             }
                         }
 
