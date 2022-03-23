@@ -18,6 +18,7 @@ import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.res.use
 import androidx.core.net.toFile
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -31,8 +32,7 @@ import com.github.barteksc.pdfviewer.link.DefaultLinkHandler
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.databinding.FragmentPdfBinding
-import com.itextpdf.android.library.extensions.isAtPosition
-import com.itextpdf.android.library.extensions.pdfDocumentInReadingMode
+import com.itextpdf.android.library.extensions.*
 import com.itextpdf.android.library.lists.PdfAdapter
 import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.annotations.AnnotationRecyclerItem
@@ -209,6 +209,7 @@ open class PdfFragment : Fragment() {
         setAnnotationsViewVisibility(false)
     }
 
+
     /**
      * Parse attributes during inflation from a view hierarchy into the
      * arguments we handle.
@@ -219,60 +220,26 @@ open class PdfFragment : Fragment() {
         val builder = PdfConfig.Builder()
 
         // get the attributes data set via xml
-        val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.PdfFragment)
-        a.getText(R.styleable.PdfFragment_file_uri)?.let {
-            builder.pdfUri = Uri.parse(it.toString())
-        }
-        a.getText(R.styleable.PdfFragment_file_name)?.let {
-            builder.fileName = it.toString()
-        }
+        context.obtainStyledAttributes(attrs, R.styleable.PdfFragment).use { a: TypedArray ->
 
-        builder.displayFileName = a.getBoolean(R.styleable.PdfFragment_display_file_name, DEFAULT_DISPLAY_FILE_NAME)
-        builder.pageSpacing = a.getInteger(R.styleable.PdfFragment_page_spacing, DEFAULT_PAGE_SPACING)
-        builder.enableThumbnailNavigationView = a.getBoolean(
-            R.styleable.PdfFragment_enable_thumbnail_navigation_view,
-            DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW
-        )
-        builder.enableSplitView = a.getBoolean(
-            R.styleable.PdfFragment_enable_split_view,
-            DEFAULT_ENABLE_SPLIT_VIEW
-        )
-        builder.enableAnnotationRendering = a.getBoolean(
-            R.styleable.PdfFragment_enable_annotation_rendering,
-            DEFAULT_ENABLE_ANNOTATION_RENDERING
-        )
-        builder.enableDoubleTapZoom = a.getBoolean(
-            R.styleable.PdfFragment_enable_double_tap_zoom,
-            DEFAULT_ENABLE_DOUBLE_TAP_ZOOM
-        )
-        builder.showScrollIndicator = a.getBoolean(
-            R.styleable.PdfFragment_show_scroll_indicator,
-            DEFAULT_SHOW_SCROLL_INDICATOR
-        )
-        builder.showScrollIndicatorPageNumber = a.getBoolean(
-            R.styleable.PdfFragment_show_scroll_indicator_page_number,
-            DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER
-        )
-        a.getText(R.styleable.PdfFragment_primary_color)?.let {
-            builder.primaryColor = it.toString()
+            a.getTextIfAvailable(R.styleable.PdfFragment_file_uri) { builder.pdfUri = Uri.parse(it.toString()) }
+            a.getTextIfAvailable(R.styleable.PdfFragment_file_name) { builder.fileName = it.toString() }
+            a.getBooleanIfAvailable(R.styleable.PdfFragment_display_file_name) { builder.displayFileName = it }
+            a.getIntegerIfAvailable(R.styleable.PdfFragment_page_spacing) { builder.pageSpacing = it }
+            a.getBooleanIfAvailable(R.styleable.PdfFragment_enable_thumbnail_navigation_view) { builder.enableThumbnailNavigationView = it }
+            a.getBooleanIfAvailable(R.styleable.PdfFragment_enable_split_view) { builder.enableSplitView = it }
+            a.getBooleanIfAvailable(R.styleable.PdfFragment_enable_annotation_rendering) { builder.enableAnnotationRendering = it }
+            a.getBooleanIfAvailable(R.styleable.PdfFragment_enable_double_tap_zoom) { builder.enableDoubleTapZoom = it }
+            a.getBooleanIfAvailable(R.styleable.PdfFragment_show_scroll_indicator) { builder.showScrollIndicator = it }
+            a.getBooleanIfAvailable(R.styleable.PdfFragment_show_scroll_indicator_page_number) { builder.showScrollIndicatorPageNumber = it }
+            a.getTextIfAvailable(R.styleable.PdfFragment_primary_color) { builder.primaryColor = it.toString() }
+            a.getTextIfAvailable(R.styleable.PdfFragment_secondary_color) { builder.secondaryColor = it.toString() }
+            a.getTextIfAvailable(R.styleable.PdfFragment_background_color) { builder.backgroundColor = it.toString() }
+            a.getBooleanIfAvailable(R.styleable.PdfFragment_enable_help_dialog) { builder.enableHelpDialog = it }
+            a.getTextIfAvailable(R.styleable.PdfFragment_help_dialog_title) { builder.helpDialogTitle = it.toString() }
+            a.getTextIfAvailable(R.styleable.PdfFragment_help_dialog_text) { builder.helpDialogText = it.toString() }
+
         }
-        a.getText(R.styleable.PdfFragment_secondary_color)?.let {
-            builder.secondaryColor = it.toString()
-        }
-        a.getText(R.styleable.PdfFragment_background_color)?.let {
-            builder.backgroundColor = it.toString()
-        }
-        builder.enableHelpDialog = a.getBoolean(
-            R.styleable.PdfFragment_enable_help_dialog,
-            SplitDocumentFragment.DEFAULT_ENABLE_HELP_DIALOG
-        )
-        a.getText(R.styleable.PdfFragment_help_dialog_title)?.let {
-            builder.helpDialogTitle = it.toString()
-        }
-        a.getText(R.styleable.PdfFragment_help_dialog_text)?.let {
-            builder.helpDialogText = it.toString()
-        }
-        a.recycle()
 
         config = builder.build()
 
@@ -789,16 +756,6 @@ open class PdfFragment : Fragment() {
         private const val CURRENT_PAGE = "CURRENT_PAGE"
         internal const val PDF_URI = "PDF_URI"
 
-        const val DEFAULT_DISPLAY_FILE_NAME = false
-        const val DEFAULT_PAGE_SPACING = 10
-        const val DEFAULT_ENABLE_THUMBNAIL_NAVIGATION_VIEW = true
-        const val DEFAULT_ENABLE_SPLIT_VIEW = true
-        const val DEFAULT_ENABLE_ANNOTATION_RENDERING = true
-        const val DEFAULT_ENABLE_DOUBLE_TAP_ZOOM = true
-        const val DEFAULT_SHOW_SCROLL_INDICATOR = true
-        const val DEFAULT_SHOW_SCROLL_INDICATOR_PAGE_NUMBER = true
-        const val DEFAULT_PRIMARY_COLOR = "#FF9400"
-        const val DEFAULT_SECONDARY_COLOR = "#FFEFD8"
 
         /**
          * Static function to create a new instance of the PdfFragment with the given settings

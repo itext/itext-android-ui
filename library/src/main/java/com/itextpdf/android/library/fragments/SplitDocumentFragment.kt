@@ -64,12 +64,12 @@ open class SplitDocumentFragment : Fragment() {
     /**
      * A color string to set the primary color of the view (affects: scroll indicator, navigation thumbnails and loading indicator). Default: #FF9400
      */
-    private var primaryColor: String? = PdfFragment.DEFAULT_PRIMARY_COLOR
+    private var primaryColor: String? = DEFAULT_PRIMARY_COLOR
 
     /**
      * A color string to set the secondary color of the view (affects: scroll indicator and navigation thumbnails). Default: #FFEFD8
      */
-    private var secondaryColor: String? = PdfFragment.DEFAULT_SECONDARY_COLOR
+    private var secondaryColor: String? = DEFAULT_SECONDARY_COLOR
 
     /**
      * A boolean flag to enable/disable the help dialog in the split view. Default: true
@@ -170,9 +170,9 @@ open class SplitDocumentFragment : Fragment() {
                 pdfUri = Uri.parse(storedUri)
             }
             fileName = bundle.getString(FILE_NAME) ?: ""
-            primaryColor = bundle.getString(PRIMARY_COLOR) ?: PdfFragment.DEFAULT_PRIMARY_COLOR
+            primaryColor = bundle.getString(PRIMARY_COLOR) ?: DEFAULT_PRIMARY_COLOR
             secondaryColor =
-                bundle.getString(SECONDARY_COLOR) ?: PdfFragment.DEFAULT_SECONDARY_COLOR
+                bundle.getString(SECONDARY_COLOR) ?: DEFAULT_SECONDARY_COLOR
             enableHelpDialog = bundle.getBoolean(ENABLE_HELP_DIALOG, DEFAULT_ENABLE_HELP_DIALOG)
             helpDialogTitle = bundle.getString(HELP_DIALOG_TITLE)
             helpDialogText = bundle.getString(HELP_DIALOG_TEXT)
@@ -417,6 +417,8 @@ open class SplitDocumentFragment : Fragment() {
         private const val PAGE_SIZE = 30
         private const val LOAD_MORE_OFFSET = PAGE_SIZE / 2
         private const val UNNAMED_FILE = "unnamed.pdf"
+        private const val DEFAULT_PRIMARY_COLOR = "#FF9400"
+        private const val DEFAULT_SECONDARY_COLOR = "#FFEFD8"
 
         const val SPLIT_DOCUMENT_RESULT = "SPLIT_DOCUMENT_RESULT"
         const val SPLIT_PDF_URI_LIST = "SPLIT_PDF_URI_LIST"
