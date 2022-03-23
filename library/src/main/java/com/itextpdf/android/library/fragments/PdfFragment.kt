@@ -751,10 +751,9 @@ open class PdfFragment : Fragment() {
 
         private const val OPEN_BOTTOM_SHEET_DELAY_MS = 200L
 
-        private const val EXTRA_PDF_CONFIG = "EXTRA_PDF_CONFIG"
+        const val EXTRA_PDF_CONFIG = "EXTRA_PDF_CONFIG"
 
         private const val CURRENT_PAGE = "CURRENT_PAGE"
-        internal const val PDF_URI = "PDF_URI"
 
 
         /**

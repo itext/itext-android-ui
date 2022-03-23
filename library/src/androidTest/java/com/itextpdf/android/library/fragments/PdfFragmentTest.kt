@@ -29,7 +29,9 @@ class PdfFragmentTest {
         val file = fileUtil.loadFileFromAssets(context, "sample_1.pdf")
         val pdfUri = Uri.fromFile(file)
 
-        val fragmentArgs = bundleOf(PdfFragment.PDF_URI to pdfUri)
+        val pdfConfig = PdfConfig(pdfUri = pdfUri)
+
+        val fragmentArgs = bundleOf(PdfFragment.EXTRA_PDF_CONFIG to pdfConfig)
 
         val scenario: FragmentScenario<PdfFragment> = launchFragmentInContainer(
             fragmentArgs = fragmentArgs,
@@ -37,8 +39,8 @@ class PdfFragmentTest {
         )
 
         // Click on "annotations" menu-item
-        onView(Matchers.allOf(ViewMatchers.withId(R.id.action_annotations), ViewMatchers.isDisplayed()))
-            .perform(ViewActions.click())
+        onView(Matchers.allOf(ViewMatchers.withId(R.id.pdfView), ViewMatchers.isDisplayed()))
+            .perform(ViewActions.longClick())
 
     }
 
