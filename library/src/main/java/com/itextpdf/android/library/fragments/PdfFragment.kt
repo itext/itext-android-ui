@@ -599,21 +599,11 @@ open class PdfFragment : Fragment() {
 
         val fragmentManager = requireActivity().supportFragmentManager
         val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
-        val fragment =
-            SplitDocumentFragment.newInstance(
-                pdfUri = config.pdfUri,
-                fileName = config.fileName,
-                primaryColor = config.primaryColor,
-                secondaryColor = config.secondaryColor,
-                enableHelpDialog = config.enableHelpDialog,
-                helpDialogTitle = config.helpDialogTitle,
-                helpDialogText = config.helpDialogText
-            )
+        val fragment = SplitDocumentFragment.newInstance(config)
         fragmentTransaction.hide(this)
         fragmentTransaction.add(android.R.id.content, fragment, SplitDocumentFragment.TAG)
         fragmentTransaction.commit()
     }
-
 
     /**
      * Closes the split document view if the SplitDocumentFragment TAG is found
@@ -757,8 +747,10 @@ open class PdfFragment : Fragment() {
 
 
         /**
-         * Static function to create a new instance of the PdfFragment with the given settings
-         * @return  in instance of PdfFragment with the given settings
+         * Static function to create a new instance of the PdfFragment with the given settings.
+         *
+         * @param pdfConfig The configuration to be used.
+         * @return A new instance of [PdfFragment] with the given settings
          */
         fun newInstance(pdfConfig: PdfConfig): PdfFragment {
             val fragment = PdfFragment()

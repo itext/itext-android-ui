@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toFile
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivitySplitPdfBinding
+import com.itextpdf.android.library.fragments.PdfConfig
 import com.itextpdf.android.library.fragments.SplitDocumentFragment
 
 class PdfSplitActivity : AppCompatActivity() {
@@ -27,13 +28,11 @@ class PdfSplitActivity : AppCompatActivity() {
 
                 val pdfUri = Uri.parse(pdfUriString)
                 val fileName = extras.getString(EXTRA_PDF_TITLE)
+                val config = PdfConfig(pdfUri = pdfUri, fileName = fileName)
 
                 // set fragment in code
                 if (savedInstanceState == null) {
-                    val fragment: SplitDocumentFragment = SplitDocumentFragment.newInstance(
-                        pdfUri = pdfUri,
-                        fileName = fileName
-                    )
+                    val fragment: SplitDocumentFragment = SplitDocumentFragment.newInstance(config)
                     val fm = supportFragmentManager.beginTransaction()
                     fm.replace(R.id.pdf_splitter_container, fragment, SplitDocumentFragment.TAG)
                     fm.commit()
