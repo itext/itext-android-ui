@@ -406,22 +406,6 @@ open class PdfFragment : Fragment() {
         }
     }
 
-    override fun onCreateContextMenu(
-        menu: ContextMenu,
-        v: View,
-        menuInfo: ContextMenu.ContextMenuInfo?
-    ) {
-        super.onCreateContextMenu(menu, v, menuInfo)
-        menu.setHeaderTitle("Context Menu")
-        menu.add(0, v.id, 0, "Upload")
-        menu.add(0, v.id, 0, "Search")
-    }
-
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        Toast.makeText(requireContext(), "Selected Item: " + item.title, Toast.LENGTH_SHORT).show()
-        return true
-    }
-
     private fun setupAnnotationView() {
 
         requireContext().pdfDocumentInReadingMode(config.pdfUri)?.let { pdfDocument ->
