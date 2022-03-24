@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.lifecycle.Lifecycle
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -28,15 +29,25 @@ class PdfFragmentTest {
     private val fileUtil = FileUtil.getInstance()
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
+    private val file = fileUtil.loadFileFromAssets(context, "sample_1.pdf")
+    private val pdfUri = Uri.fromFile(file)
+    private val pdfConfig = PdfConfig(pdfUri = pdfUri)
+    private val fragmentArgs = bundleOf(PdfFragment.EXTRA_PDF_CONFIG to pdfConfig)
+
+    @Test
+    fun testRecreation() {
+        val scenario: FragmentScenario<PdfFragment> = launchFragmentInContainer(
+            fragmentArgs = fragmentArgs,
+            themeResId = R.style.Theme_MaterialComponents_DayNight
+        )
+
+        scenario.moveToState(Lifecycle.State.RESUMED)
+        scenario.recreate()
+    }
+
     @Test
     fun testLongPress() {
 
-        val file = fileUtil.loadFileFromAssets(context, "sample_1.pdf")
-        val pdfUri = Uri.fromFile(file)
-
-        val pdfConfig = PdfConfig(pdfUri = pdfUri)
-
-        val fragmentArgs = bundleOf(PdfFragment.EXTRA_PDF_CONFIG to pdfConfig)
 
         val scenario: FragmentScenario<PdfFragment> = launchFragmentInContainer(
             fragmentArgs = fragmentArgs,
