@@ -3,6 +3,12 @@
     package="com.itextpdf.android.library">
 
     <application>
+
+        <activity
+            android:name=".PdfActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

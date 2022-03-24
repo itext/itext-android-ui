@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.util.Log
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -19,12 +20,14 @@ import android.widget.Toast
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
+import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.use
 import androidx.core.net.toFile
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -256,21 +259,32 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setupToolbar() {
+
         setHasOptionsMenu(true)
-        if (::binding.isInitialized) {
-            (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbPdfFragment)
-            binding.tbPdfFragment.setNavigationIcon(R.drawable.abc_ic_ab_back_material)
-            binding.tbPdfFragment.setNavigationOnClickListener { requireActivity().onBackPressed() }
-            binding.tbPdfFragment.title = if (config.displayFileName) config.fileName else null
+
+        val toolbar = binding.tbPdfFragment
+        toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material)
+        toolbar.setNavigationOnClickListener { requireActivity().onBackPressed() }
+        toolbar.title = if (config.displayFileName) config.fileName else null
+
+        val parentActivity: FragmentActivity? = activity
+
+        when (parentActivity) {
+            is AppCompatActivity -> parentActivity.setSupportActionBar(binding.tbPdfFragment)
+            else -> Log.d(TAG, "Cannot setSupportActionBar on parent activity $parentActivity.")
         }
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_pdf_fragment, menu)
-        menu.getItem(0).isVisible = config.enableThumbnailNavigationView
-        menu.getItem(1).isVisible = false //TODO: highlight
-        menu.getItem(2).isVisible = true //TODO: annotate
-        menu.getItem(3).isVisible = config.enableSplitView
+
+        menu.findItem(R.id.action_navigate_pdf).isVisible = config.enableThumbnailNavigationView
+        menu.findItem(R.id.action_highlight).isVisible = config.enableHighlightView
+        menu.findItem(R.id.action_annotations).isVisible = config.enableAnnotationView
+        menu.findItem(R.id.action_split_pdf).isVisible = config.enableSplitView
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 

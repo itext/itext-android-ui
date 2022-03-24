@@ -39,7 +39,9 @@ data class PdfConfig(
     val backgroundColor: String = BACKGROUND_COLOR,
     val enableHelpDialog: Boolean = ENABLE_HELP_DIALOG,
     val helpDialogTitle: String? = HELP_DIALOG_TITLE,
-    val helpDialogText: String? = HELP_DIALOG_TEXT
+    val helpDialogText: String? = HELP_DIALOG_TEXT,
+    val enableHighlightView: Boolean = ENABLE_HIGHLIGHT_VIEW,
+    val enableAnnotationView: Boolean = ENABLE_ANNOTATION_VIEW
 ) : Parcelable {
 
     private constructor(builder: Builder) : this(
@@ -58,7 +60,9 @@ data class PdfConfig(
         backgroundColor = builder.backgroundColor,
         enableHelpDialog = builder.enableHelpDialog,
         helpDialogTitle = builder.helpDialogTitle,
-        helpDialogText = builder.helpDialogText
+        helpDialogText = builder.helpDialogText,
+        enableHighlightView = builder.enableHighlightView,
+        enableAnnotationView = builder.enableAnnotationView
     )
 
     companion object {
@@ -80,6 +84,9 @@ data class PdfConfig(
         private const val ENABLE_HELP_DIALOG: Boolean = true
         private val HELP_DIALOG_TITLE: String? = null
         private val HELP_DIALOG_TEXT: String? = null
+        private const val ENABLE_HIGHLIGHT_VIEW: Boolean = true
+        private const val ENABLE_ANNOTATION_VIEW: Boolean = true
+
     }
 
     class Builder {
@@ -100,6 +107,8 @@ data class PdfConfig(
         var enableHelpDialog: Boolean = ENABLE_HELP_DIALOG
         var helpDialogTitle: String? = HELP_DIALOG_TITLE
         var helpDialogText: String? = HELP_DIALOG_TEXT
+        var enableHighlightView: Boolean = ENABLE_HIGHLIGHT_VIEW
+        var enableAnnotationView: Boolean = ENABLE_ANNOTATION_VIEW
 
         fun build() = PdfConfig(this)
 
