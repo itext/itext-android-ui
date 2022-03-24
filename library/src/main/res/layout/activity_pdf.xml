@@ -12,7 +12,6 @@
         android:layout_height="match_parent"
         app:background_color="#F4EFBB"
         app:display_file_name="true"
-        app:enable_split_view="false"
         app:file_name="sample_1.pdf"
         app:file_uri="file:///data/user/0/com.itextpdf.android.library.test/cache/sample_1.pdf"
         app:layout_constraintStart_toStartOf="parent"

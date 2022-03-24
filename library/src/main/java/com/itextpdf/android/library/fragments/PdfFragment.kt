@@ -267,7 +267,7 @@ open class PdfFragment : Fragment() {
 
         when (parentActivity) {
             is AppCompatActivity -> parentActivity.setSupportActionBar(binding.tbPdfFragment)
-            else -> Log.d(TAG, "Cannot set toolbar on parent activity $parentActivity.")
+            else -> Log.d(TAG, "Cannot setSupportActionBar on parent activity $parentActivity.")
         }
 
 
@@ -275,10 +275,12 @@ open class PdfFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_pdf_fragment, menu)
-        menu.getItem(0).isVisible = config.enableThumbnailNavigationView
-        menu.getItem(1).isVisible = config.enableHighlightView
-        menu.getItem(2).isVisible = config.enableAnnotationView
-        menu.getItem(3).isVisible = config.enableSplitView
+
+        menu.findItem(R.id.action_navigate_pdf).isVisible = config.enableThumbnailNavigationView
+        menu.findItem(R.id.action_highlight).isVisible = config.enableHighlightView
+        menu.findItem(R.id.action_annotations).isVisible = config.enableAnnotationView
+        menu.findItem(R.id.action_split_pdf).isVisible = config.enableSplitView
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 
