@@ -7,18 +7,19 @@ import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.ext.junit.rules.activityScenarioRule
+import androidx.test.espresso.contrib.RecyclerViewActions
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.itextpdf.android.library.R
-import com.itextpdf.android.library.PdfActivity
+import com.itextpdf.android.library.helpers.RecyclerViewMatcher
+import com.itextpdf.android.library.helpers.waitForView
 import com.itextpdf.android.library.util.FileUtil
 import org.hamcrest.Matchers.allOf
 import org.junit.Test
 import org.junit.runner.RunWith
+
 
 @LargeTest
 @RunWith(AndroidJUnit4::class)
@@ -43,17 +44,42 @@ class PdfFragmentTest {
         )
 
         // Click on "annotations" menu-item
-        onView(allOf(ViewMatchers.withId(R.id.pdfView), isDisplayed()))
+        onView(allOf(withId(R.id.pdfView), isDisplayed()))
             .perform(longClick())
 
-        onView(allOf(ViewMatchers.withId(R.id.etTextAnnotation)))
+        onView(allOf(withId(R.id.etTextAnnotation)))
             .check(matches(allOf(isDisplayed())))
             .perform(typeText("Lorem Ipsum"))
 
-        onView(allOf(ViewMatchers.withId(R.id.btnSaveAnnotation)))
+        onView(allOf(withId(R.id.btnSaveAnnotation)))
             .check(matches(allOf(isDisplayed())))
             .perform(click())
+
+        onView(allOf(withId(R.id.pdfView), isDisplayed()))
+            .perform(swipeUp(), click())
+
+        waitForBottomSheetToOpen()
+
+        onView(withId(R.id.rvAnnotations))
+            .perform(click())
+
+        onView(withId(R.id.ivMore)).perform(click())
+
+        onView(allOf(withText(context.getString(R.string.edit))))
+            .perform(click())
     }
+
+    private fun waitForBottomSheetToOpen() {
+
+        // TODO: We need to wait for the bottom sheet to open and almost all (technically feasible) tasks did not succeed.
+        //  This is why we're currently using the dirty Thread.sleep() which must be removed
+        //  Things I've tried already:
+        //  - Disable windowAnimation-, transitionAnimation- and animatorDuration-scale on emulator: https://developer.android.com/training/testing/espresso/setup
+        //  - Disable animations in build.gradle via testOptions.animationsDisabled = true
+        Thread.sleep(1000)
+
+    }
+
 
     /**
      * The file names of the pdf files that are stored in the assets folder.

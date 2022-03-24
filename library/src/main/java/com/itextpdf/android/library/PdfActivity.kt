@@ -6,7 +6,7 @@ import com.itextpdf.android.library.R
 import com.itextpdf.android.library.util.FileUtil
 
 
-class PdfActivity : AppCompatActivity() {
+internal class PdfActivity : AppCompatActivity() {
 
     private val fileUtil = FileUtil.getInstance()
 
