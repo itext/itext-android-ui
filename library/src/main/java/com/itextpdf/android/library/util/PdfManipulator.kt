@@ -267,7 +267,7 @@ object PdfManipulator {
         context: Context,
         fileUri: Uri,
         pageNumber: Int,
-        annotation: PdfTextAnnotation
+        annotation: PdfAnnotation
     ): File {
         val tempFile = fileUtil.createTempCopy(context, File(fileUri.path))
         val resultingFile: File =
@@ -276,6 +276,32 @@ object PdfManipulator {
                 for (ann in page.annotations) {
                     if (annotation.isSameAs(ann)) {
                         page.removeAnnotation(ann)
+                    }
+                }
+                tempFile
+            }
+
+        return fileUtil.overrideFile(resultingFile, fileUri)
+    }
+
+    fun editAnnotationFromPdf(
+        context: Context,
+        fileUri: Uri,
+        pageNumber: Int,
+        annotation: PdfAnnotation,
+        title: String?,
+        text: String
+    ): File {
+        val tempFile = fileUtil.createTempCopy(context, File(fileUri.path))
+        val resultingFile: File =
+            context.pdfDocumentInStampingMode(fileUri, tempFile).use { pdfDocument ->
+                val page = pdfDocument.getPage(pageNumber)
+                for (ann in page.annotations) {
+                    if (annotation.isSameAs(ann)) {
+                        ann.setContents(text)
+                        if (title != null) {
+                            annotation.title = PdfString(title)
+                        }
                     }
                 }
                 tempFile
