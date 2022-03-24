@@ -1,12 +1,7 @@
 package com.itextpdf.android.library.util
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.net.Uri
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.graphics.drawable.DrawableCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.isSameAs
@@ -25,7 +20,6 @@ import com.itextpdf.kernel.utils.PageRange
 import com.itextpdf.kernel.utils.PdfSplitter
 import com.itextpdf.layout.Document
 import com.itextpdf.layout.element.Paragraph
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -297,24 +291,10 @@ object PdfManipulator {
         bubbleSize: Float
     ): PdfFormXObject? {
         var commentXObj: PdfFormXObject? = null
+        val imageSize = bubbleSize * 3
+        val imageByteArray = ImageUtil.getResourceAsByteArray(context, R.drawable.ic_annotation, imageSize.toInt(), colorString)
 
-        val d = AppCompatResources.getDrawable(
-            context,
-            R.drawable.ic_annotation
-        )?.constantState?.newDrawable()?.mutate()
-        if (d != null) {
-            val imageSize = bubbleSize * 3
-
-            val wrappedDrawable = DrawableCompat.wrap(d)
-            DrawableCompat.setTint(
-                wrappedDrawable,
-                Color.parseColor(colorString)
-            )
-
-            val bitmap = d.toBitmap(imageSize.toInt(), imageSize.toInt(), Bitmap.Config.ARGB_8888)
-            val stream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-            val imageByteArray: ByteArray = stream.toByteArray()
+        if (imageByteArray != null) {
             val itextImageData = ImageDataFactory.createPng(imageByteArray)
 
             // draw a speech bubble on a 30x30 canvas

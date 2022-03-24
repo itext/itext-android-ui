@@ -9,15 +9,18 @@ import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.use
 import androidx.core.net.toFile
 import androidx.core.os.bundleOf
@@ -27,7 +30,6 @@ import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.github.barteksc.pdfviewer.PDFView
 import com.github.barteksc.pdfviewer.link.DefaultLinkHandler
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itextpdf.android.library.R
@@ -38,12 +40,13 @@ import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.annotations.AnnotationRecyclerItem
 import com.itextpdf.android.library.lists.annotations.AnnotationsAdapter
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
+import com.itextpdf.android.library.util.ImageUtil
 import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfViewScrollHandle
+import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
-import com.shockwave.pdfium.util.SizeF
 import java.lang.reflect.Method
 
 
@@ -76,6 +79,7 @@ open class PdfFragment : Fragment() {
 
     private var textAnnotations = mutableListOf<PdfTextAnnotation>()
     private var longPressPdfPagePosition: PointF? = null
+    private var ivHighlightedAnnotation: ImageView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -313,7 +317,7 @@ open class PdfFragment : Fragment() {
             pageNumber = currentPageIndex + 1,
             x = pdfPagePosition.x,
             y = pdfPagePosition.y,
-            bubbleSize = 30f,
+            bubbleSize = ANNOTATION_SIZE,
             bubbleColor = config.primaryColor
         )
 
@@ -485,19 +489,27 @@ open class PdfFragment : Fragment() {
                 showPdfLoadError(error.message ?: "Unknown")
             }
             .onPageScroll { _, _ ->
-                // if user scrolls, close the navView
+                // if user scrolls, close the navView and reset the highlighted annotation
                 if (!navPageSelected && navViewOpen) {
                     setThumbnailNavigationViewVisibility(false)
+                }
+                if (ivHighlightedAnnotation != null) {
+                    resetHighlightedAnnotation()
                 }
             }
             .onPageChange { page, _ ->
                 currentPageIndex = page
             }
             .onTap {
-                val pdfPagePosition = convertScreenPointToPdfPagePoint(it, binding.pdfView)
+                if (ivHighlightedAnnotation != null) {
+                    resetHighlightedAnnotation()
+                }
+
+                val pdfPagePosition = binding.pdfView.convertScreenPointToPdfPagePoint(it)
                 if (pdfPagePosition != null) {
                     val annotationIndex = findAnnotationIndexAtPosition(pdfPagePosition)
                     if (annotationIndex != null) {
+                        highlightAnnotation(it, textAnnotations[annotationIndex])
                         scrollAnnotationsViewTo(annotationIndex)
                         setAnnotationsViewVisibility(true)
                     }
@@ -506,7 +518,7 @@ open class PdfFragment : Fragment() {
                 true
             }
             .onLongPress { event ->
-                longPressPdfPagePosition = convertScreenPointToPdfPagePoint(event, binding.pdfView)
+                longPressPdfPagePosition = binding.pdfView.convertScreenPointToPdfPagePoint(event)
                 setAnnotationTextViewVisibility(true)
             }
             .onLoad {
@@ -529,6 +541,47 @@ open class PdfFragment : Fragment() {
                 Color.parseColor(config.primaryColor),
                 PorterDuff.Mode.SRC_ATOP
             )
+        }
+    }
+
+    private fun resetHighlightedAnnotation() {
+        (view as ViewGroup).removeView(ivHighlightedAnnotation)
+        ivHighlightedAnnotation = null
+    }
+
+    private fun highlightAnnotation(event: MotionEvent, annotation: PdfAnnotation?) {
+        val size = (ANNOTATION_SIZE * 3 * binding.pdfView.zoom).toInt()
+
+        // android:layout_marginTop="?attr/actionBarSize" affects the click position, therefore take that into account when setting position
+        val tv = TypedValue()
+        var actionBarHeight = 0
+        if (requireActivity().theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+        }
+
+        val x = event.x.toInt() - size / 2
+        val y = event.y.toInt() - size / 2 + actionBarHeight
+
+        val lp = CoordinatorLayout.LayoutParams(
+            CoordinatorLayout.LayoutParams.WRAP_CONTENT,
+            CoordinatorLayout.LayoutParams.WRAP_CONTENT
+        )
+        ivHighlightedAnnotation = ImageView(requireContext())
+        ivHighlightedAnnotation?.imageAlpha = 200
+
+        // set position
+        lp.setMargins(x, y, 0, 0)
+        ivHighlightedAnnotation?.layoutParams = lp
+
+        ImageUtil.getResourceAsByteArray(
+            requireContext(),
+            R.drawable.ic_annotation,
+            size,
+            config.primaryColor
+        )?.let { imageByteArray ->
+            val bmp = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
+            ivHighlightedAnnotation?.setImageBitmap(Bitmap.createScaledBitmap(bmp, size, size, false))
+            (view as ViewGroup).addView(ivHighlightedAnnotation)
         }
     }
 
@@ -559,37 +612,6 @@ open class PdfFragment : Fragment() {
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
         }
-    }
-
-    fun convertScreenPointToPdfPagePoint(e: MotionEvent, pdfView: PDFView): PointF? {
-        val x = e.x
-        val y = e.y
-
-        val pdfFile = pdfView.pdfFile ?: return null
-        val mappedX = -pdfView.currentXOffset + x
-        val mappedY = -pdfView.currentYOffset + y
-        val page =
-            pdfFile.getPageAtOffset(if (pdfView.isSwipeVertical) mappedY else mappedX, pdfView.zoom)
-        val pageSize: SizeF = pdfFile.getScaledPageSize(page, pdfView.zoom)
-        val pageX: Int
-        val pageY: Int
-        if (pdfView.isSwipeVertical) {
-            pageX = pdfFile.getSecondaryPageOffset(page, pdfView.zoom).toInt()
-            pageY = pdfFile.getPageOffset(page, pdfView.zoom).toInt()
-        } else {
-            pageY = pdfFile.getSecondaryPageOffset(page, pdfView.zoom).toInt()
-            pageX = pdfFile.getPageOffset(page, pdfView.zoom).toInt()
-        }
-        return pdfFile.mapDeviceCoordsToPage(
-            page,
-            pageX,
-            pageY,
-            pageSize.width.toInt(),
-            pageSize.height.toInt(),
-            0, //TODO: use real rotation
-            mappedX.toInt(),
-            mappedY.toInt()
-        )
     }
 
     /**
@@ -740,6 +762,7 @@ open class PdfFragment : Fragment() {
         const val TAG = "PdfFragment"
 
         private const val OPEN_BOTTOM_SHEET_DELAY_MS = 200L
+        private const val ANNOTATION_SIZE = 30f
 
         const val EXTRA_PDF_CONFIG = "EXTRA_PDF_CONFIG"
 
