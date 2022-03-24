@@ -67,7 +67,7 @@ android {
 
         // Enable/Disable android-x test-orchestrator
         // The orchestrator is used to ensure empty/clean app-data for each instrumented-test
-        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+//        execution 'ANDROIDX_TEST_ORCHESTRATOR'
 
         animationsDisabled = true
 
