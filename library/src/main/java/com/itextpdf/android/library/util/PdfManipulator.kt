@@ -8,13 +8,18 @@ import com.itextpdf.android.library.extensions.isSameAs
 import com.itextpdf.android.library.extensions.pdfDocumentInReadingMode
 import com.itextpdf.android.library.extensions.pdfDocumentInStampingMode
 import com.itextpdf.io.image.ImageDataFactory
+import com.itextpdf.kernel.colors.Color
+import com.itextpdf.kernel.colors.DeviceRgb
 import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfName
 import com.itextpdf.kernel.pdf.PdfString
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
+import com.itextpdf.kernel.pdf.annot.PdfTextMarkupAnnotation
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas
+import com.itextpdf.kernel.pdf.extgstate.PdfExtGState
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject
 import com.itextpdf.kernel.utils.PageRange
 import com.itextpdf.kernel.utils.PdfSplitter
@@ -310,6 +315,63 @@ object PdfManipulator {
         return fileUtil.overrideFile(resultingFile, fileUri)
     }
 
+    fun addTextMarkupAnnotationToPdf(
+        context: Context,
+        fileUri: Uri,
+        pageNumber: Int,
+        x: Float,
+        y: Float,
+        size: Float,
+        color: String
+    ): File {
+
+        val tempFile = fileUtil.createTempCopy(context, File(fileUri.path))
+        val resultingFile: File = context.pdfDocumentInStampingMode(fileUri, tempFile)
+            .use { pdfDoc ->
+
+                val rect = Rectangle(x, y, size, size)
+                // Specify quad points in Z-like order
+                // [0,1] x1,y1   [2,3] x2,y2
+                // [4,5] x3,y3   [6,7] x4,y4
+                // Specify quad points in Z-like order
+                // [0,1] x1,y1   [2,3] x2,y2
+                // [4,5] x3,y3   [6,7] x4,y4
+                val quads = FloatArray(8)
+                quads[0] = rect.x
+                quads[1] = rect.y + rect.height
+                quads[2] = rect.x + rect.width
+                quads[3] = quads[1]
+                quads[4] = quads[0]
+                quads[5] = rect.y
+                quads[6] = quads[2]
+                quads[7] = quads[5]
+
+                val page = pdfDoc.getPage(pageNumber)
+                val highlightColor: Color = DeviceRgb(1f, 1f, 0f)
+
+                val markupAnnotation = PdfTextMarkupAnnotation(rect, PdfName.Highlight, quads)
+                    .setColor(highlightColor)
+
+                page.addAnnotation(markupAnnotation)
+
+
+                val canvas = PdfCanvas(page)
+                val extGState = PdfExtGState()
+                extGState.blendMode = PdfExtGState.BM_MULTIPLY
+                canvas.setExtGState(extGState)
+                canvas.rectangle(rect.x.toDouble(), rect.y.toDouble(), rect.width.toDouble(), rect.height.toDouble())
+                canvas.setFillColor(highlightColor)
+                canvas.fill()
+                canvas.release()
+
+                pdfDoc.close()
+
+                tempFile
+            }
+
+        return fileUtil.overrideFile(resultingFile, fileUri)
+    }
+
     private fun getCommentAppearance(
         context: Context,
         pdfDocument: PdfDocument,
@@ -330,6 +392,111 @@ object PdfManipulator {
         }
         return commentXObj
     }
+
+//    private fun addTextMarkupAnnotationToPdf(subtype: PdfName, annotObject: AnnotObject, color: Color) {
+//        val rect: Rectangle = readAnnotRect(annotObject)
+//        val quads: FloatArray = readAnnotQuadPoints(annotObject)
+//        val pdfAnnot = PdfTextMarkupAnnotation(rect, subtype, quads)
+//        addCommonAnnotationAttributes(pdfAnnot, annotObject, color)
+//        addMarkupAnnotationAttributes(pdfAnnot, annotObject)
+//        val page: Int = readAnnotPage(annotObject)
+//        pdfDocument.getPage(page).addAnnotation(pdfAnnot)
+//        addPopupAnnotation(page, pdfAnnot, annotObject.popup)
+//    }
+//    private fun readAnnotRect(annotObject: AnnotObject): Rectangle {
+//        val rect: String = annotObject.getAttributeValue(XfdfConstants.RECT)
+//        return XfdfObjectReadingUtils.convertRectFromString(rect, this.transform)
+//    }
+//
+//    private fun readAnnotQuadPoints(annotObject: AnnotObject): FloatArray {
+//        val coords: String = annotObject.getAttributeValue(XfdfConstants.COORDS)
+//        return XfdfObjectReadingUtils.convertQuadPointsFromCoordsString(coords, this.transform)
+//    }
+//
+//    private fun readAnnotPage(annotObject: AnnotObject): Int {
+//        // iText pages are 1-indexed
+//        val page: Int = 1 + annotObject.getAttribute(XfdfConstants.PAGE).getValue().toInt()
+//        return this.pageShift + page
+//    }
+
+//    private fun addCommonAnnotationAttributes(annotation: PdfAnnotation, annotObject: AnnotObject, color: Color) {
+//        annotation.flags = XfdfObjectReadingUtils.convertFlagsFromString(annotObject.getAttributeValue(XfdfConstants.FLAGS))
+//        annotation.setColor(color)
+//        val dateString = annotObject.getAttributeValue(XfdfConstants.DATE)
+//        if (dateString != null) {
+//            annotation.date = PdfString(dateString)
+//        }
+//        val name = annotObject.getAttributeValue(XfdfConstants.NAME)
+//        if (name != null) {
+//            annotation.name = PdfString(name)
+//            annotMap.put(name, annotation)
+//            // add pending replies
+//            for (reply in replyMap.getOrDefault(name, Collections.emptyList())) {
+//                reply.inReplyTo = annotation
+//            }
+//            replyMap.remove(name)
+//        }
+//        val titleString = annotObject.getAttributeValue(XfdfConstants.TITLE)
+//        if (titleString != null) {
+//            annotation.title = PdfString(titleString)
+//        }
+//    }
+
+//    private fun addPopupAnnotation(page: Int, parent: PdfMarkupAnnotation, popup: AnnotObject?) {
+//        if (popup != null) {
+//            val pdfPopupAnnot = PdfPopupAnnotation(readAnnotRect(popup))
+//            val openProp = popup.getAttributeValue("open")
+//            val open = "yes" == openProp
+//            pdfPopupAnnot.setOpen(open).flags = XfdfObjectReadingUtils.convertFlagsFromString(popup.getAttributeValue(XfdfConstants.FLAGS))
+//            parent.popup = pdfPopupAnnot
+//            pdfDocument.getPage(page).addAnnotation(pdfPopupAnnot)
+//        }
+//    }
+
+//    private fun addMarkupAnnotationAttributes(annotation: PdfMarkupAnnotation, annotObject: AnnotObject) {
+//        val creationDateString = annotObject.getAttributeValue(XfdfConstants.CREATION_DATE)
+//        if (creationDateString != null) {
+//            annotation.creationDate = PdfString(creationDateString)
+//        }
+//        val subjectString = annotObject.getAttributeValue(XfdfConstants.SUBJECT)
+//        if (subjectString != null) {
+//            annotation.subject = PdfString(subjectString)
+//        }
+//        val intent = annotObject.getAttributeValue("IT")
+//        if (intent != null && !intent.isBlank()) {
+//            annotation.intent = PdfName(intent)
+//        }
+//        val irpt = annotObject.getAttributeValue(XfdfConstants.IN_REPLY_TO)
+//        if (irpt != null && !irpt.isBlank()) {
+//            if ("group".equals(annotObject.getAttributeValue(XfdfConstants.REPLY_TYPE), ignoreCase = true)) {
+//                annotation.replyType = PdfName.Group
+//            }
+//            val inReplyToAnnot: PdfAnnotation = annotMap.get(irpt)
+//            if (inReplyToAnnot != null) {
+//                annotation.inReplyTo = inReplyToAnnot
+//            } else {
+//                // queue for later
+//                var queued: MutableList<PdfMarkupAnnotation?>? = replyMap.get(irpt)
+//                if (queued == null) {
+//                    queued = ArrayList()
+//                    queued.add(annotation)
+//                    replyMap.put(irpt, queued)
+//                } else {
+//                    queued.add(annotation)
+//                }
+//            }
+//        }
+//        val rc = annotObject.contentsRichText
+//        if (rc != null && !rc.toString().isBlank()) {
+//            val rcString = rc.toString().trim { it <= ' ' }
+//            annotation.richText = PdfString(rcString)
+//        }
+//        val plainContents = annotObject.contents
+//        if (plainContents != null && !plainContents.toString().isBlank()) {
+//            val pcString = plainContents.toString().trim { it <= ' ' }
+//            annotation.contents = PdfString(pcString)
+//        }
+//    }
 
     //TODO: only for testing
     fun writePdf(output: FileOutputStream) {

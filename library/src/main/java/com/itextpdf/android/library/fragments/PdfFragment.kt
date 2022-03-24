@@ -136,7 +136,7 @@ open class PdfFragment : Fragment() {
             if (annotationActionMode == AnnotationAction.ADD) {
                 longPressPdfPagePosition?.let { pdfPagePosition ->
                     val annotationText = binding.etTextAnnotation.text.toString()
-                    addAnnotation(null, annotationText, pdfPagePosition)
+                    addTextAnnotation(null, annotationText, pdfPagePosition)
                     setAnnotationTextViewVisibility(false)
                     binding.etTextAnnotation.text.clear()
                 }
@@ -332,7 +332,7 @@ open class PdfFragment : Fragment() {
         }
     }
 
-    private fun addAnnotation(title: String?, text: String, pdfPagePosition: PointF) {
+    private fun addTextAnnotation(title: String?, text: String, pdfPagePosition: PointF) {
         PdfManipulator.addTextAnnotationToPdf(
             context = requireContext(),
             fileUri = config.pdfUri,
@@ -343,6 +343,20 @@ open class PdfFragment : Fragment() {
             y = pdfPagePosition.y,
             bubbleSize = ANNOTATION_SIZE,
             bubbleColor = config.primaryColor
+        )
+        setupPdfView()
+        annotationActionMode = null
+    }
+
+    private fun addMarkupAnnotation(pdfPagePosition: PointF) {
+        PdfManipulator.addTextMarkupAnnotationToPdf(
+            context = requireContext(),
+            fileUri = config.pdfUri,
+            pageNumber = currentPageIndex + 1,
+            x = pdfPagePosition.x,
+            y = pdfPagePosition.y,
+            size = ANNOTATION_SIZE,
+            color = config.primaryColor
         )
         setupPdfView()
         annotationActionMode = null
@@ -543,9 +557,16 @@ open class PdfFragment : Fragment() {
                 true
             }
             .onLongPress { event ->
-                annotationActionMode = AnnotationAction.ADD
-                longPressPdfPagePosition = binding.pdfView.convertScreenPointToPdfPagePoint(event)
-                setAnnotationTextViewVisibility(true)
+                //TODO: remove again after testing
+                val position = binding.pdfView.convertScreenPointToPdfPagePoint(event)
+                position?.let {
+                    addMarkupAnnotation(it)
+                }
+
+                //TODO: add again after testing
+//                annotationActionMode = AnnotationAction.ADD
+//                longPressPdfPagePosition = binding.pdfView.convertScreenPointToPdfPagePoint(event)
+//                setAnnotationTextViewVisibility(true)
             }
             .onLoad {
                 setupThumbnailNavigationView()
