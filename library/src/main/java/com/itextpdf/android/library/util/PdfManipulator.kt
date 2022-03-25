@@ -7,6 +7,8 @@ import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.isSameAs
 import com.itextpdf.android.library.extensions.pdfDocumentInReadingMode
 import com.itextpdf.android.library.extensions.pdfDocumentInStampingMode
+import com.itextpdf.forms.xfdf.AnnotObject
+import com.itextpdf.forms.xfdf.XfdfConstants
 import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.kernel.colors.Color
 import com.itextpdf.kernel.colors.DeviceRgb
@@ -16,10 +18,10 @@ import com.itextpdf.kernel.pdf.PdfName
 import com.itextpdf.kernel.pdf.PdfString
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
+import com.itextpdf.kernel.pdf.annot.PdfMarkupAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextMarkupAnnotation
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas
-import com.itextpdf.kernel.pdf.extgstate.PdfExtGState
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject
 import com.itextpdf.kernel.utils.PageRange
 import com.itextpdf.kernel.utils.PdfSplitter
@@ -281,6 +283,7 @@ object PdfManipulator {
                 for (ann in page.annotations) {
                     if (annotation.isSameAs(ann)) {
                         page.removeAnnotation(ann)
+                        break
                     }
                 }
                 tempFile
@@ -351,18 +354,18 @@ object PdfManipulator {
 
                 val markupAnnotation = PdfTextMarkupAnnotation(rect, PdfName.Highlight, quads)
                     .setColor(highlightColor)
+                page.addAnnotation(markupAnnotation);
 
-                page.addAnnotation(markupAnnotation)
 
-
-                val canvas = PdfCanvas(page)
-                val extGState = PdfExtGState()
-                extGState.blendMode = PdfExtGState.BM_MULTIPLY
-                canvas.setExtGState(extGState)
-                canvas.rectangle(rect.x.toDouble(), rect.y.toDouble(), rect.width.toDouble(), rect.height.toDouble())
-                canvas.setFillColor(highlightColor)
-                canvas.fill()
-                canvas.release()
+                //TODO: this is only for testing -> adds color at correct position that cannot be removed afterwards
+//                val canvas = PdfCanvas(page)
+//                val extGState = PdfExtGState()
+//                extGState.blendMode = PdfExtGState.BM_MULTIPLY
+//                canvas.setExtGState(extGState)
+//                canvas.rectangle(rect.x.toDouble(), rect.y.toDouble(), rect.width.toDouble(), rect.height.toDouble())
+//                canvas.setFillColor(highlightColor)
+//                canvas.fill()
+//                canvas.release()
 
                 pdfDoc.close()
 

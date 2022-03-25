@@ -20,6 +20,7 @@ import android.widget.Toast
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
+import androidx.compose.ui.text.toLowerCase
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.use
@@ -46,8 +47,8 @@ import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.util.ImageUtil
 import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfViewScrollHandle
+import com.itextpdf.forms.xfdf.XfdfConstants
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
-import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import java.lang.reflect.Method
@@ -81,7 +82,7 @@ open class PdfFragment : Fragment() {
     private var currentPageIndex = 0
 
     private var annotationActionMode: AnnotationAction? = null
-    private var textAnnotations = mutableListOf<PdfTextAnnotation>()
+    private var textAnnotations = mutableListOf<PdfAnnotation>()
     private var editedAnnotationIndex = -1
     private var longPressPdfPagePosition: PointF? = null
     private var ivHighlightedAnnotation: ImageView? = null
@@ -429,24 +430,26 @@ open class PdfFragment : Fragment() {
             for (i in 1..pdfDocument.numberOfPages) {
                 val annotations = pdfDocument.getPage(i).annotations
                 for (annotation in annotations) {
-                    if (annotation is PdfTextAnnotation) {
-                        textAnnotations.add(annotation)
-                        val title =
-                            if (annotation.title != null) annotation.title.value else null
-                        val text =
-                            if (annotation.contents != null) annotation.contents.value else null
+                    if (annotation is PdfAnnotation) {
+                        if (annotation.subtype != null) {
+                            textAnnotations.add(annotation)
+                            val title =
+                                if (annotation.title != null) annotation.title.value else null
+                            val text =
+                                if (annotation.subtype.value.lowercase() == XfdfConstants.TEXT && annotation.contents != null) annotation.contents.value else annotation.subtype.value
 
-                        data.add(
-                            AnnotationRecyclerItem(
-                                title,
-                                text
-                            ) {
-                                showAnnotationContextMenu(
-                                    it,
-                                    R.menu.popup_menu_annotation,
-                                    annotation
-                                )
-                            })
+                            data.add(
+                                AnnotationRecyclerItem(
+                                    title,
+                                    text
+                                ) {
+                                    showAnnotationContextMenu(
+                                        it,
+                                        R.menu.popup_menu_annotation,
+                                        annotation
+                                    )
+                                })
+                        }
                     }
                 }
             }
