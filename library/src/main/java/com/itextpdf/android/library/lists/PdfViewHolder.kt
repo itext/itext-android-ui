@@ -21,7 +21,7 @@ abstract class PdfViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
     protected val tvPageNumber: TextView = view.findViewById(R.id.tvPageNumber)
     protected val thumbnailView: PdfThumbnailView = view.findViewById(R.id.pageThumbnail)
-    protected val strokeWidth: Int = DisplayUtil.dpToPx(STROKE_WIDTH_IN_DP, itemView.context)
+    private val strokeWidth: Int = DisplayUtil.dpToPx(STROKE_WIDTH_IN_DP, itemView.context)
 
     abstract fun bind(item: PdfRecyclerItem)
 

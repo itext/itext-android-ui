@@ -7,18 +7,14 @@ import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.isSameAs
 import com.itextpdf.android.library.extensions.pdfDocumentInReadingMode
 import com.itextpdf.android.library.extensions.pdfDocumentInStampingMode
-import com.itextpdf.forms.xfdf.AnnotObject
-import com.itextpdf.forms.xfdf.XfdfConstants
 import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.kernel.colors.Color
-import com.itextpdf.kernel.colors.DeviceRgb
 import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfName
 import com.itextpdf.kernel.pdf.PdfString
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
-import com.itextpdf.kernel.pdf.annot.PdfMarkupAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextMarkupAnnotation
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas
@@ -325,7 +321,7 @@ object PdfManipulator {
         x: Float,
         y: Float,
         size: Float,
-        color: String
+        color: Color
     ): File {
 
         val tempFile = fileUtil.createTempCopy(context, File(fileUri.path))
@@ -350,10 +346,9 @@ object PdfManipulator {
                 quads[7] = quads[5]
 
                 val page = pdfDoc.getPage(pageNumber)
-                val highlightColor: Color = DeviceRgb(1f, 1f, 0f)
 
                 val markupAnnotation = PdfTextMarkupAnnotation(rect, PdfName.Highlight, quads)
-                    .setColor(highlightColor)
+                    .setColor(color)
                 page.addAnnotation(markupAnnotation);
 
 
@@ -363,7 +358,7 @@ object PdfManipulator {
 //                extGState.blendMode = PdfExtGState.BM_MULTIPLY
 //                canvas.setExtGState(extGState)
 //                canvas.rectangle(rect.x.toDouble(), rect.y.toDouble(), rect.width.toDouble(), rect.height.toDouble())
-//                canvas.setFillColor(highlightColor)
+//                canvas.setFillColor(color)
 //                canvas.fill()
 //                canvas.release()
 

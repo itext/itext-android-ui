@@ -38,6 +38,10 @@
         layout="@layout/bottom_sheet_navigate" />
 
     <include
+        android:id="@+id/includedBottomSheetHighlighting"
+        layout="@layout/bottom_sheet_highlight" />
+
+    <include
         android:id="@+id/includedBottomSheetAnnotations"
         layout="@layout/bottom_sheet_annotations" />
 

@@ -20,7 +20,6 @@ import android.widget.Toast
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
-import androidx.compose.ui.text.toLowerCase
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.use
@@ -43,11 +42,14 @@ import com.itextpdf.android.library.lists.PdfAdapter
 import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.annotations.AnnotationRecyclerItem
 import com.itextpdf.android.library.lists.annotations.AnnotationsAdapter
+import com.itextpdf.android.library.lists.highlighting.HighlightColorAdapter
+import com.itextpdf.android.library.lists.highlighting.HighlightColorRecyclerItem
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.util.ImageUtil
 import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.itextpdf.forms.xfdf.XfdfConstants
+import com.itextpdf.kernel.colors.DeviceRgb
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
@@ -64,12 +66,15 @@ open class PdfFragment : Fragment() {
 
     private lateinit var binding: FragmentPdfBinding
     private lateinit var pdfNavigationAdapter: PdfAdapter
+    private lateinit var highlightColorAdapter: HighlightColorAdapter
     private lateinit var annotationAdapter: AnnotationsAdapter
 
     private val navigateBottomSheet by lazy { binding.includedBottomSheetNavigate.bottomSheetNavigate }
     private lateinit var navigateBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private val annotationsBottomSheet by lazy { binding.includedBottomSheetAnnotations.bottomSheetAnnotations }
     private lateinit var annotationsBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+    private val highlightingBottomSheet by lazy { binding.includedBottomSheetHighlighting.bottomSheetHighlighting }
+    private lateinit var highlightingBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     private lateinit var pdfiumCore: PdfiumCore
 
@@ -87,6 +92,14 @@ open class PdfFragment : Fragment() {
     private var longPressPdfPagePosition: PointF? = null
     private var ivHighlightedAnnotation: ImageView? = null
 
+    private var highlightColors = arrayOf(
+        DeviceRgb(1f, 1f, 0f), // yellow
+        DeviceRgb(0f, 1f, 0f), // green
+        DeviceRgb(1f, 0f, 0f), // red
+        DeviceRgb(0f, 0f, 1f), // blue
+        DeviceRgb(1f, 0f, 1f) // magenta
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -102,6 +115,7 @@ open class PdfFragment : Fragment() {
 
         setupToolbar()
         setupPdfView()
+        setupHighlightingView()
 
         val fileDescriptor: ParcelFileDescriptor? = requireContext().contentResolver.openFileDescriptor(config.pdfUri, "r")
         if (fileDescriptor != null) {
@@ -226,6 +240,9 @@ open class PdfFragment : Fragment() {
 
         annotationsBottomSheetBehavior = BottomSheetBehavior.from(annotationsBottomSheet)
         setAnnotationsViewVisibility(false)
+
+        highlightingBottomSheetBehavior = BottomSheetBehavior.from(highlightingBottomSheet)
+        setHighlightingViewVisibility(false)
     }
 
 
@@ -307,16 +324,7 @@ open class PdfFragment : Fragment() {
             true
         }
         R.id.action_highlight -> {
-            // only for testing (Create pdf file with dummy content)
-//            val name = "writePdfTest.pdf"
-//            val storageFolderPath =
-//                (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
-//            val pdfFile = File("$storageFolderPath/$name")
-//
-//            val newOutput = FileOutputStream(pdfFile)
-//            writePdf(newOutput)
-//
-//            setupPdfView(pdfFile.toUri())
+            toggleHighlightingViewVisibility()
             true
         }
         R.id.action_annotations -> {
@@ -357,7 +365,7 @@ open class PdfFragment : Fragment() {
             x = pdfPagePosition.x,
             y = pdfPagePosition.y,
             size = ANNOTATION_SIZE,
-            color = config.primaryColor
+            color = highlightColors[highlightColorAdapter.selectedPosition]
         )
         setupPdfView()
         annotationActionMode = null
@@ -419,6 +427,21 @@ open class PdfFragment : Fragment() {
 
             navViewSetupComplete = true
         }
+    }
+
+    private fun setupHighlightingView() {
+        val data = mutableListOf<HighlightColorRecyclerItem>()
+
+        for ((index, color) in highlightColors.withIndex()) {
+            data.add(HighlightColorRecyclerItem(color) { highlightColor ->
+                highlightColorAdapter.updateSelectedItem(index)
+            })
+        }
+
+        highlightColorAdapter = HighlightColorAdapter(data, config.primaryColor)
+        binding.includedBottomSheetHighlighting.rvColors.adapter = highlightColorAdapter
+        binding.includedBottomSheetHighlighting.rvColors.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
     }
 
     private fun setupAnnotationView() {
@@ -715,6 +738,14 @@ open class PdfFragment : Fragment() {
     }
 
     /**
+     * Toggles the visibility state of the highlighting view
+     */
+    open fun toggleHighlightingViewVisibility() {
+        // if bottom sheet is collapsed, set it to visible, if not set it to invisible
+        setHighlightingViewVisibility(highlightingBottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+    }
+
+    /**
      * Sets the visibility state of the thumbnail navigation view
      *
      * @param isVisible True when the view should be visible, false if it shouldn't.
@@ -723,6 +754,7 @@ open class PdfFragment : Fragment() {
         if (isVisible) {
             setAnnotationsViewVisibility(false)
             setAnnotationTextViewVisibility(false)
+            setHighlightingViewVisibility(false)
             scrollThumbnailNavigationViewToPage(getCurrentItemPosition())
         }
         view?.postDelayed({
@@ -730,6 +762,24 @@ open class PdfFragment : Fragment() {
                 if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
             navigateBottomSheetBehavior.state = updatedState
             navViewOpen = isVisible
+        }, OPEN_BOTTOM_SHEET_DELAY_MS)
+    }
+
+    /**
+     * Sets the visibility state of the highlighting view
+     *
+     * @param isVisible True when the view should be visible, false if it shouldn't.
+     */
+    open fun setHighlightingViewVisibility(isVisible: Boolean) {
+        if (isVisible) {
+            setThumbnailNavigationViewVisibility(false)
+            setAnnotationsViewVisibility(false)
+            setAnnotationTextViewVisibility(false)
+        }
+        view?.postDelayed({
+            val updatedState =
+                if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
+            highlightingBottomSheetBehavior.state = updatedState
         }, OPEN_BOTTOM_SHEET_DELAY_MS)
     }
 
@@ -742,6 +792,7 @@ open class PdfFragment : Fragment() {
         if (isVisible) {
             setThumbnailNavigationViewVisibility(false)
             setAnnotationTextViewVisibility(false)
+            setHighlightingViewVisibility(false)
         }
         view?.postDelayed({
             val updatedState =
@@ -759,6 +810,7 @@ open class PdfFragment : Fragment() {
         if (isVisible) {
             setThumbnailNavigationViewVisibility(false)
             setAnnotationsViewVisibility(false)
+            setHighlightingViewVisibility(false)
             binding.etTextAnnotation.requestFocus()
         }
         showKeyboard(isVisible)
