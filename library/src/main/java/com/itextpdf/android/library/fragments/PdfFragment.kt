@@ -358,7 +358,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun addMarkupAnnotation(pdfPagePosition: PointF) {
-        PdfManipulator.addTextMarkupAnnotationToPdf(
+        PdfManipulator.addMarkupAnnotationToPdf(
             context = requireContext(),
             fileUri = config.pdfUri,
             pageNumber = currentPageIndex + 1,
@@ -368,7 +368,6 @@ open class PdfFragment : Fragment() {
             color = highlightColors[highlightColorAdapter.selectedPosition]
         )
         setupPdfView()
-        annotationActionMode = null
     }
 
     private fun removeAnnotation(annotation: PdfAnnotation) {
@@ -583,16 +582,16 @@ open class PdfFragment : Fragment() {
                 true
             }
             .onLongPress { event ->
-                //TODO: remove again after testing
-                val position = binding.pdfView.convertScreenPointToPdfPagePoint(event)
-                position?.let {
-                    addMarkupAnnotation(it)
+                if (annotationActionMode == AnnotationAction.HIGHLIGHT) {
+                    val position = binding.pdfView.convertScreenPointToPdfPagePoint(event)
+                    position?.let {
+                        addMarkupAnnotation(it)
+                    }
+                } else {
+                    annotationActionMode = AnnotationAction.ADD
+                    longPressPdfPagePosition = binding.pdfView.convertScreenPointToPdfPagePoint(event)
+                    setAnnotationTextViewVisibility(true)
                 }
-
-                //TODO: add again after testing
-//                annotationActionMode = AnnotationAction.ADD
-//                longPressPdfPagePosition = binding.pdfView.convertScreenPointToPdfPagePoint(event)
-//                setAnnotationTextViewVisibility(true)
             }
             .onLoad {
                 setupThumbnailNavigationView()
@@ -775,6 +774,11 @@ open class PdfFragment : Fragment() {
             setThumbnailNavigationViewVisibility(false)
             setAnnotationsViewVisibility(false)
             setAnnotationTextViewVisibility(false)
+            annotationActionMode = AnnotationAction.HIGHLIGHT
+        } else {
+            if (annotationActionMode == AnnotationAction.HIGHLIGHT) {
+                annotationActionMode = null
+            }
         }
         view?.postDelayed({
             val updatedState =
