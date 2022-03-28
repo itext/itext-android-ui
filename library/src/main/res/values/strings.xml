@@ -9,6 +9,7 @@
     <string name="help_dialog_text">To split a document, select the pages you would like to extract from the pdf file. The selected pages will be highlighted.\n\nWhen you are done selecting, press the split button at the bottom right to initiated the splitting process.\n\nAfter the process is complete, the split view will be closed and the result is two pdf files. One with all the selected pages and another one with the not selected pages. The original pdf file stays unchanged.</string>
     <string name="highlight_text">Highlight text</string>
     <string name="add_annotation">Add annotation</string>
+    <string name="save">Save</string>
     <string name="annotation_hint">Add a note</string>
     <string name="no_annotations_title">This file doesn\'t have any annotations.</string>
     <string name="no_annotations_description">You can add one by long-pressing the pdf document at the location where you want to add the annotation to.</string>
