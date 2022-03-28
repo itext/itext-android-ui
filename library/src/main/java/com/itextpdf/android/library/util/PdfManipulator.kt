@@ -59,6 +59,10 @@ interface PdfManipulator {
 
     fun getTextAnnotationAppearance(pdfDocument: PdfDocument, colorString: String, bubbleSize: Float): PdfFormXObject?
 
+
+    fun getPdfDocumentInReadingMode(): PdfDocument
+    fun getPdfDocumentInStampingMode(destFile: File): PdfDocument
+
     companion object Factory {
         fun create(context: Context, originalFileUri: Uri): PdfManipulator {
             return PdfManipulatorImpl(context, originalFileUri)
@@ -66,7 +70,5 @@ interface PdfManipulator {
     }
 
 
-    fun getPdfDocumentInReadingMode(): PdfDocument
-    fun getPdfDocumentInStampingMode(destFile: File): PdfDocument
 
 }
