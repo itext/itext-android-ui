@@ -29,7 +29,7 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 
 
-object PdfManipulator {
+object PdfManipulatorImpl {
 
     private val fileUtil = FileUtil.getInstance()
 

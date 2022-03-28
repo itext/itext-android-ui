@@ -6,7 +6,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.itextpdf.android.library.extensions.getFileName
 import com.itextpdf.android.library.extensions.pdfDocumentInReadingMode
 import com.itextpdf.android.library.util.FileUtil
-import com.itextpdf.android.library.util.PdfManipulator
+import com.itextpdf.android.library.util.PdfManipulatorImpl
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,7 +33,7 @@ class PdfManipulatorInstrumentedTest {
         // ## Test: Valid selection - pages: 1, 2, 6; original pdf number of pages: 10 ##
         // ##############################################################################
         var selectedPageIndices = listOf(0, 1, 5)
-        var splitPdfUriList = PdfManipulator.splitPdfWithSelection(
+        var splitPdfUriList = PdfManipulatorImpl.splitPdfWithSelection(
             appContext,
             uri,
             fileName,
@@ -79,7 +79,7 @@ class PdfManipulatorInstrumentedTest {
         // ## Test: Valid selection - all pages; original pdf number of pages: 10 ##
         // #########################################################################
         selectedPageIndices = listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-        splitPdfUriList = PdfManipulator.splitPdfWithSelection(
+        splitPdfUriList = PdfManipulatorImpl.splitPdfWithSelection(
             appContext,
             uri,
             fileName,
@@ -108,7 +108,7 @@ class PdfManipulatorInstrumentedTest {
         // ## Test: Valid selection - no pages; original pdf number of pages: 10 ##
         // ########################################################################
         selectedPageIndices = listOf()
-        splitPdfUriList = PdfManipulator.splitPdfWithSelection(
+        splitPdfUriList = PdfManipulatorImpl.splitPdfWithSelection(
             appContext,
             uri,
             fileName,
@@ -137,7 +137,7 @@ class PdfManipulatorInstrumentedTest {
         // ## Test: Invalid selection - pages: 2, 13; original pdf number of pages: 10 ##
         // ##############################################################################
         selectedPageIndices = listOf(1, 12)
-        splitPdfUriList = PdfManipulator.splitPdfWithSelection(
+        splitPdfUriList = PdfManipulatorImpl.splitPdfWithSelection(
             appContext,
             uri,
             fileName,

@@ -46,7 +46,7 @@ import com.itextpdf.android.library.lists.highlighting.HighlightColorAdapter
 import com.itextpdf.android.library.lists.highlighting.HighlightColorRecyclerItem
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.util.ImageUtil
-import com.itextpdf.android.library.util.PdfManipulator
+import com.itextpdf.android.library.util.PdfManipulatorImpl
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.itextpdf.forms.xfdf.XfdfConstants
 import com.itextpdf.kernel.colors.DeviceRgb
@@ -342,7 +342,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun addTextAnnotation(title: String?, text: String, pdfPagePosition: PointF) {
-        PdfManipulator.addTextAnnotationToPdf(
+        PdfManipulatorImpl.addTextAnnotationToPdf(
             context = requireContext(),
             fileUri = config.pdfUri,
             title = title,
@@ -358,7 +358,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun addMarkupAnnotation(pdfPagePosition: PointF) {
-        PdfManipulator.addMarkupAnnotationToPdf(
+        PdfManipulatorImpl.addMarkupAnnotationToPdf(
             context = requireContext(),
             fileUri = config.pdfUri,
             pageNumber = currentPageIndex + 1,
@@ -371,7 +371,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun removeAnnotation(annotation: PdfAnnotation) {
-        PdfManipulator.removeAnnotationFromPdf(
+        PdfManipulatorImpl.removeAnnotationFromPdf(
             context = requireContext(),
             fileUri = config.pdfUri,
             pageNumber = currentPageIndex + 1,
@@ -382,7 +382,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun editAnnotation(annotation: PdfAnnotation, title: String?, text: String) {
-        PdfManipulator.editAnnotationFromPdf(
+        PdfManipulatorImpl.editAnnotationFromPdf(
             context = requireContext(),
             fileUri = config.pdfUri,
             pageNumber = currentPageIndex + 1,

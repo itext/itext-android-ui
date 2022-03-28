@@ -32,7 +32,7 @@ import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.split.PdfSplitRecyclerItem
 import com.itextpdf.android.library.paging.Page
 import com.itextpdf.android.library.paging.PaginationScrollListener
-import com.itextpdf.android.library.util.PdfManipulator
+import com.itextpdf.android.library.util.PdfManipulatorImpl
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import kotlinx.coroutines.Dispatchers
@@ -321,7 +321,7 @@ open class SplitDocumentFragment : Fragment() {
         val storageFolderPath =
             (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
         val name = if (!fileName.isNullOrEmpty()) fileName else UNNAMED_FILE
-        val pdfUriList = PdfManipulator.splitPdfWithSelection(
+        val pdfUriList = PdfManipulatorImpl.splitPdfWithSelection(
             requireContext(),
             config.pdfUri,
             name,
