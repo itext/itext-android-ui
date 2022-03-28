@@ -15,13 +15,14 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class PdfManipulatorInstrumentedTest {
+
+    private val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+    private val fileName = "sample_3.pdf"
+    private val file = FileUtil.getInstance().loadFileFromAssets(appContext, fileName)
+    private val uri = Uri.fromFile(file)
+
     @Test
     fun splitPdfWithSelection() {
-        // Context of the app under test.
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val fileName = "sample_3.pdf"
-        val file = FileUtil.getInstance().loadFileFromAssets(appContext, fileName)
-        val uri = Uri.fromFile(file)
 
         val pdfManipulator = PdfManipulator.create(appContext, uri)
         val pdfFile = pdfManipulator.getPdfDocumentInReadingMode()
@@ -69,33 +70,6 @@ class PdfManipulatorInstrumentedTest {
             pdfFile.getPage(10).contentBytes.size,
             unselectedPagesPdf.lastPage.contentBytes.size
         )
-
-        // close pdf documents
-        selectedPagesPdf.close()
-        unselectedPagesPdf.close()
-
-        // #########################################################################
-        // ## Test: Valid selection - all pages; original pdf number of pages: 10 ##
-        // #########################################################################
-        selectedPageIndices = listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-        splitPdfUriList = PdfManipulator.create(appContext, uri).splitPdfWithSelection(
-            fileName,
-            selectedPageIndices,
-            appContext.cacheDir.absolutePath
-        )
-
-        assertEquals(1, splitPdfUriList.size)
-        assertEquals("sample_3_selected.pdf", appContext.getFileName(splitPdfUriList[0]))
-
-        selectedPagesPdf = PdfManipulator.create(appContext, splitPdfUriList[0]).getPdfDocumentInReadingMode()
-
-        assertEquals(10, selectedPagesPdf.numberOfPages)
-        for (i in 1..pdfFile.numberOfPages) {
-            assertEquals(
-                pdfFile.getPage(i).contentBytes.size,
-                selectedPagesPdf.getPage(i).contentBytes.size
-            )
-        }
 
         // close pdf documents
         selectedPagesPdf.close()
@@ -165,5 +139,38 @@ class PdfManipulatorInstrumentedTest {
         unselectedPagesPdf.close()
 
         pdfFile.close()
+    }
+
+    /**
+     * Test: Valid selection - all pages; original pdf number of pages: 10
+     */
+    @Test
+    fun testSplitAllPages() {
+
+        val pdfFile = PdfManipulator.create(appContext, uri).getPdfDocumentInReadingMode()
+
+        val selectedPageIndices = listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+        val splitPdfUriList = PdfManipulator.create(appContext, uri).splitPdfWithSelection(
+            fileName,
+            selectedPageIndices,
+            appContext.cacheDir.absolutePath
+        )
+
+        assertEquals(1, splitPdfUriList.size)
+        assertEquals("sample_3_selected.pdf", appContext.getFileName(splitPdfUriList[0]))
+
+        val selectedPagesPdf = PdfManipulator.create(appContext, splitPdfUriList[0]).getPdfDocumentInReadingMode()
+
+        assertEquals(10, selectedPagesPdf.numberOfPages)
+        for (i in 1..pdfFile.numberOfPages) {
+            assertEquals(
+                pdfFile.getPage(i).contentBytes.size,
+                selectedPagesPdf.getPage(i).contentBytes.size
+            )
+        }
+
+        // close pdf documents
+        selectedPagesPdf.close()
+        //unselectedPagesPdf.close()
     }
 }
