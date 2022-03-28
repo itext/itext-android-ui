@@ -7,12 +7,15 @@ import com.itextpdf.android.library.extensions.getFileName
 import com.itextpdf.android.library.util.FileUtil
 import com.itextpdf.android.library.util.PdfManipulator
 import org.junit.Assert.assertEquals
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
  * Tests the functions in the PdfManipulator
  */
+
+@Ignore
 @RunWith(AndroidJUnit4::class)
 class PdfManipulatorInstrumentedTest {
 
@@ -20,6 +23,7 @@ class PdfManipulatorInstrumentedTest {
     private val fileName = "sample_3.pdf"
     private val file = FileUtil.getInstance().loadFileFromAssets(appContext, fileName)
     private val uri = Uri.fromFile(file)
+
 
     @Test
     fun splitPdfWithSelection() {
