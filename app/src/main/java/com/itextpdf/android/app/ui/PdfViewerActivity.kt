@@ -17,6 +17,8 @@ class PdfViewerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        listenForPdfResults()
+
         binding = ActivityPdfViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -82,6 +84,14 @@ class PdfViewerActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun listenForPdfResults() {
+        supportFragmentManager.setFragmentResultListener("requestKey", this) { requestKey, bundle ->
+            // We use a String here, but any type that can be put in a Bundle is supported
+            val result = bundle.getString("bundleKey")
+            // Do something with the result
         }
     }
 

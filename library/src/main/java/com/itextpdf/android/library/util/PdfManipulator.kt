@@ -66,4 +66,7 @@ interface PdfManipulator {
     }
 
 
+    fun getPdfDocumentInReadingMode(): PdfDocument
+    fun getPdfDocumentInStampingMode(destFile: File): PdfDocument
+
 }

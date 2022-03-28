@@ -5,15 +5,10 @@ import android.net.Uri
 import androidx.core.net.toUri
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.isSameAs
-import com.itextpdf.android.library.extensions.pdfDocumentInReadingMode
-import com.itextpdf.android.library.extensions.pdfDocumentInStampingMode
 import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.kernel.colors.Color
 import com.itextpdf.kernel.geom.Rectangle
-import com.itextpdf.kernel.pdf.PdfDocument
-import com.itextpdf.kernel.pdf.PdfName
-import com.itextpdf.kernel.pdf.PdfString
-import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.kernel.pdf.*
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextMarkupAnnotation
@@ -31,12 +26,8 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
 
     private val fileUtil = FileUtil.getInstance()
 
-    override val workingCopy: File = createWorkingCopy(originalFileUri)
+    override val workingCopy: File = fileUtil.createTempCopyIfNotExists(context, originalFileUri = originalFileUri)
     private val workingCopyUri: Uri = workingCopy.toUri()
-
-    private fun createWorkingCopy(originalFileUri: Uri): File {
-        return fileUtil.createTempCopyIfNotExists(context, originalFileUri = originalFileUri)
-    }
 
     /**
      * Splits the pdf file at the given uri and creates a new document with the selected page indices and another one for the unselected indices.
@@ -49,58 +40,57 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
      * @return  the list of uris of the newly created split documents
      */
     override fun splitPdfWithSelection(fileName: String, selectedPageIndices: List<Int>, storageFolderPath: String): List<Uri> {
-        val pdfDocument = context.pdfDocumentInReadingMode(workingCopyUri)
+
+        val pdfDocument = getPdfDocumentInReadingMode()
         val pdfUriList = mutableListOf<Uri>()
-        if (pdfDocument != null) {
-            val selectedPagesNumbers = mutableListOf<Int>()
-            val unselectedPageNumbers = mutableListOf<Int>()
+        val selectedPagesNumbers = mutableListOf<Int>()
+        val unselectedPageNumbers = mutableListOf<Int>()
 
-            val numberOfPages = pdfDocument.numberOfPages
-            val pdfSplitter: PdfSplitter = object : PdfSplitter(pdfDocument) {
-                var partNumber = 1
-                override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
-                    return try {
-                        val name = getSplitDocumentName(
-                            fileName,
-                            partNumber,
-                            selectedPagesNumbers,
-                            unselectedPageNumbers
-                        )
-                        partNumber++
+        val numberOfPages = pdfDocument.numberOfPages
+        val pdfSplitter: PdfSplitter = object : PdfSplitter(pdfDocument) {
+            var partNumber = 1
+            override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
+                return try {
+                    val name = getSplitDocumentName(
+                        fileName,
+                        partNumber,
+                        selectedPagesNumbers,
+                        unselectedPageNumbers
+                    )
+                    partNumber++
 
-                        val pdfFile = File("$storageFolderPath/$name")
-                        pdfUriList.add(pdfFile.toUri())
+                    val pdfFile = File("$storageFolderPath/$name")
+                    pdfUriList.add(pdfFile.toUri())
 
-                        val newOutput = FileOutputStream(pdfFile)
-                        PdfWriter(newOutput)
-                    } catch (ignored: FileNotFoundException) {
-                        throw RuntimeException()
-                    }
+                    val newOutput = FileOutputStream(pdfFile)
+                    PdfWriter(newOutput)
+                } catch (ignored: FileNotFoundException) {
+                    throw RuntimeException()
                 }
             }
-
-            // for splitting we need the actual page number and not the index, therefore add 1 to each index
-            selectedPageIndices.forEach { selectedPagesNumbers.add(it + 1) }
-
-            for (i in 1..numberOfPages) {
-                if (!selectedPagesNumbers.contains(i)) {
-                    unselectedPageNumbers.add(i)
-                }
-            }
-
-            // get page ranges for selected and unselected pages and split document
-            val documents = pdfSplitter.extractPageRanges(
-                getPageRanges(
-                    selectedPagesNumbers,
-                    unselectedPageNumbers,
-                    numberOfPages
-                )
-            )
-            for (doc in documents) {
-                doc.close()
-            }
-            pdfDocument.close()
         }
+
+        // for splitting we need the actual page number and not the index, therefore add 1 to each index
+        selectedPageIndices.forEach { selectedPagesNumbers.add(it + 1) }
+
+        for (i in 1..numberOfPages) {
+            if (!selectedPagesNumbers.contains(i)) {
+                unselectedPageNumbers.add(i)
+            }
+        }
+
+        // get page ranges for selected and unselected pages and split document
+        val documents = pdfSplitter.extractPageRanges(
+            getPageRanges(
+                selectedPagesNumbers,
+                unselectedPageNumbers,
+                numberOfPages
+            )
+        )
+        for (doc in documents) {
+            doc.close()
+        }
+        pdfDocument.close()
         return pdfUriList
     }
 
@@ -199,7 +189,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
         bubbleColor: String
     ): File {
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
-        val resultingFile: File = context.pdfDocumentInStampingMode(workingCopyUri, tempFile)
+        val resultingFile: File = getPdfDocumentInStampingMode(tempFile)
             .use { pdfDoc ->
 
                 val appearance = getTextAnnotationAppearance(pdfDoc, bubbleColor, bubbleSize)
@@ -224,7 +214,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
     override fun addMarkupAnnotationToPdf(pageNumber: Int, x: Float, y: Float, size: Float, color: Color): File {
 
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
-        val resultingFile: File = context.pdfDocumentInStampingMode(workingCopyUri, tempFile)
+        val resultingFile: File = getPdfDocumentInStampingMode(tempFile)
             .use { pdfDoc ->
 
                 val rect = Rectangle(x, y, size, size)
@@ -261,7 +251,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
     override fun removeAnnotationFromPdf(pageNumber: Int, annotation: PdfAnnotation): File {
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
         val resultingFile: File =
-            context.pdfDocumentInStampingMode(workingCopyUri, tempFile).use { pdfDocument ->
+            getPdfDocumentInStampingMode(tempFile).use { pdfDocument ->
                 val page = pdfDocument.getPage(pageNumber)
                 for (ann in page.annotations) {
                     if (annotation.isSameAs(ann)) {
@@ -278,7 +268,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
     override fun editAnnotationFromPdf(pageNumber: Int, annotation: PdfAnnotation, title: String?, text: String): File {
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
         val resultingFile: File =
-            context.pdfDocumentInStampingMode(workingCopyUri, tempFile).use { pdfDocument ->
+            getPdfDocumentInStampingMode(tempFile).use { pdfDocument ->
                 val page = pdfDocument.getPage(pageNumber)
                 for (ann in page.annotations) {
                     if (annotation.isSameAs(ann)) {
@@ -327,5 +317,27 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
             canvas.addImageAt(itextImageData, 0f, 0f, true)
         }
         return commentXObj
+    }
+
+    /**
+     * Returns a pdfDocument object with the given uri in reading mode.
+     *
+     * @return  the pdf document in reading mode
+     */
+    override fun getPdfDocumentInReadingMode(): PdfDocument {
+        val pdfReader = PdfReader(workingCopy)
+        return PdfDocument(pdfReader)
+    }
+
+    override fun getPdfDocumentInStampingMode(destFile: File): PdfDocument {
+
+        val inputStream = workingCopy.inputStream()
+        val outputStream = FileOutputStream(destFile)
+
+        return PdfDocument(
+            PdfReader(inputStream),
+            PdfWriter(outputStream)
+        )
+
     }
 }

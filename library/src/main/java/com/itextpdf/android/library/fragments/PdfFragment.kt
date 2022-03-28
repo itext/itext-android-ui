@@ -439,35 +439,35 @@ open class PdfFragment : Fragment() {
 
     private fun setupAnnotationView() {
 
-        requireContext().pdfDocumentInReadingMode(config.pdfUri)?.let { pdfDocument ->
-            val data = mutableListOf<AnnotationRecyclerItem>()
-            textAnnotations.clear()
+        val pdfDocument = pdfManipulator.getPdfDocumentInReadingMode()
+        val data = mutableListOf<AnnotationRecyclerItem>()
+        textAnnotations.clear()
 
-            for (i in 1..pdfDocument.numberOfPages) {
-                val annotations = pdfDocument.getPage(i).annotations
-                for (annotation in annotations) {
-                    if (annotation is PdfAnnotation) {
-                        if (annotation.subtype != null) {
-                            textAnnotations.add(annotation)
-                            val title =
-                                if (annotation.title != null) annotation.title.value else null
-                            val text =
-                                if (annotation.subtype.value.lowercase() == XfdfConstants.TEXT && annotation.contents != null) annotation.contents.value else annotation.subtype.value
+        for (i in 1..pdfDocument.numberOfPages) {
+            val annotations = pdfDocument.getPage(i).annotations
+            for (annotation in annotations) {
+                if (annotation is PdfAnnotation) {
+                    if (annotation.subtype != null) {
+                        textAnnotations.add(annotation)
+                        val title =
+                            if (annotation.title != null) annotation.title.value else null
+                        val text =
+                            if (annotation.subtype.value.lowercase() == XfdfConstants.TEXT && annotation.contents != null) annotation.contents.value else annotation.subtype.value
 
-                            data.add(
-                                AnnotationRecyclerItem(
-                                    title,
-                                    text
-                                ) {
-                                    showAnnotationContextMenu(
-                                        it,
-                                        R.menu.popup_menu_annotation,
-                                        annotation
-                                    )
-                                })
-                        }
+                        data.add(
+                            AnnotationRecyclerItem(
+                                title,
+                                text
+                            ) {
+                                showAnnotationContextMenu(
+                                    it,
+                                    R.menu.popup_menu_annotation,
+                                    annotation
+                                )
+                            })
                     }
                 }
+
             }
 
             if (textAnnotations.size > 0) {
