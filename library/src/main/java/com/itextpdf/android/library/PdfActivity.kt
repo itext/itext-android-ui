@@ -11,9 +11,9 @@ internal class PdfActivity : AppCompatActivity() {
     private val fileUtil = FileUtil.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        copyFileFromAssets()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pdf)
-        copyFileFromAssets()
     }
 
     private fun copyFileFromAssets() {
