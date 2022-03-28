@@ -3,8 +3,8 @@ package com.itextpdf.android.library.util
 import android.content.Context
 import android.content.res.AssetManager
 import android.net.Uri
-import androidx.core.net.toUri
 import java.io.*
+import java.nio.file.Files
 
 class FileUtilImpl : FileUtil {
 
@@ -92,12 +92,18 @@ class FileUtilImpl : FileUtil {
         return File("$storageFolderPath/temp_${originalFile.name}")
     }
 
-    override fun createTempCopyIfNotExists(context: Context, originalFile: File): File {
+    override fun createTempCopyIfNotExists(context: Context, originalFileUri: Uri): File {
+
+        val originalFile = File(originalFileUri.path)
+        val originalFileName = originalFile.name
+
         val storageFolderPath = (context.externalCacheDir ?: context.cacheDir).absolutePath
-        val file = File("$storageFolderPath/temp_${originalFile.name}")
+        val file = File("$storageFolderPath/temp_${originalFileName}")
 
         if (!file.exists()) {
-            overrideFile(originalFile, file.toUri())
+            context.contentResolver.openInputStream(originalFileUri)!!.use { inputStream ->
+                Files.copy(inputStream, file.toPath())
+            }
         }
 
         return file

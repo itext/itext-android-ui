@@ -2,7 +2,6 @@ package com.itextpdf.android.library.util
 
 import android.content.Context
 import android.net.Uri
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.isSameAs
@@ -32,8 +31,12 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
 
     private val fileUtil = FileUtil.getInstance()
 
-    override val workingCopy: File = fileUtil.createTempCopyIfNotExists(context, originalFile = originalFileUri.toFile())
+    override val workingCopy: File = createWorkingCopy(originalFileUri)
     private val workingCopyUri: Uri = workingCopy.toUri()
+
+    private fun createWorkingCopy(originalFileUri: Uri): File {
+        return fileUtil.createTempCopyIfNotExists(context, originalFileUri = originalFileUri)
+    }
 
     /**
      * Splits the pdf file at the given uri and creates a new document with the selected page indices and another one for the unselected indices.
