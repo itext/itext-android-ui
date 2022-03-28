@@ -32,7 +32,6 @@ import com.itextpdf.android.library.lists.split.PdfSplitRecyclerItem
 import com.itextpdf.android.library.paging.Page
 import com.itextpdf.android.library.paging.PaginationScrollListener
 import com.itextpdf.android.library.util.PdfManipulator
-import com.itextpdf.android.library.util.PdfManipulatorImpl
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import kotlinx.coroutines.Dispatchers
@@ -181,7 +180,7 @@ open class SplitDocumentFragment : Fragment() {
             binding.tbSplitDocumentFragment.setNavigationIcon(R.drawable.ic_close)
             binding.tbSplitDocumentFragment.setNavigationOnClickListener {
                 val fragmentManager = requireActivity().supportFragmentManager
-                val pdfFragment = fragmentManager.findFragmentByTag(PdfFragment.TAG)
+                val pdfFragment = fragmentManager.findFragmentByTag(TAG)
                 // if pdfFragment can be found, show it again, else close activity
                 if (pdfFragment != null) {
                     val fragmentTransaction: FragmentTransaction =
@@ -340,7 +339,7 @@ open class SplitDocumentFragment : Fragment() {
     }
 
     companion object {
-        const val TAG = "SplitDocumentFragment"
+        private const val TAG = "SplitDocumentFragment"
 
         private const val EXTRA_PDF_CONFIG = "PDF_URI"
 

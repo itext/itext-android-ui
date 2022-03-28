@@ -25,10 +25,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.use
 import androidx.core.net.toFile
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentTransaction
-import androidx.fragment.app.setFragmentResultListener
+import androidx.fragment.app.*
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -168,11 +165,7 @@ open class PdfFragment : Fragment() {
         return binding.root
     }
 
-    private fun showAnnotationContextMenu(
-        v: View,
-        @MenuRes menuRes: Int,
-        annotation: PdfAnnotation
-    ) {
+    private fun showAnnotationContextMenu(v: View, @MenuRes menuRes: Int, annotation: PdfAnnotation) {
         val popup = PopupMenu(requireContext(), v)
         popup.menuInflater.inflate(menuRes, popup.menu)
 
@@ -302,7 +295,7 @@ open class PdfFragment : Fragment() {
 
         when (parentActivity) {
             is AppCompatActivity -> parentActivity.setSupportActionBar(binding.tbPdfFragment)
-            else -> Log.d(TAG, "Cannot setSupportActionBar on parent activity $parentActivity.")
+            else -> Log.d(LOG_TAG, "Cannot setSupportActionBar on parent activity $parentActivity.")
         }
 
 
@@ -320,6 +313,12 @@ open class PdfFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+
+        R.id.action_save -> {
+            setFragmentResult(REQUEST_KEY, bundleOf(RESULT_FILE to pdfManipulator.workingCopy))
+            true
+        }
+
         R.id.action_navigate_pdf -> {
             if (navViewSetupComplete)
                 toggleThumbnailNavigationViewVisibility()
@@ -695,7 +694,7 @@ open class PdfFragment : Fragment() {
         val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
         val fragment = SplitDocumentFragment.newInstance(config)
         fragmentTransaction.hide(this)
-        fragmentTransaction.add(android.R.id.content, fragment, SplitDocumentFragment.TAG)
+        fragmentTransaction.add(android.R.id.content, fragment, SPLIT_FRAGMENT_TAG)
         fragmentTransaction.commit()
     }
 
@@ -704,7 +703,7 @@ open class PdfFragment : Fragment() {
      */
     open fun closeSplitDocumentView() {
         val fragmentManager = requireActivity().supportFragmentManager
-        val splitDocumentFragment = fragmentManager.findFragmentByTag(SplitDocumentFragment.TAG)
+        val splitDocumentFragment = fragmentManager.findFragmentByTag(SPLIT_FRAGMENT_TAG)
         if (splitDocumentFragment != null) {
             val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
             fragmentTransaction.show(this)
@@ -866,14 +865,19 @@ open class PdfFragment : Fragment() {
     }
 
     companion object {
-        const val TAG = "PdfFragment"
 
+        const val REQUEST_KEY: String = "pdf_request_key"
+        const val RESULT_FILE: String = "pdf_result_file"
+
+        internal const val EXTRA_PDF_CONFIG = "EXTRA_PDF_CONFIG"
+
+        private const val LOG_TAG = "PdfFragment"
         private const val OPEN_BOTTOM_SHEET_DELAY_MS = 200L
         private const val ANNOTATION_SIZE = 30f
-
-        const val EXTRA_PDF_CONFIG = "EXTRA_PDF_CONFIG"
-
         private const val CURRENT_PAGE = "CURRENT_PAGE"
+
+        private const val SPLIT_FRAGMENT_TAG = "splitFragment"
+
 
         /**
          * Static function to create a new instance of the PdfFragment with the given settings.

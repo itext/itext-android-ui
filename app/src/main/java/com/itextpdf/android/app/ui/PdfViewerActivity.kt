@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityPdfViewerBinding
 import com.itextpdf.android.library.fragments.PdfConfig
 import com.itextpdf.android.library.fragments.PdfFragment
+import java.io.File
 
 class PdfViewerActivity : AppCompatActivity() {
 
@@ -79,7 +81,7 @@ class PdfViewerActivity : AppCompatActivity() {
                         }
 
                         val fm = supportFragmentManager.beginTransaction()
-                        fm.replace(R.id.pdf_fragment_container, fragment, PdfFragment.TAG)
+                        fm.replace(R.id.pdf_fragment_container, fragment, "pdfFragment")
                         fm.commit()
                     }
                 }
@@ -88,14 +90,29 @@ class PdfViewerActivity : AppCompatActivity() {
     }
 
     private fun listenForPdfResults() {
-        supportFragmentManager.setFragmentResultListener("requestKey", this) { requestKey, bundle ->
-            // We use a String here, but any type that can be put in a Bundle is supported
-            val result = bundle.getString("bundleKey")
-            // Do something with the result
+
+        val pdfRequestKey = PdfFragment.REQUEST_KEY
+
+        supportFragmentManager.setFragmentResultListener(pdfRequestKey, this) { requestKey, bundle ->
+
+            if (requestKey == pdfRequestKey) {
+                handlePdfResult(bundle)
+            }
+
+            supportFragmentManager.clearFragmentResult(requestKey)
+
         }
     }
 
+    private fun handlePdfResult(bundle: Bundle) {
+        val result: File = bundle.getSerializable(PdfFragment.RESULT_FILE) as File
+        finish()
+    }
+
     companion object {
+
+        private const val LOG_TAG = "PdfViewActivity"
+
         private const val EXTRA_PDF_URI = "EXTRA_PDF_URI"
         private const val EXTRA_PDF_TITLE = "EXTRA_PDF_TITLE"
         private const val EXTRA_PDF_INDEX = "EXTRA_PDF_INDEX"

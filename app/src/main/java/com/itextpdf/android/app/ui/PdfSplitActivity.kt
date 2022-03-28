@@ -34,7 +34,7 @@ class PdfSplitActivity : AppCompatActivity() {
                 if (savedInstanceState == null) {
                     val fragment: SplitDocumentFragment = SplitDocumentFragment.newInstance(config)
                     val fm = supportFragmentManager.beginTransaction()
-                    fm.replace(R.id.pdf_splitter_container, fragment, SplitDocumentFragment.TAG)
+                    fm.replace(R.id.pdf_splitter_container, fragment, SPLIT_FRAGMENT_TAG)
                     fm.commit()
                 }
             }
@@ -62,6 +62,8 @@ class PdfSplitActivity : AppCompatActivity() {
     companion object {
         private const val EXTRA_PDF_URI = "EXTRA_PDF_URI"
         private const val EXTRA_PDF_TITLE = "EXTRA_PDF_TITLE"
+
+        private const val SPLIT_FRAGMENT_TAG = "splitFragment"
 
         /**
          * Convenience function to launch the PdfViewerActivity. Adds the passed uri and the filename
