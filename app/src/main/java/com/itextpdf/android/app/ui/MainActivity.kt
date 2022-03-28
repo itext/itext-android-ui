@@ -18,7 +18,7 @@ import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_P
 import com.itextpdf.android.library.extensions.registerPdfSelectionResult
 import com.itextpdf.android.library.extensions.selectPdfIntent
 import com.itextpdf.android.library.util.FileUtil
-import com.itextpdf.android.library.util.PdfManipulatorImpl
+import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfThumbnailView
 
 
@@ -85,12 +85,10 @@ class MainActivity : AppCompatActivity() {
     private fun noUISplit(uri: Uri, fileName: String, selectedPageIndices: List<Int>) {
         // specify the path where the newly created pdf files will be stored -> Cache
         val storageFolderPath = (externalCacheDir ?: cacheDir).absolutePath
-        val pdfUriList = PdfManipulatorImpl.splitPdfWithSelection(
-            this,
-            uri,
-            fileName,
-            selectedPageIndices,
-            storageFolderPath
+        val pdfUriList = PdfManipulator.create(this, uri).splitPdfWithSelection(
+            fileName = fileName,
+            selectedPageIndices = selectedPageIndices,
+            storageFolderPath = storageFolderPath
         )
         // check if uris were returned
         if (pdfUriList.isNotEmpty()) {

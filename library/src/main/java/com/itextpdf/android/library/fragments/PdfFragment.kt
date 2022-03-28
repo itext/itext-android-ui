@@ -46,7 +46,7 @@ import com.itextpdf.android.library.lists.highlighting.HighlightColorAdapter
 import com.itextpdf.android.library.lists.highlighting.HighlightColorRecyclerItem
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.util.ImageUtil
-import com.itextpdf.android.library.util.PdfManipulatorImpl
+import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.itextpdf.forms.xfdf.XfdfConstants
 import com.itextpdf.kernel.colors.DeviceRgb
@@ -63,6 +63,7 @@ import java.lang.reflect.Method
 open class PdfFragment : Fragment() {
 
     private lateinit var config: PdfConfig
+    private lateinit var pdfManipulator: PdfManipulator
 
     private lateinit var binding: FragmentPdfBinding
     private lateinit var pdfNavigationAdapter: PdfAdapter
@@ -104,6 +105,7 @@ open class PdfFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         setParamsFromBundle(savedInstanceState ?: arguments)
+        pdfManipulator = PdfManipulator.create(requireContext(), config.pdfUri)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -342,9 +344,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun addTextAnnotation(title: String?, text: String, pdfPagePosition: PointF) {
-        PdfManipulatorImpl.addTextAnnotationToPdf(
-            context = requireContext(),
-            fileUri = config.pdfUri,
+        pdfManipulator.addTextAnnotationToPdf(
             title = title,
             text = text,
             pageNumber = currentPageIndex + 1,
@@ -358,9 +358,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun addMarkupAnnotation(pdfPagePosition: PointF) {
-        PdfManipulatorImpl.addMarkupAnnotationToPdf(
-            context = requireContext(),
-            fileUri = config.pdfUri,
+        pdfManipulator.addMarkupAnnotationToPdf(
             pageNumber = currentPageIndex + 1,
             x = pdfPagePosition.x,
             y = pdfPagePosition.y,
@@ -371,20 +369,16 @@ open class PdfFragment : Fragment() {
     }
 
     private fun removeAnnotation(annotation: PdfAnnotation) {
-        PdfManipulatorImpl.removeAnnotationFromPdf(
-            context = requireContext(),
-            fileUri = config.pdfUri,
+        pdfManipulator.removeAnnotationFromPdf(
             pageNumber = currentPageIndex + 1,
-            annotation
+            annotation = annotation
         )
         setupPdfView()
         annotationActionMode = null
     }
 
     private fun editAnnotation(annotation: PdfAnnotation, title: String?, text: String) {
-        PdfManipulatorImpl.editAnnotationFromPdf(
-            context = requireContext(),
-            fileUri = config.pdfUri,
+        pdfManipulator.editAnnotationFromPdf(
             pageNumber = currentPageIndex + 1,
             annotation = annotation,
             title = title,
@@ -541,7 +535,7 @@ open class PdfFragment : Fragment() {
         }
 
         binding.pdfLoadingIndicator.visibility = VISIBLE
-        binding.pdfView.fromUri(config.pdfUri)
+        binding.pdfView.fromFile(pdfManipulator.workingCopy)
             .defaultPage(currentPageIndex)
             .scrollHandle(scrollHandle)
             .onPageError { page, error ->

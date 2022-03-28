@@ -3,7 +3,6 @@ package com.itextpdf.android.library.fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.res.ColorStateList
-import android.content.res.TypedArray
 import android.graphics.*
 import android.net.Uri
 import android.os.Build
@@ -32,6 +31,7 @@ import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.split.PdfSplitRecyclerItem
 import com.itextpdf.android.library.paging.Page
 import com.itextpdf.android.library.paging.PaginationScrollListener
+import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.util.PdfManipulatorImpl
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
@@ -55,6 +55,7 @@ import kotlin.math.min
 open class SplitDocumentFragment : Fragment() {
 
     private lateinit var config: PdfConfig
+    private lateinit var pdfManipulator: PdfManipulator
 
     private lateinit var binding: FragmentSplitDocumentBinding
 
@@ -80,6 +81,7 @@ open class SplitDocumentFragment : Fragment() {
 
         // set the parameter from the savedInstanceState, or if it's null, from the arguments
         setParamsFromBundle(savedInstanceState ?: arguments)
+        pdfManipulator = PdfManipulator.create(requireContext(), config.pdfUri)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -321,9 +323,7 @@ open class SplitDocumentFragment : Fragment() {
         val storageFolderPath =
             (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
         val name = if (!fileName.isNullOrEmpty()) fileName else UNNAMED_FILE
-        val pdfUriList = PdfManipulatorImpl.splitPdfWithSelection(
-            requireContext(),
-            config.pdfUri,
+        val pdfUriList = pdfManipulator.splitPdfWithSelection(
             name,
             splitPdfAdapter.getSelectedPositions(),
             storageFolderPath

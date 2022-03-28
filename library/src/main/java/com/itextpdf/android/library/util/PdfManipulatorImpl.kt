@@ -2,6 +2,7 @@ package com.itextpdf.android.library.util
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.isSameAs
@@ -22,37 +23,30 @@ import com.itextpdf.kernel.pdf.extgstate.PdfExtGState
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject
 import com.itextpdf.kernel.utils.PageRange
 import com.itextpdf.kernel.utils.PdfSplitter
-import com.itextpdf.layout.Document
-import com.itextpdf.layout.element.Paragraph
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 
 
-object PdfManipulatorImpl {
+internal class PdfManipulatorImpl constructor(private val context: Context, originalFileUri: Uri) : PdfManipulator {
 
     private val fileUtil = FileUtil.getInstance()
+
+    override val workingCopy: File = fileUtil.createTempCopyIfNotExists(context, originalFile = originalFileUri.toFile())
+    private val workingCopyUri: Uri = workingCopy.toUri()
 
     /**
      * Splits the pdf file at the given uri and creates a new document with the selected page indices and another one for the unselected indices.
      * If selected page indices are empty or contains all the pages, there will only be one document with all pages.
      *
-     * @param context   the android context
-     * @param fileUri   the uri of the pdf file that should be split
      * @param fileName  the name of the file that will be split. Only relevant for naming the new split documents.
      * @param selectedPageIndices   the list of selected page indices that will be used to create a document with selected and another document
      *  with not selected pages.
      * @param storageFolderPath    the path where the newly created pdf files will be stored
      * @return  the list of uris of the newly created split documents
      */
-    fun splitPdfWithSelection(
-        context: Context,
-        fileUri: Uri,
-        fileName: String,
-        selectedPageIndices: List<Int>,
-        storageFolderPath: String
-    ): List<Uri> {
-        val pdfDocument = context.pdfDocumentInReadingMode(fileUri)
+    override fun splitPdfWithSelection(fileName: String, selectedPageIndices: List<Int>, storageFolderPath: String): List<Uri> {
+        val pdfDocument = context.pdfDocumentInReadingMode(workingCopyUri)
         val pdfUriList = mutableListOf<Uri>()
         if (pdfDocument != null) {
             val selectedPagesNumbers = mutableListOf<Int>()
@@ -116,7 +110,7 @@ object PdfManipulatorImpl {
      * @param unselectedPageNumbers  the list of unselected page numbers
      * @return  the name for the split document
      */
-    private fun getSplitDocumentName(
+    override fun getSplitDocumentName(
         initialFileName: String,
         partNumber: Int,
         selectedPagesNumbers: List<Int>,
@@ -163,7 +157,7 @@ object PdfManipulatorImpl {
      * @param numberOfPages the number of pages this pdf document has
      * @return  the list of page ranges (can be empty if selected pages and unselected pages were empty or the numbers were higher than the numberOfPages)
      */
-    private fun getPageRanges(
+    override fun getPageRanges(
         selectedPagesNumbers: List<Int>,
         unselectedPageNumbers: List<Int>,
         numberOfPages: Int
@@ -192,9 +186,7 @@ object PdfManipulatorImpl {
     }
 
     @Throws(java.lang.Exception::class)
-    fun addTextAnnotationToPdf(
-        context: Context,
-        fileUri: Uri,
+    override fun addTextAnnotationToPdf(
         title: String?,
         text: String,
         pageNumber: Int,
@@ -203,11 +195,11 @@ object PdfManipulatorImpl {
         bubbleSize: Float,
         bubbleColor: String
     ): File {
-        val tempFile = fileUtil.createTempCopy(context, File(fileUri.path))
-        val resultingFile: File = context.pdfDocumentInStampingMode(fileUri, tempFile)
+        val tempFile = fileUtil.createTempCopy(context, workingCopy)
+        val resultingFile: File = context.pdfDocumentInStampingMode(workingCopyUri, tempFile)
             .use { pdfDoc ->
 
-                val appearance = getTextAnnotationAppearance(context, pdfDoc, bubbleColor, bubbleSize)
+                val appearance = getTextAnnotationAppearance(pdfDoc, bubbleColor, bubbleSize)
                 val annotation: PdfAnnotation =
                     PdfTextAnnotation(Rectangle(x, y, bubbleSize, bubbleSize))
                         .setContents(text)
@@ -223,21 +215,13 @@ object PdfManipulatorImpl {
                 tempFile
             }
 
-        return fileUtil.overrideFile(resultingFile, fileUri)
+        return fileUtil.overrideFile(resultingFile, workingCopyUri)
     }
 
-    fun addMarkupAnnotationToPdf(
-        context: Context,
-        fileUri: Uri,
-        pageNumber: Int,
-        x: Float,
-        y: Float,
-        size: Float,
-        color: Color
-    ): File {
+    override fun addMarkupAnnotationToPdf(pageNumber: Int, x: Float, y: Float, size: Float, color: Color): File {
 
-        val tempFile = fileUtil.createTempCopy(context, File(fileUri.path))
-        val resultingFile: File = context.pdfDocumentInStampingMode(fileUri, tempFile)
+        val tempFile = fileUtil.createTempCopy(context, workingCopy)
+        val resultingFile: File = context.pdfDocumentInStampingMode(workingCopyUri, tempFile)
             .use { pdfDoc ->
 
                 val rect = Rectangle(x, y, size, size)
@@ -268,18 +252,13 @@ object PdfManipulatorImpl {
                 tempFile
             }
 
-        return fileUtil.overrideFile(resultingFile, fileUri)
+        return fileUtil.overrideFile(resultingFile, workingCopyUri)
     }
 
-    fun removeAnnotationFromPdf(
-        context: Context,
-        fileUri: Uri,
-        pageNumber: Int,
-        annotation: PdfAnnotation
-    ): File {
-        val tempFile = fileUtil.createTempCopy(context, File(fileUri.path))
+    override fun removeAnnotationFromPdf(pageNumber: Int, annotation: PdfAnnotation): File {
+        val tempFile = fileUtil.createTempCopy(context, workingCopy)
         val resultingFile: File =
-            context.pdfDocumentInStampingMode(fileUri, tempFile).use { pdfDocument ->
+            context.pdfDocumentInStampingMode(workingCopyUri, tempFile).use { pdfDocument ->
                 val page = pdfDocument.getPage(pageNumber)
                 for (ann in page.annotations) {
                     if (annotation.isSameAs(ann)) {
@@ -290,20 +269,13 @@ object PdfManipulatorImpl {
                 tempFile
             }
 
-        return fileUtil.overrideFile(resultingFile, fileUri)
+        return fileUtil.overrideFile(resultingFile, workingCopyUri)
     }
 
-    fun editAnnotationFromPdf(
-        context: Context,
-        fileUri: Uri,
-        pageNumber: Int,
-        annotation: PdfAnnotation,
-        title: String?,
-        text: String
-    ): File {
-        val tempFile = fileUtil.createTempCopy(context, File(fileUri.path))
+    override fun editAnnotationFromPdf(pageNumber: Int, annotation: PdfAnnotation, title: String?, text: String): File {
+        val tempFile = fileUtil.createTempCopy(context, workingCopy)
         val resultingFile: File =
-            context.pdfDocumentInStampingMode(fileUri, tempFile).use { pdfDocument ->
+            context.pdfDocumentInStampingMode(workingCopyUri, tempFile).use { pdfDocument ->
                 val page = pdfDocument.getPage(pageNumber)
                 for (ann in page.annotations) {
                     if (annotation.isSameAs(ann)) {
@@ -316,10 +288,10 @@ object PdfManipulatorImpl {
                 tempFile
             }
 
-        return fileUtil.overrideFile(resultingFile, fileUri)
+        return fileUtil.overrideFile(resultingFile, workingCopyUri)
     }
 
-    private fun getHighlightAppearance(
+    override fun getHighlightAppearance(
         pdfDocument: PdfDocument,
         rectangle: Rectangle,
         color: Color
@@ -338,12 +310,7 @@ object PdfManipulatorImpl {
         return commentXObj
     }
 
-    private fun getTextAnnotationAppearance(
-        context: Context,
-        pdfDocument: PdfDocument,
-        colorString: String,
-        bubbleSize: Float
-    ): PdfFormXObject? {
+    override fun getTextAnnotationAppearance(pdfDocument: PdfDocument, colorString: String, bubbleSize: Float): PdfFormXObject? {
         var commentXObj: PdfFormXObject? = null
         val imageSize = bubbleSize * 3
         val imageByteArray = ImageUtil.getResourceAsByteArray(context, R.drawable.ic_annotation, imageSize.toInt(), colorString)
