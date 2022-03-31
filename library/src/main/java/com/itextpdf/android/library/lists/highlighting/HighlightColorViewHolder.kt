@@ -51,5 +51,5 @@ class HighlightColorViewHolder(view: View) : RecyclerView.ViewHolder(view) {
  */
 data class HighlightColorRecyclerItem(
     val color: DeviceRgb,
-    val action: (com.itextpdf.kernel.colors.Color) -> (Unit)
+    val action: (DeviceRgb) -> (Unit)
 )

@@ -427,6 +427,8 @@ open class PdfFragment : Fragment() {
         for ((index, color) in highlightColors.withIndex()) {
             data.add(HighlightColorRecyclerItem(color) { highlightColor ->
                 highlightColorAdapter.updateSelectedItem(index)
+                binding.highlightPreview.color = Color.parseColor(highlightColor.getHexString())
+                binding.highlightPreview.invalidate()
             })
         }
 
@@ -434,6 +436,10 @@ open class PdfFragment : Fragment() {
         binding.includedBottomSheetHighlighting.rvColors.adapter = highlightColorAdapter
         binding.includedBottomSheetHighlighting.rvColors.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+        // default color
+        if (highlightColors.isNotEmpty())
+            binding.highlightPreview.color = Color.parseColor(highlightColors.first().getHexString())
     }
 
     private fun setupAnnotationView() {
@@ -774,10 +780,13 @@ open class PdfFragment : Fragment() {
             setAnnotationsViewVisibility(false)
             setAnnotationTextViewVisibility(false)
             annotationActionMode = AnnotationAction.HIGHLIGHT
+            binding.highlightPreview.reset()
+            binding.highlightPreview.visibility = VISIBLE
         } else {
             if (annotationActionMode == AnnotationAction.HIGHLIGHT) {
                 annotationActionMode = null
             }
+            binding.highlightPreview.visibility = GONE
         }
         view?.postDelayed({
             val updatedState =

@@ -11,7 +11,7 @@ import java.io.ByteArrayOutputStream
 
 object ImageUtil {
 
-    fun getResourceAsByteArray(context: Context, @DrawableRes resId: Int, imageSize: Int, tintColor: String): ByteArray? {
+    fun getResourceAsBitmap(context: Context, @DrawableRes resId: Int, imageSize: Int, tintColor: String): Bitmap? {
         val d = AppCompatResources.getDrawable(
             context,
             resId
@@ -23,11 +23,19 @@ object ImageUtil {
                 Color.parseColor(tintColor)
             )
 
-            val bitmap = d.toBitmap(imageSize, imageSize, Bitmap.Config.ARGB_8888)
-            val stream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-            return stream.toByteArray()
+            return d.toBitmap(imageSize, imageSize, Bitmap.Config.ARGB_8888)
         }
         return null
+    }
+
+    fun getResourceAsByteArray(context: Context, @DrawableRes resId: Int, imageSize: Int, tintColor: String): ByteArray? {
+        val bitmap = getResourceAsBitmap(context, resId, imageSize, tintColor)
+        return if (bitmap != null) {
+            val stream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            stream.toByteArray()
+        } else {
+            null
+        }
     }
 }
