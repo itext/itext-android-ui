@@ -47,6 +47,7 @@ import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.itextpdf.forms.xfdf.XfdfConstants
 import com.itextpdf.kernel.colors.DeviceRgb
+import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
@@ -356,12 +357,10 @@ open class PdfFragment : Fragment() {
         annotationActionMode = null
     }
 
-    private fun addMarkupAnnotation(pdfPagePosition: PointF) {
+    private fun addMarkupAnnotation(rect: Rectangle) {
         pdfManipulator.addMarkupAnnotationToPdf(
             pageNumber = currentPageIndex + 1,
-            x = pdfPagePosition.x,
-            y = pdfPagePosition.y,
-            size = ANNOTATION_SIZE,
+            rect = rect,
             color = highlightColors[highlightColorAdapter.selectedPosition]
         )
         setupPdfView()
@@ -574,7 +573,7 @@ open class PdfFragment : Fragment() {
                     resetHighlightedAnnotation()
                 }
 
-                val pdfPagePosition = binding.pdfView.convertScreenPointToPdfPagePoint(it)
+                val pdfPagePosition = binding.pdfView.convertMotionEventPointToPdfPagePoint(it)
                 if (pdfPagePosition != null) {
                     val annotationIndex = findAnnotationIndexAtPosition(pdfPagePosition)
                     if (annotationIndex != null) {
@@ -588,13 +587,14 @@ open class PdfFragment : Fragment() {
             }
             .onLongPress { event ->
                 if (annotationActionMode == AnnotationAction.HIGHLIGHT) {
-                    val position = binding.pdfView.convertScreenPointToPdfPagePoint(event)
-                    position?.let {
-                        addMarkupAnnotation(it)
-                    }
+                    //TODO: put to correct spot or remove
+//                    val position = binding.pdfView.convertMotionEventPointToPdfPagePoint(event)
+//                    position?.let {
+//                        addMarkupAnnotation(it)
+//                    }
                 } else {
                     annotationActionMode = AnnotationAction.ADD
-                    longPressPdfPagePosition = binding.pdfView.convertScreenPointToPdfPagePoint(event)
+                    longPressPdfPagePosition = binding.pdfView.convertMotionEventPointToPdfPagePoint(event)
                     setAnnotationTextViewVisibility(true)
                 }
             }
@@ -785,6 +785,12 @@ open class PdfFragment : Fragment() {
         } else {
             if (annotationActionMode == AnnotationAction.HIGHLIGHT) {
                 annotationActionMode = null
+
+                //TODO: move to correct spot
+                val screenRect = binding.highlightPreview.getSelectionRectangle()
+                val pdfRect = binding.pdfView.convertScreenRectToPdfPageRect(screenRect)
+                if (pdfRect != null)
+                    addMarkupAnnotation(pdfRect)
             }
             binding.highlightPreview.visibility = GONE
         }

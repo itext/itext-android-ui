@@ -211,13 +211,12 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
         return fileUtil.overrideFile(resultingFile, workingCopyUri)
     }
 
-    override fun addMarkupAnnotationToPdf(pageNumber: Int, x: Float, y: Float, size: Float, color: Color): File {
+    override fun addMarkupAnnotationToPdf(pageNumber: Int, rect: Rectangle, color: Color): File {
 
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
         val resultingFile: File = getPdfDocumentInStampingMode(tempFile)
             .use { pdfDoc ->
 
-                val rect = Rectangle(x, y, size, size)
                 // Specify quad points in Z-like order
                 // [0,1] x1,y1   [2,3] x2,y2
                 // [4,5] x3,y3   [6,7] x4,y4

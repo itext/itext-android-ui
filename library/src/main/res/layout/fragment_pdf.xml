@@ -29,6 +29,7 @@
     <com.itextpdf.android.library.lists.highlighting.HighlightingPreview
         android:id="@+id/highlightPreview"
         android:visibility="gone"
+        android:layout_marginTop="?attr/actionBarSize"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

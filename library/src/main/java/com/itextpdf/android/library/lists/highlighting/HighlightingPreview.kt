@@ -7,6 +7,7 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.core.graphics.ColorUtils
 import com.itextpdf.android.library.R
+import com.itextpdf.android.library.extensions.toItextRectangle
 import com.itextpdf.android.library.util.ImageUtil
 import com.itextpdf.kernel.geom.Rectangle
 import kotlin.math.sqrt
@@ -18,7 +19,8 @@ class HighlightingPreview : View {
     // the highlight color that should be used
     var color = ColorUtils.setAlphaComponent(Color.parseColor(HANDLE_COLOR), RECT_COLOR_ALPHA)
 
-    var rectangle: Rectangle? = null
+    // the drawn rect
+    private var rectF = RectF()
 
     /**
      * point1 and point 3 are of same group and same as point 2 and point4
@@ -70,28 +72,23 @@ class HighlightingPreview : View {
         paint.strokeJoin = Paint.Join.ROUND
         paint.strokeWidth = 5f
 
+        // update rect
+        rectF.left = (left + handles[0].width / 2).toFloat()
+        rectF.top = (top + handles[0].width / 2).toFloat()
+        rectF.right = (right + handles[2].width / 2).toFloat()
+        rectF.bottom = (bottom + handles[2].width / 2).toFloat()
+
         // draw border
         paint.style = Paint.Style.STROKE
         paint.color = Color.parseColor("#AA3C3C3C")
         paint.strokeWidth = 2f
-        canvas.drawRect(
-            (
-                    left + handles[0].widthOfHandle / 2).toFloat(), (
-                    top + handles[0].widthOfHandle / 2).toFloat(), (
-                    right + handles[2].widthOfHandle / 2).toFloat(), (
-                    bottom + handles[2].widthOfHandle / 2).toFloat(), paint
-        )
+        canvas.drawRect(rectF, paint)
+
         // fill the rectangle
         paint.style = Paint.Style.FILL
         paint.color = ColorUtils.setAlphaComponent(color, RECT_COLOR_ALPHA)
         paint.strokeWidth = 0f
-        canvas.drawRect(
-            (
-                    left + handles[0].widthOfHandle / 2).toFloat(), (
-                    top + handles[0].widthOfHandle / 2).toFloat(), (
-                    right + handles[2].widthOfHandle / 2).toFloat(), (
-                    bottom + handles[2].widthOfHandle / 2).toFloat(), paint
-        )
+        canvas.drawRect(rectF, paint)
 
         // draw handles
         // reset alpha by setting any fully-opaque color
@@ -141,14 +138,12 @@ class HighlightingPreview : View {
                     while (i >= 0) {
                         val handle = handles[i]
                         // get the center for the handle
-                        val centerX = handle.x + handle.widthOfHandle / 2
-                        val centerY = handle.y + handle.heightOfBall / 2
+                        val centerX = handle.x + handle.width / 2
+                        val centerY = handle.y + handle.height / 2
                         // calculate the radius from the touch to the center of the handle
-                        val radCircle = sqrt(
-                            ((centerX - x) * (centerX - x) + (centerY - y) * (centerY - y)).toDouble()
-                        )
+                        val radCircle = sqrt(((centerX - x) * (centerX - x) + (centerY - y) * (centerY - y)).toDouble())
                         // check if touch was inside of the bounds of the handle (+ buffer to easier touch the handle)
-                        if (radCircle < handle.widthOfHandle + HANDLE_BUFFER) {
+                        if (radCircle < handle.width + HANDLE_BUFFER) {
                             handleId = handle.id
                             groupId = if (handleId == 1 || handleId == 3) {
                                 2
@@ -163,7 +158,7 @@ class HighlightingPreview : View {
                     }
                 }
             MotionEvent.ACTION_MOVE -> if (handleId > -1) {
-                // move the balls the same as the finger
+                // move the handles the same as the finger
                 handles[handleId].x = x
                 handles[handleId].y = y
                 if (groupId == 1) {
@@ -190,6 +185,10 @@ class HighlightingPreview : View {
         setup()
     }
 
+    fun getSelectionRectangle(): Rectangle {
+        return rectF.toItextRectangle()
+    }
+
     companion object {
         private const val HANDLE_BUFFER = 80
         private const val HANDLE_SIZE = 20
@@ -201,9 +200,9 @@ class HighlightingPreview : View {
         var bitmap: Bitmap =
             ImageUtil.getResourceAsBitmap(context, resourceId, HANDLE_SIZE, HANDLE_COLOR)
                 ?: Bitmap.createBitmap(HANDLE_SIZE, HANDLE_SIZE, Bitmap.Config.ARGB_8888)
-        val widthOfHandle: Int
+        val width: Int
             get() = bitmap.width
-        val heightOfBall: Int
+        val height: Int
             get() = bitmap.height
         var x: Int
             get() = point.x

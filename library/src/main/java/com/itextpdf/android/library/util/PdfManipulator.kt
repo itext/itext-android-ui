@@ -49,7 +49,7 @@ interface PdfManipulator {
 
     fun addTextAnnotationToPdf(title: String?, text: String, pageNumber: Int, x: Float, y: Float, bubbleSize: Float, bubbleColor: String): File
 
-    fun addMarkupAnnotationToPdf(pageNumber: Int, x: Float, y: Float, size: Float, color: Color): File
+    fun addMarkupAnnotationToPdf(pageNumber: Int, rect: Rectangle, color: Color): File
 
     fun removeAnnotationFromPdf(pageNumber: Int, annotation: PdfAnnotation): File
 
