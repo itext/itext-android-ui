@@ -284,33 +284,43 @@ open class PdfFragment : Fragment() {
     }
 
     private fun setupToolbar() {
-
         setHasOptionsMenu(true)
 
+        when (val parentActivity: FragmentActivity? = activity) {
+            is AppCompatActivity -> parentActivity.setSupportActionBar(binding.tbPdfFragment)
+            else -> Log.d(LOG_TAG, "Cannot setSupportActionBar on parent activity $parentActivity.")
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        if (annotationActionMode == AnnotationAction.HIGHLIGHT) {
+            prepareConfirmMenu(menu, inflater)
+        } else {
+            prepareDefaultMenu(menu, inflater)
+        }
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    private fun prepareDefaultMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_pdf_fragment, menu)
         val toolbar = binding.tbPdfFragment
         toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material)
         toolbar.setNavigationOnClickListener { requireActivity().onBackPressed() }
         toolbar.title = if (config.displayFileName) config.fileName else null
 
-        val parentActivity: FragmentActivity? = activity
-
-        when (parentActivity) {
-            is AppCompatActivity -> parentActivity.setSupportActionBar(binding.tbPdfFragment)
-            else -> Log.d(LOG_TAG, "Cannot setSupportActionBar on parent activity $parentActivity.")
-        }
-
-
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_pdf_fragment, menu)
-
         menu.findItem(R.id.action_navigate_pdf).isVisible = config.enableThumbnailNavigationView
         menu.findItem(R.id.action_highlight).isVisible = config.enableHighlightView
         menu.findItem(R.id.action_annotations).isVisible = config.enableAnnotationView
         menu.findItem(R.id.action_split_pdf).isVisible = config.enableSplitView
+    }
 
-        super.onCreateOptionsMenu(menu, inflater)
+    private fun prepareConfirmMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_confirm, menu)
+        val toolbar = binding.tbPdfFragment
+        toolbar.setNavigationIcon(R.drawable.ic_close)
+        toolbar.setNavigationOnClickListener { setHighlightingViewVisibility(false) }
+        toolbar.title = getString(R.string.highlight)
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
@@ -336,6 +346,15 @@ open class PdfFragment : Fragment() {
         }
         R.id.action_split_pdf -> {
             openSplitDocumentView()
+            true
+        }
+        R.id.action_confirm -> {
+            if (annotationActionMode == AnnotationAction.HIGHLIGHT) {
+                val screenRect = binding.highlightPreview.getSelectionRectangle()
+                val pdfRect = binding.pdfView.convertScreenRectToPdfPageRect(screenRect)
+                if (pdfRect != null)
+                    addMarkupAnnotation(pdfRect)
+            }
             true
         }
         else -> {
@@ -364,6 +383,7 @@ open class PdfFragment : Fragment() {
             color = highlightColors[highlightColorAdapter.selectedPosition]
         )
         setupPdfView()
+        setHighlightingViewVisibility(false)
     }
 
     private fun removeAnnotation(annotation: PdfAnnotation) {
@@ -586,17 +606,9 @@ open class PdfFragment : Fragment() {
                 true
             }
             .onLongPress { event ->
-                if (annotationActionMode == AnnotationAction.HIGHLIGHT) {
-                    //TODO: put to correct spot or remove
-//                    val position = binding.pdfView.convertMotionEventPointToPdfPagePoint(event)
-//                    position?.let {
-//                        addMarkupAnnotation(it)
-//                    }
-                } else {
-                    annotationActionMode = AnnotationAction.ADD
-                    longPressPdfPagePosition = binding.pdfView.convertMotionEventPointToPdfPagePoint(event)
-                    setAnnotationTextViewVisibility(true)
-                }
+                annotationActionMode = AnnotationAction.ADD
+                longPressPdfPagePosition = binding.pdfView.convertMotionEventPointToPdfPagePoint(event)
+                setAnnotationTextViewVisibility(true)
             }
             .onLoad {
                 setupThumbnailNavigationView()
@@ -785,15 +797,11 @@ open class PdfFragment : Fragment() {
         } else {
             if (annotationActionMode == AnnotationAction.HIGHLIGHT) {
                 annotationActionMode = null
-
-                //TODO: move to correct spot
-                val screenRect = binding.highlightPreview.getSelectionRectangle()
-                val pdfRect = binding.pdfView.convertScreenRectToPdfPageRect(screenRect)
-                if (pdfRect != null)
-                    addMarkupAnnotation(pdfRect)
             }
             binding.highlightPreview.visibility = GONE
         }
+        requireActivity().invalidateOptionsMenu()
+
         view?.postDelayed({
             val updatedState =
                 if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED

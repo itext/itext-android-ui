@@ -11,13 +11,13 @@
     <item
         android:id="@+id/action_highlight"
         android:icon="@drawable/ic_highlight"
-        android:title="@string/highlight_text"
+        android:title="@string/highlight"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_annotations"
         android:icon="@drawable/ic_annotation"
-        android:title="@string/add_annotation"
+        android:title="@string/annotations"
         app:showAsAction="ifRoom" />
 
     <item
@@ -29,6 +29,6 @@
     <item
         android:id="@+id/action_save"
         android:icon="@drawable/ic_send"
-        android:title="@string/add_annotation"
-        app:showAsAction="always" />
+        android:title="@string/annotations"
+        app:showAsAction="ifRoom" />
 </menu>

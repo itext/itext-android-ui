@@ -3,7 +3,6 @@ package com.itextpdf.android.library.fragments
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.action.ViewActions.*
-import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -11,7 +10,6 @@ import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.PdfActivity
-import org.hamcrest.Matchers.allOf
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -51,7 +49,7 @@ internal class PdfActivityTest {
     fun testSplitPdf() {
 
         openActionBarOverflowOrOptionsMenu(context)
-        onView(withText(context.getString(R.string.add_annotation)))
+        onView(withText(context.getString(R.string.annotations)))
             .perform(click())
     }
 
