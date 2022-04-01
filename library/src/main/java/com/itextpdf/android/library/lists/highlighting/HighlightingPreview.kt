@@ -22,10 +22,16 @@ class HighlightingPreview : View {
     // the drawn rect
     private var rectF = RectF()
 
+    // the x value of the last touch point (required to calc the delta for the move event)
+    private var lastX = -1
+
+    // the y value of the last touch point (required to calc the delta for the move event)
+    private var lastY = -1
+
     /**
-     * point1 and point 3 are of same group and same as point 2 and point4
+     * point 1 and point 3 are in group 1, point 2 and point 4 are in group 2 and all four together are in group 3
      */
-    var groupId = -1
+    var groupId = GROUP_NONE
 
     // array that holds the handles
     private val handles = ArrayList<Handle>()
@@ -125,7 +131,7 @@ class HighlightingPreview : View {
                     points[3].x = x + 30
                     points[3].y = y
                     handleId = 2
-                    groupId = 1
+                    groupId = GROUP_PT_1_AND_3
                     // declare each handle
                     for ((index, pt) in points.withIndex()) {
                         handles.add(Handle(context, R.drawable.circle_shape_with_border, pt, index))
@@ -133,7 +139,7 @@ class HighlightingPreview : View {
                 } else {
                     //resize rectangle
                     handleId = -1
-                    groupId = -1
+                    groupId = GROUP_NONE
                     var i = handles.size - 1
                     while (i >= 0) {
                         val handle = handles[i]
@@ -145,10 +151,10 @@ class HighlightingPreview : View {
                         // check if touch was inside of the bounds of the handle (+ buffer to easier touch the handle)
                         if (radCircle < handle.width + HANDLE_BUFFER) {
                             handleId = handle.id
-                            groupId = if (handleId == 1 || handleId == 3) {
-                                2
+                            groupId = if (handleId == 0 || handleId == 2) {
+                                GROUP_PT_1_AND_3
                             } else {
-                                1
+                                GROUP_PT_2_AND_4
                             }
                             invalidate()
                             break
@@ -156,12 +162,20 @@ class HighlightingPreview : View {
                         invalidate()
                         i--
                     }
+
+                    // check if touch was inside of rectangle, if yes, assign group containing all points
+                    if (rectF.contains(event.x, event.y)) {
+                        groupId = GROUP_ALL_POINTS
+                        invalidate()
+                    }
+                    lastX = x
+                    lastY = y
                 }
             MotionEvent.ACTION_MOVE -> if (handleId > -1) {
                 // move the handles the same as the finger
                 handles[handleId].x = x
                 handles[handleId].y = y
-                if (groupId == 1) {
+                if (groupId == GROUP_PT_1_AND_3) {
                     handles[1].x = handles[0].x
                     handles[1].y = handles[2].y
                     handles[3].x = handles[2].x
@@ -173,8 +187,24 @@ class HighlightingPreview : View {
                     handles[2].y = handles[1].y
                 }
                 invalidate()
+            } else if (groupId == GROUP_ALL_POINTS) {
+                // if group is 3, the touch was within the rect, therefore move the whole rect
+                val diffX = x - lastX
+                val diffY = y - lastY
+
+                for (handle in handles) {
+                    handle.x = handle.x + diffX
+                    handle.y = handle.y + diffY
+                }
+                invalidate()
+
+                lastX = x
+                lastY = y
             }
-            MotionEvent.ACTION_UP -> {}
+            MotionEvent.ACTION_UP -> {
+                lastX = -1
+                lastY = -1
+            }
         }
         // redraw the canvas
         invalidate()
@@ -194,6 +224,11 @@ class HighlightingPreview : View {
         private const val HANDLE_SIZE = 20
         private const val HANDLE_COLOR = "#3C3C3C"
         private const val RECT_COLOR_ALPHA = 80 // value between 0 and 255
+
+        private const val GROUP_NONE = -1
+        private const val GROUP_PT_1_AND_3 = 1
+        private const val GROUP_PT_2_AND_4 = 2
+        private const val GROUP_ALL_POINTS = 3
     }
 
     class Handle(var context: Context, resourceId: Int, var point: Point, val id: Int) {
