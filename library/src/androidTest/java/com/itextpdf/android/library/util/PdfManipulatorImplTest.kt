@@ -208,7 +208,7 @@ class PdfManipulatorImplTest {
     }
 
     /**
-     * GIVEN contains two annotations
+     * GIVEN pdf contains two annotations
      * WHEN users removes one of those annotations
      * THEN pdf only contains the other, remaining annotation
      */
@@ -243,11 +243,11 @@ class PdfManipulatorImplTest {
 
         // WHEN
         sut.removeAnnotationFromPdf(1, annotationToRemove)
-        val updatedAnnotations: List<PdfAnnotation> = sut.getPdfDocumentInReadingMode().getPages().flatMap { it.annotations }
-        val remainingAnnotation: PdfAnnotation = updatedAnnotations.first()
+        val remaining: List<PdfAnnotation> = sut.getPdfDocumentInReadingMode().getPages().flatMap { it.annotations }
+        val remainingAnnotation: PdfAnnotation = remaining.first()
 
         // THEN
-        assertThat(updatedAnnotations).hasSize(1)
+        assertThat(remaining).hasSize(1)
         assertThat(remainingAnnotation.title.value).isEqualTo("Lorem Ipsum Title 2")
         assertThat(remainingAnnotation.contents.value).isEqualTo("Lorem Ipsum Message 2")
 
