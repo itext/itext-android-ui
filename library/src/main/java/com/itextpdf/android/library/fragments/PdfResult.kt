@@ -12,6 +12,6 @@ sealed class PdfResult : Parcelable {
     class PdfEdited(val file: File) : PdfResult()
     class PdfSplit(
         val fileContainingSelectedPages: Uri,
-        val fileContainingUnselectedPages: Uri
+        val fileContainingUnselectedPages: Uri?
     ) : PdfResult()
 }

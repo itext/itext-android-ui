@@ -164,7 +164,7 @@ open class PdfFragment : Fragment() {
 
 
         // listen for the fragment result from the SplitDocumentFragment to get a list pdfUris resulting from the split
-        setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT) { _, bundle ->
+        setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_REQUEST_KEY) { _, bundle ->
 
             val splitResult: PdfResult? = bundle.getParcelable(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT)
 
@@ -172,20 +172,6 @@ open class PdfFragment : Fragment() {
                 setFragmentResult(splitResult)
             }
 
-            // get the uri from the pdf files created when splitting the document
-            val pdfUriList =
-                bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT)
-            if (pdfUriList != null) {
-                if (!pdfUriList.isNullOrEmpty()) {
-                    // show toast with storage location
-                    val file = pdfUriList.first().toFile()
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.split_document_success, "${file.parent}/"),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
             // close SplitDocumentFragment to show PdfFragment again
             closeSplitDocumentView()
         }

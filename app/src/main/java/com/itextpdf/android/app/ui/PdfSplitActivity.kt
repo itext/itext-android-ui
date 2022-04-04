@@ -7,9 +7,11 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toFile
+import androidx.core.net.toUri
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivitySplitPdfBinding
 import com.itextpdf.android.library.fragments.PdfConfig
+import com.itextpdf.android.library.fragments.PdfResult
 import com.itextpdf.android.library.fragments.SplitDocumentFragment
 
 class PdfSplitActivity : AppCompatActivity() {
@@ -41,17 +43,25 @@ class PdfSplitActivity : AppCompatActivity() {
         }
 
         // listen for the fragment result from the SplitDocumentFragment to get a list pdfUris resulting from the split
-        supportFragmentManager.setFragmentResultListener("pdfSplit", this) { requestKey, bundle ->
+        supportFragmentManager.setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_REQUEST_KEY, this) { requestKey, bundle ->
 
-            val pdfUriList: List<Uri> = bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT).orEmpty()
-            val first: Uri = pdfUriList.first()
-
-            Toast.makeText(this, getString(R.string.split_document_success), Toast.LENGTH_LONG).show()
+            val result: PdfResult? = bundle.getParcelable(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT)
+            handlePdfResult(result)
 
             supportFragmentManager.clearFragmentResult(requestKey)
 
-            ShareUtil.sharePdf(this, first)
         }
+    }
+
+    private fun handlePdfResult(result: PdfResult?) {
+        
+        when (result) {
+            PdfResult.CancelledByUser -> Toast.makeText(this, R.string.cancelled_by_user, Toast.LENGTH_LONG).show()
+            is PdfResult.PdfEdited -> ShareUtil.sharePdf(this, result.file.toUri())
+            is PdfResult.PdfSplit -> ShareUtil.sharePdf(this, result.fileContainingSelectedPages)
+            null -> Toast.makeText(this, R.string.no_result, Toast.LENGTH_LONG).show()
+        }
+
     }
 
     companion object {

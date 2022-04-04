@@ -342,7 +342,7 @@ open class SplitDocumentFragment : Fragment() {
         )
 
         // set the uris as fragmentResult for any class that is listening
-        setFragmentResult(SPLIT_DOCUMENT_RESULT, bundleOf(SPLIT_DOCUMENT_RESULT to result))
+        setFragmentResult(SPLIT_DOCUMENT_REQUEST_KEY, bundleOf(SPLIT_DOCUMENT_RESULT to result))
 
     }
 
@@ -358,6 +358,7 @@ open class SplitDocumentFragment : Fragment() {
         private const val LOAD_MORE_OFFSET = PAGE_SIZE / 2
         private const val UNNAMED_FILE = "unnamed.pdf"
 
+        const val SPLIT_DOCUMENT_REQUEST_KEY = "split_pdf_request_key"
         const val SPLIT_DOCUMENT_RESULT = "SPLIT_DOCUMENT_RESULT"
 
         /**

@@ -115,7 +115,7 @@ class PdfViewerActivity : AppCompatActivity() {
         }
 
     }
-    
+
     companion object {
 
         private const val LOG_TAG = "PdfViewActivity"
