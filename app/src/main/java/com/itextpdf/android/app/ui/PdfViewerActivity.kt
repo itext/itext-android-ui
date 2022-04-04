@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityPdfViewerBinding
 import com.itextpdf.android.library.fragments.PdfConfig
@@ -106,7 +107,7 @@ class PdfViewerActivity : AppCompatActivity() {
 
     private fun handlePdfResult(bundle: Bundle) {
         val result: File = bundle.getSerializable(PdfFragment.RESULT_FILE) as File
-        finish()
+        ShareUtil.sharePdf(this, result.toUri())
     }
 
     companion object {

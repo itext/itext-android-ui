@@ -93,32 +93,13 @@ class MainActivity : AppCompatActivity() {
         // check if uris were returned
         if (pdfUriList.isNotEmpty()) {
             // open the share sheet to share the first pdf file which contains of the selected pages
-            sharePdf(pdfUriList.first())
+            ShareUtil.sharePdf(this, pdfUriList.first())
         } else {
             Log.e(
                 TAG,
                 getString(com.itextpdf.android.library.R.string.split_document_error)
             )
         }
-    }
-
-    /**
-     * Use this function to open up the share sheet an share one pdf file
-     *
-     * @param pdfUri    the uri to the pdf that should be shared
-     */
-    private fun sharePdf(pdfUri: Uri) {
-        // prepare a sharable uri with the FileProvider (also make sure to setup provider_paths.xml and set FileProvider in Manifest)
-        val shareableUri = FileProvider.getUriForFile(
-            this,
-            BuildConfig.APPLICATION_ID + ".provider",
-            pdfUri.toFile()
-        )
-        val shareIntent = Intent(Intent.ACTION_SEND)
-        shareIntent.putExtra(Intent.EXTRA_STREAM, shareableUri)
-        shareIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-        shareIntent.type = "application/pdf"
-        startActivity(Intent.createChooser(shareIntent, getString(R.string.share_pdf_title)))
     }
 
     /**
