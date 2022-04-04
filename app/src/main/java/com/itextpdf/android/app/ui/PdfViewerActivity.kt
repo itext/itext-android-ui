@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.itextpdf.android.app.R
@@ -96,18 +97,23 @@ class PdfViewerActivity : AppCompatActivity() {
 
         supportFragmentManager.setFragmentResultListener(pdfRequestKey, this) { requestKey, bundle ->
 
-            if (requestKey == pdfRequestKey) {
-                handlePdfResult(bundle)
-            }
-
+            handlePdfResult(bundle)
             supportFragmentManager.clearFragmentResult(requestKey)
 
+            finish()
         }
     }
 
     private fun handlePdfResult(bundle: Bundle) {
-        val result: File = bundle.getSerializable(PdfFragment.RESULT_FILE) as File
-        ShareUtil.sharePdf(this, result.toUri())
+        val result: File? = bundle.getSerializable(PdfFragment.RESULT_FILE) as? File
+
+        if (result != null) {
+            ShareUtil.sharePdf(this, result.toUri())
+        } else {
+            Toast.makeText(this, R.string.cancelled_by_user, Toast.LENGTH_LONG).show()
+        }
+
+        supportFragmentManager.popBackStack()
     }
 
     companion object {

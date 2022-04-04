@@ -2,6 +2,7 @@ package com.itextpdf.android.library.fragments
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.res.TypedArray
 import android.graphics.*
 import android.net.Uri
@@ -17,6 +18,7 @@ import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
@@ -91,6 +93,14 @@ open class PdfFragment : Fragment() {
     private var longPressPdfPagePosition: PointF? = null
     private var ivHighlightedAnnotation: ImageView? = null
 
+    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
+
+        override fun handleOnBackPressed() {
+            showSaveConfirmationDialog()
+        }
+
+    }
+
     private var highlightColors = arrayOf(
         DeviceRgb(1f, 1f, 0f), // yellow
         DeviceRgb(0f, 1f, 0f), // green
@@ -102,8 +112,30 @@ open class PdfFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+
         setParamsFromBundle(savedInstanceState ?: arguments)
         pdfManipulator = PdfManipulator.create(requireContext(), config.pdfUri)
+
+    }
+
+    private fun showSaveConfirmationDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.save_confirmation_title)
+            .setMessage(R.string.save_confirmation_message)
+            .setPositiveButton(R.string.save_confirmation_accept) { _, _ -> applyChanges() }
+            .setNegativeButton(R.string.save_confirmation_discard) { _, _ -> discardChanges() }
+            .setNeutralButton(R.string.save_confirmation_keep_editing, null)
+            .show()
+
+    }
+
+    private fun applyChanges() {
+        setFragmentResult(REQUEST_KEY, bundleOf(RESULT_FILE to pdfManipulator.workingCopy))
+    }
+
+    private fun discardChanges() {
+        setFragmentResult(REQUEST_KEY, bundleOf())
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -324,11 +356,6 @@ open class PdfFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-
-        R.id.action_save -> {
-            setFragmentResult(REQUEST_KEY, bundleOf(RESULT_FILE to pdfManipulator.workingCopy))
-            true
-        }
 
         R.id.action_navigate_pdf -> {
             if (navViewSetupComplete)
