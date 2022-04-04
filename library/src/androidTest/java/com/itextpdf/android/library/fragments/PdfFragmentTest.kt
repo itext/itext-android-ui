@@ -48,7 +48,6 @@ class PdfFragmentTest {
     @Test
     fun testLongPress() {
 
-
         val scenario: FragmentScenario<PdfFragment> = launchFragmentInContainer(
             fragmentArgs = fragmentArgs,
             themeResId = R.style.Theme_MaterialComponents_DayNight

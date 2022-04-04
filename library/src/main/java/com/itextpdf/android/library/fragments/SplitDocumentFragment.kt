@@ -334,7 +334,7 @@ open class SplitDocumentFragment : Fragment() {
         }
 
         val selected = pdfUriList.first()
-        val unselected = pdfUriList[1]
+        val unselected = pdfUriList.getOrNull(1)
 
         val result = PdfResult.PdfSplit(
             fileContainingSelectedPages = selected,
@@ -349,7 +349,7 @@ open class SplitDocumentFragment : Fragment() {
     companion object {
         private const val TAG = "SplitDocumentFragment"
 
-        private const val EXTRA_PDF_CONFIG = "PDF_URI"
+        internal const val EXTRA_PDF_CONFIG = "PDF_URI"
 
         private const val THUMBNAIL_WIDTH_BASE = 1080
         private const val MAX_THUMBNAIL_WIDTH = 150
