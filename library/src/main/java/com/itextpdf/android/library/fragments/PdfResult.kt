@@ -6,10 +6,15 @@ import kotlinx.parcelize.Parcelize
 import java.io.File
 
 
-@Parcelize
 sealed class PdfResult : Parcelable {
+
+    @Parcelize
     object CancelledByUser : PdfResult()
+
+    @Parcelize
     class PdfEdited(val file: File) : PdfResult()
+
+    @Parcelize
     class PdfSplit(
         val fileContainingSelectedPages: Uri,
         val fileContainingUnselectedPages: Uri?
