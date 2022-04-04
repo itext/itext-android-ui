@@ -1,14 +1,5 @@
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-        jcenter()
-        maven {
-            url "https://repo.itextsupport.com/snapshot"
-        }
-    }
-}
 rootProject.name = "iTextPDF"
 include ':app'
 include ':library'
+include ':android-pdf-viewer'
+include ':android-pdfium'

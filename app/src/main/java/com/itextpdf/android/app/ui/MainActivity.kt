@@ -15,8 +15,8 @@ import com.itextpdf.android.app.BuildConfig
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityMainBinding
 import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
-import com.itextpdf.android.library.extensions.registerPdfSelectionResult
-import com.itextpdf.android.library.extensions.selectPdfIntent
+import com.itextpdf.android.app.extensions.registerPdfSelectionResult
+import com.itextpdf.android.app.extensions.selectPdfIntent
 import com.itextpdf.android.library.util.FileUtil
 import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfThumbnailView
@@ -25,6 +25,7 @@ import com.itextpdf.android.library.views.PdfThumbnailView
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val fileUtil = FileUtil.getInstance()
 
     /**
      * An ActivityResultLauncher<Intent> object that is used to launch the selectPdfIntent to select a
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -46,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         // prepare pre-defined pdf files from the assets folder to display them in a recyclerView
         val data = mutableListOf<PdfRecyclerItem>()
         pdfFileNames.forEachIndexed { i, fileName ->
-            val file = FileUtil.loadFileFromAssets(this, fileName)
+            val file = fileUtil.loadFileFromAssets(this, fileName)
             val uri = Uri.fromFile(file)
 
             data.add(PdfItem(pdfTitles[i], fileName, pdfDescriptions[i], uri) {
@@ -83,42 +85,21 @@ class MainActivity : AppCompatActivity() {
     private fun noUISplit(uri: Uri, fileName: String, selectedPageIndices: List<Int>) {
         // specify the path where the newly created pdf files will be stored -> Cache
         val storageFolderPath = (externalCacheDir ?: cacheDir).absolutePath
-        val pdfUriList = PdfManipulator.splitPdfWithSelection(
-            this,
-            uri,
-            fileName,
-            selectedPageIndices,
-            storageFolderPath
+        val pdfUriList = PdfManipulator.create(this, uri).splitPdfWithSelection(
+            fileName = fileName,
+            selectedPageIndices = selectedPageIndices,
+            storageFolderPath = storageFolderPath
         )
         // check if uris were returned
         if (pdfUriList.isNotEmpty()) {
             // open the share sheet to share the first pdf file which contains of the selected pages
-            sharePdf(pdfUriList.first())
+            ShareUtil.sharePdf(this, pdfUriList.first())
         } else {
             Log.e(
                 TAG,
                 getString(com.itextpdf.android.library.R.string.split_document_error)
             )
         }
-    }
-
-    /**
-     * Use this function to open up the share sheet an share one pdf file
-     *
-     * @param pdfUri    the uri to the pdf that should be shared
-     */
-    private fun sharePdf(pdfUri: Uri) {
-        // prepare a sharable uri with the FileProvider (also make sure to setup provider_paths.xml and set FileProvider in Manifest)
-        val shareableUri = FileProvider.getUriForFile(
-            this,
-            BuildConfig.APPLICATION_ID + ".provider",
-            pdfUri.toFile()
-        )
-        val shareIntent = Intent(Intent.ACTION_SEND)
-        shareIntent.putExtra(Intent.EXTRA_STREAM, shareableUri)
-        shareIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-        shareIntent.type = "application/pdf"
-        startActivity(Intent.createChooser(shareIntent, getString(R.string.share_pdf_title)))
     }
 
     /**

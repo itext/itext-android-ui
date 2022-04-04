@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
+    id 'kotlin-parcelize'
     id 'jacoco'
 }
 
@@ -16,6 +17,12 @@ android {
         targetSdk 31
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // The following argument makes the Android Test Orchestrator run its
+        // "pm clear" command after each test invocation. This command ensures
+        // that the app's state is completely cleared between tests.
+        testInstrumentationRunnerArguments = ['clearPackageData': 'true', 'useTestStorageService': 'true']
+
         consumerProguardFiles "consumer-rules.pro"
     }
 
@@ -44,6 +51,9 @@ android {
         debug {
             testCoverageEnabled = true
         }
+        innerTest {
+            matchingFallbacks = ['debug', 'release']
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -52,7 +62,15 @@ android {
     kotlinOptions {
         jvmTarget = '11'
     }
+
     testOptions {
+
+        // Enable/Disable android-x test-orchestrator
+        // The orchestrator is used to ensure empty/clean app-data for each instrumented-test
+//        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+
+        animationsDisabled = true
+
         unitTests {
             includeAndroidResources = true
         }
@@ -63,12 +81,17 @@ dependencies {
     // PDF
     //TODO: for some reason v7.2.0 not working with android
     // https://mvnrepository.com/artifact/com.itextpdf/kernel
-    implementation("com.itextpdf:kernel:7.2.2-SNAPSHOT")
+    api("com.itextpdf:kernel:7.2.2-SNAPSHOT")
     // https://mvnrepository.com/artifact/com.itextpdf/layout
-    implementation("com.itextpdf:layout:7.2.2-SNAPSHOT")
-    implementation("com.itextpdf:io:7.2.2-SNAPSHOT")
+    api("com.itextpdf:layout:7.2.2-SNAPSHOT")
+    api("com.itextpdf:io:7.2.2-SNAPSHOT")
+    api("com.itextpdf:forms:7.2.2-SNAPSHOT")
 
-    implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
+//    implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
+//    implementation 'com.github.Lucasq95:AndroidPdfViewer:4.9.12'
+//    implementation 'com.github.ahoikapptn-dev:AndroidPdfViewer:master-SNAPSHOT'
+//    implementation 'com.github.barteksc:AndroidPdfViewer:master-SNAPSHOT'
+    implementation project(path: ':android-pdf-viewer')
 
     // Android X
     implementation 'androidx.core:core-ktx:1.7.0'
@@ -78,26 +101,38 @@ dependencies {
 
     // Material design
     implementation 'com.google.android.material:material:1.5.0'
+    androidTestImplementation 'com.google.android.material:material:1.5.0'
+
     implementation 'androidx.compose.material3:material3:1.0.0-alpha06'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0'
     implementation('org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0')
     implementation('androidx.lifecycle:lifecycle-runtime-ktx:2.4.1')
 
-    implementation 'org.jacoco:org.jacoco.agent:0.8.7'
-
     // Espresso
     // Core library
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation "androidx.test.espresso:espresso-contrib:3.4.0"
+
     // AndroidJUnitRunner and JUnit Rules
+    androidTestUtil "androidx.test:orchestrator:1.4.2-alpha02"
+    androidTestUtil "androidx.test.services:test-services:1.4.2-alpha02"
+
     androidTestImplementation 'androidx.test:core-ktx:1.4.0'
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test:rules:1.4.0'
     testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.ext:junit-ktx:1.1.3'
+
+    implementation 'org.jacoco:org.jacoco.agent:0.8.7'
+
+
+    debugImplementation "androidx.fragment:fragment-testing:1.4.1"
+    implementation "androidx.core:core-ktx:1.7.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
-configurations.all{
+configurations.all {
     resolutionStrategy {
         eachDependency { details ->
             if ('org.jacoco' == details.requested.group) {
