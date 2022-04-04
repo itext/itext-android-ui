@@ -1,5 +1,6 @@
 package com.itextpdf.android.library.extensions
 
+import android.graphics.Point
 import android.graphics.PointF
 import android.view.MotionEvent
 import com.github.barteksc.pdfviewer.PDFView
@@ -50,4 +51,25 @@ fun PDFView.convertScreenRectToPdfPageRect(screenRect: Rectangle): Rectangle? {
     } else {
         null
     }
+}
+
+fun PDFView.convertPdfPagePointToScreenPoint(pagePoint: PointF): Point? {
+    val x = pagePoint.x
+    val y = pagePoint.y
+
+    if (pdfFile == null) return null
+
+    val page = pdfFile.getPageAtOffset(if (isSwipeVertical) y else x, zoom)
+    val pageSize = pdfFile.getScaledPageSize(page, zoom)
+
+    return pdfFile.mapPageCoordsToDevice(
+        page,
+        currentXOffset.toInt(),
+        currentYOffset.toInt(),
+        pageSize.width.toInt(),
+        pageSize.height.toInt(),
+        0, //TODO: use real rotation
+        x.toDouble(),
+        y.toDouble()
+    )
 }

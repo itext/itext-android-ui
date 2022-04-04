@@ -38,3 +38,20 @@ fun PdfAnnotation.isAtPosition(position: PointF): Boolean {
     // check if position is in rectangle bounds
     return position.x > llx && position.x < urx && position.y > lly && position.y < ury
 }
+
+/**
+ * Returns the center point of the annotation within the pdf coordinate system
+ *
+ * @return  the center point
+ */
+fun PdfAnnotation.getCenterPoint(): PointF {
+    // rectangle should have 4 entries: lower-left and upper-right x and y coordinates: [llx, lly, urx, ury]
+    val llx = rectangle.getAsNumber(0).floatValue()
+    val lly = rectangle.getAsNumber(1).floatValue()
+    val urx = rectangle.getAsNumber(2).floatValue()
+    val ury = rectangle.getAsNumber(3).floatValue()
+
+    val annotationWidth = urx - llx
+    val annotationHeight = ury - lly
+    return PointF(llx + annotationWidth / 2, lly + annotationHeight / 2)
+}
