@@ -3,9 +3,9 @@ package com.itextpdf.android.library.fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
@@ -13,7 +13,8 @@ import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.use
-import androidx.core.net.toFile
+import androidx.core.graphics.BlendModeColorFilterCompat
+import androidx.core.graphics.BlendModeCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
@@ -118,17 +119,11 @@ open class SplitDocumentFragment : Fragment() {
 
     private fun adjustColors() {
         val primary = Color.parseColor(config.primaryColor)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            binding.splitPdfLoadingIndicator.indeterminateDrawable.colorFilter =
-                BlendModeColorFilter(primary, BlendMode.SRC_ATOP)
-        } else {
-            binding.splitPdfLoadingIndicator.indeterminateDrawable.setColorFilter(
-                primary,
-                PorterDuff.Mode.SRC_ATOP
-            )
-        }
-        binding.fabSplit.backgroundTintList = ColorStateList.valueOf(primary)
 
+        val colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(primary, BlendModeCompat.SRC_ATOP)
+        binding.splitPdfLoadingIndicator.indeterminateDrawable.colorFilter = colorFilter
+
+        binding.fabSplit.backgroundTintList = ColorStateList.valueOf(primary)
     }
 
     private fun setParamsFromBundle(bundle: Bundle?) {
@@ -327,7 +322,6 @@ open class SplitDocumentFragment : Fragment() {
             storageFolderPath
         )
         if (pdfUriList.isNotEmpty()) {
-            val file = pdfUriList.first().toFile()
             Log.i(TAG, getString(R.string.split_document_success))
         } else {
             Log.e(TAG, getString(R.string.split_document_error))
