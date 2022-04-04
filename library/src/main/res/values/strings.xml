@@ -22,5 +22,6 @@
     <string name="save_confirmation_accept">Yes, accept changes</string>
     <string name="save_confirmation_discard">Discard changes</string>
     <string name="save_confirmation_keep_editing">Keep editing</string>
+    <string name="text_annotation_error">Error while adding text annotation</string>
 
 </resources>

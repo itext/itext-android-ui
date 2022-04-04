@@ -20,6 +20,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.MenuRes
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -387,17 +388,28 @@ open class PdfFragment : Fragment() {
     }
 
     private fun addTextAnnotation(title: String?, text: String, pdfPagePosition: PointF) {
-        pdfManipulator.addTextAnnotationToPdf(
-            title = title,
-            text = text,
-            pageNumber = currentPageIndex + 1,
-            x = pdfPagePosition.x,
-            y = pdfPagePosition.y,
-            bubbleSize = ANNOTATION_SIZE,
-            bubbleColor = config.primaryColor
-        )
-        setupPdfView()
-        annotationActionMode = null
+        try {
+            pdfManipulator.addTextAnnotationToPdf(
+                title = title,
+                text = text,
+                pageNumber = currentPageIndex + 1,
+                x = pdfPagePosition.x,
+                y = pdfPagePosition.y,
+                bubbleSize = ANNOTATION_SIZE,
+                bubbleColor = config.primaryColor
+            )
+
+            setupPdfView()
+            annotationActionMode = null
+        } catch (error: Throwable) {
+            Log.e(LOG_TAG, "Error while adding text annotation.", error)
+            showError(error, R.string.text_annotation_error)
+        }
+    }
+
+    private fun showError(error: Throwable, @StringRes messageRes: Int) {
+        val message = getString(messageRes)
+        Toast.makeText(requireContext(), "$message: ${error.javaClass.simpleName}", Toast.LENGTH_LONG).show()
     }
 
     private fun addMarkupAnnotation(rect: Rectangle) {
