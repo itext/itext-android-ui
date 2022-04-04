@@ -171,24 +171,27 @@ open class SplitDocumentFragment : Fragment() {
 
     private fun setupToolbar() {
         setHasOptionsMenu(true)
-        if (::binding.isInitialized) {
-            (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbSplitDocumentFragment)
-            binding.tbSplitDocumentFragment.setNavigationIcon(R.drawable.ic_close)
-            binding.tbSplitDocumentFragment.setNavigationOnClickListener {
-                val fragmentManager = requireActivity().supportFragmentManager
-                val pdfFragment = fragmentManager.findFragmentByTag(TAG)
-                // if pdfFragment can be found, show it again, else close activity
-                if (pdfFragment != null) {
-                    val fragmentTransaction: FragmentTransaction =
-                        fragmentManager.beginTransaction()
-                    fragmentTransaction.remove(this)
-                    fragmentTransaction.show(pdfFragment)
-                    fragmentTransaction.commit()
-                } else {
-                    requireActivity().onBackPressed()
-                }
+        (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbSplitDocumentFragment)
+
+        val toolbar = binding.tbSplitDocumentFragment
+
+        toolbar.setNavigationIcon(R.drawable.ic_close)
+        toolbar.setNavigationContentDescription(R.string.close)
+        toolbar.setNavigationOnClickListener {
+            val fragmentManager = requireActivity().supportFragmentManager
+            val pdfFragment = fragmentManager.findFragmentByTag(TAG)
+            // if pdfFragment can be found, show it again, else close activity
+            if (pdfFragment != null) {
+                val fragmentTransaction: FragmentTransaction =
+                    fragmentManager.beginTransaction()
+                fragmentTransaction.remove(this)
+                fragmentTransaction.show(pdfFragment)
+                fragmentTransaction.commit()
+            } else {
+                requireActivity().onBackPressed()
             }
         }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

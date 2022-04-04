@@ -14,8 +14,7 @@ import androidx.test.espresso.action.ViewActions.longClick
 import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
@@ -65,6 +64,23 @@ class SplitDocumentFragmentTest {
 
         onView(allOf(withId(R.id.fabSplit), isDisplayed()))
             .perform(click())
+
+    }
+
+    @Test
+    fun testCloseButton() {
+
+        val scenario: FragmentScenario<SplitDocumentFragment> = launchFragmentInContainer(
+            fragmentArgs = fragmentArgs,
+            themeResId = R.style.Theme_MaterialComponents_DayNight
+        )
+
+        onView(
+            allOf(
+                withParent(withId(R.id.tbSplitDocumentFragment)),
+                withContentDescription(R.string.close)
+            )
+        ).perform(click());
 
     }
 }
