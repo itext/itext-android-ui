@@ -158,8 +158,8 @@ open class PdfFragment : Fragment() {
         if (fileDescriptor != null) {
             try {
                 pdfiumPdfDocument = pdfiumCore.newDocument(fileDescriptor)
-            } catch (exception: Exception) {
-                exception.printStackTrace()
+            } catch (error: Exception) {
+                Log.e(LOG_TAG, null, error)
             }
         }
 
@@ -229,8 +229,8 @@ open class PdfFragment : Fragment() {
             )
             method.isAccessible = true
             method.invoke(popup.menu, true)
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
+        } catch (error: Throwable) {
+            Log.e(LOG_TAG, null, error)
         }
     }
 

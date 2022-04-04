@@ -4,18 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityPdfViewerBinding
 import com.itextpdf.android.library.fragments.PdfConfig
 import com.itextpdf.android.library.fragments.PdfFragment
 import com.itextpdf.android.library.fragments.PdfResult
-import com.itextpdf.android.library.fragments.SplitDocumentFragment
-import java.io.File
 
 class PdfViewerActivity : AppCompatActivity() {
 

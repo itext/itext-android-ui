@@ -50,6 +50,7 @@ class PdfSplitActivity : AppCompatActivity() {
 
             supportFragmentManager.clearFragmentResult(requestKey)
 
+            finish()
         }
     }
 
@@ -84,7 +85,7 @@ class PdfSplitActivity : AppCompatActivity() {
             context.startActivity(intent)
         }
 
-        fun createIntent(context: Context, uri: Uri, fileName: String?): Intent {
+        private fun createIntent(context: Context, uri: Uri, fileName: String?): Intent {
             val intent = Intent(context, PdfSplitActivity::class.java)
             intent.putExtra(EXTRA_PDF_URI, uri.toString())
             intent.putExtra(EXTRA_PDF_TITLE, fileName)

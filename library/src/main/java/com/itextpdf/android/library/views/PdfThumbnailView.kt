@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -114,7 +115,7 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
             setImageViewWithPdfDocument(pdfiumCore, pdfDocument, pageIndex)
             pdfiumCore.closeDocument(pdfDocument)
         } catch (exception: Exception) {
-            exception.printStackTrace()
+            Log.e(LOG_TAG, null, exception)
         }
     }
 
@@ -143,5 +144,9 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
         pdfiumCore.renderPageBitmap(pdfDocument, bitmap, pageIndex, 0, 0, width, height, true)
 
         pdfImageView.setImageBitmap(bitmap)
+    }
+
+    companion object {
+        private const val LOG_TAG = "PdfThumbnailView"
     }
 }

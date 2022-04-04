@@ -16,6 +16,7 @@
     <string name="delete">Delete</string>
     <string name="confirm">Confirm</string>
     <string name="highlight">Highlight</string>
+    <string name="close">Close</string>
 
     <string name="save_confirmation_title">Unsaved changes</string>
     <string name="save_confirmation_message">Are you done editing and want to keep your changes?</string>

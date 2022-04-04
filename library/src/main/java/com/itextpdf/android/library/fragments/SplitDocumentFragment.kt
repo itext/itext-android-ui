@@ -3,9 +3,9 @@ package com.itextpdf.android.library.fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.util.AttributeSet
@@ -13,9 +13,11 @@ import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.use
-import androidx.core.net.toFile
+import androidx.core.graphics.BlendModeColorFilterCompat
+import androidx.core.graphics.BlendModeCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.lifecycleScope
@@ -101,8 +103,8 @@ open class SplitDocumentFragment : Fragment() {
                     totalPages = ceil(documentPageCount.toDouble() / PAGE_SIZE).toInt()
                 }
                 setupSplitSelectionList()
-            } catch (exception: Exception) {
-                exception.printStackTrace()
+            } catch (error: Exception) {
+                Log.e(LOG_TAG, null, error)
             }
         }
 
@@ -117,18 +119,13 @@ open class SplitDocumentFragment : Fragment() {
     }
 
     private fun adjustColors() {
-        val primary = Color.parseColor(config.primaryColor)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            binding.splitPdfLoadingIndicator.indeterminateDrawable.colorFilter =
-                BlendModeColorFilter(primary, BlendMode.SRC_ATOP)
-        } else {
-            binding.splitPdfLoadingIndicator.indeterminateDrawable.setColorFilter(
-                primary,
-                PorterDuff.Mode.SRC_ATOP
-            )
-        }
-        binding.fabSplit.backgroundTintList = ColorStateList.valueOf(primary)
 
+        val primaryColor = config.getPrimaryColorInt()
+        val colorStateList = ColorStateList.valueOf(primaryColor)
+        val colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(primaryColor, BlendModeCompat.SRC_ATOP)
+
+        binding.splitPdfLoadingIndicator.indeterminateDrawable.colorFilter = colorFilter
+        binding.fabSplit.backgroundTintList = colorStateList
     }
 
     private fun setParamsFromBundle(bundle: Bundle?) {
@@ -175,23 +172,15 @@ open class SplitDocumentFragment : Fragment() {
 
     private fun setupToolbar() {
         setHasOptionsMenu(true)
-        if (::binding.isInitialized) {
-            (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbSplitDocumentFragment)
-            binding.tbSplitDocumentFragment.setNavigationIcon(R.drawable.ic_close)
-            binding.tbSplitDocumentFragment.setNavigationOnClickListener {
-                val fragmentManager = requireActivity().supportFragmentManager
-                val pdfFragment = fragmentManager.findFragmentByTag(TAG)
-                // if pdfFragment can be found, show it again, else close activity
-                if (pdfFragment != null) {
-                    val fragmentTransaction: FragmentTransaction =
-                        fragmentManager.beginTransaction()
-                    fragmentTransaction.remove(this)
-                    fragmentTransaction.show(pdfFragment)
-                    fragmentTransaction.commit()
-                } else {
-                    requireActivity().onBackPressed()
-                }
-            }
+
+        val toolbar = binding.tbSplitDocumentFragment
+
+        (requireActivity() as? AppCompatActivity)?.setSupportActionBar(toolbar)
+
+        toolbar.setNavigationIcon(R.drawable.ic_close)
+        toolbar.setNavigationContentDescription(R.string.close)
+        toolbar.setNavigationOnClickListener {
+            setFragmentResult(SPLIT_DOCUMENT_REQUEST_KEY, bundleOf(SPLIT_DOCUMENT_RESULT to PdfResult.CancelledByUser))
         }
     }
 
@@ -292,8 +281,8 @@ open class SplitDocumentFragment : Fragment() {
                         loading = false
                         binding.splitPdfLoadingIndicator.visibility = View.GONE
                     }
-                } catch (e: java.lang.Exception) {
-                    e.printStackTrace()
+                } catch (error: Throwable) {
+                    Log.e(LOG_TAG, null, error)
                 }
             }
         } ?: run {
@@ -327,14 +316,13 @@ open class SplitDocumentFragment : Fragment() {
             storageFolderPath
         )
         if (pdfUriList.isNotEmpty()) {
-            val file = pdfUriList.first().toFile()
-            Log.i(TAG, getString(R.string.split_document_success))
+            Log.i(LOG_TAG, getString(R.string.split_document_success))
         } else {
-            Log.e(TAG, getString(R.string.split_document_error))
+            Log.e(LOG_TAG, getString(R.string.split_document_error))
         }
 
         val selected = pdfUriList.first()
-        val unselected = pdfUriList[1]
+        val unselected = pdfUriList.getOrNull(1)
 
         val result = PdfResult.PdfSplit(
             fileContainingSelectedPages = selected,
@@ -347,9 +335,9 @@ open class SplitDocumentFragment : Fragment() {
     }
 
     companion object {
-        private const val TAG = "SplitDocumentFragment"
+        private const val LOG_TAG = "SplitDocumentFragment"
 
-        private const val EXTRA_PDF_CONFIG = "PDF_URI"
+        internal const val EXTRA_PDF_CONFIG = "PDF_URI"
 
         private const val THUMBNAIL_WIDTH_BASE = 1080
         private const val MAX_THUMBNAIL_WIDTH = 150
