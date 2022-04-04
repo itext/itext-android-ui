@@ -180,20 +180,8 @@ open class SplitDocumentFragment : Fragment() {
         toolbar.setNavigationIcon(R.drawable.ic_close)
         toolbar.setNavigationContentDescription(R.string.close)
         toolbar.setNavigationOnClickListener {
-            val fragmentManager = requireActivity().supportFragmentManager
-            val pdfFragment = fragmentManager.findFragmentByTag(TAG)
-            // if pdfFragment can be found, show it again, else close activity
-            if (pdfFragment != null) {
-                val fragmentTransaction: FragmentTransaction =
-                    fragmentManager.beginTransaction()
-                fragmentTransaction.remove(this)
-                fragmentTransaction.show(pdfFragment)
-                fragmentTransaction.commit()
-            } else {
-                requireActivity().onBackPressed()
-            }
+            setFragmentResult(SPLIT_DOCUMENT_REQUEST_KEY, bundleOf(SPLIT_DOCUMENT_RESULT to PdfResult.CancelledByUser))
         }
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
