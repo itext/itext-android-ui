@@ -119,7 +119,7 @@ open class SplitDocumentFragment : Fragment() {
 
     private fun adjustColors() {
 
-        val primaryColor = config.primaryColorInt
+        val primaryColor = config.getPrimaryColorInt()
         val colorStateList = ColorStateList.valueOf(primaryColor)
         val colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(primaryColor, BlendModeCompat.SRC_ATOP)
 
