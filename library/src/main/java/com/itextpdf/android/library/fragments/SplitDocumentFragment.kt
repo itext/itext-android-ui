@@ -118,12 +118,13 @@ open class SplitDocumentFragment : Fragment() {
     }
 
     private fun adjustColors() {
-        val primary = Color.parseColor(config.primaryColor)
 
-        val colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(primary, BlendModeCompat.SRC_ATOP)
+        val primaryColor = config.primaryColorInt
+        val colorStateList = ColorStateList.valueOf(primaryColor)
+        val colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(primaryColor, BlendModeCompat.SRC_ATOP)
+
         binding.splitPdfLoadingIndicator.indeterminateDrawable.colorFilter = colorFilter
-
-        binding.fabSplit.backgroundTintList = ColorStateList.valueOf(primary)
+        binding.fabSplit.backgroundTintList = colorStateList
     }
 
     private fun setParamsFromBundle(bundle: Bundle?) {

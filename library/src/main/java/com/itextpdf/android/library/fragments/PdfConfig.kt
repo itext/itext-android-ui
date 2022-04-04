@@ -1,5 +1,6 @@
 package com.itextpdf.android.library.fragments
 
+import android.graphics.Color
 import android.net.Uri
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
@@ -64,6 +65,8 @@ data class PdfConfig(
         enableHighlightView = builder.enableHighlightView,
         enableAnnotationView = builder.enableAnnotationView
     )
+
+    val primaryColorInt get() = Color.parseColor(primaryColor)
 
     companion object {
 
