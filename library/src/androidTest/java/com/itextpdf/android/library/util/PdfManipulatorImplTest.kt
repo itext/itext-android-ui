@@ -7,8 +7,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
+import com.itextpdf.android.library.R
+import com.itextpdf.android.library.extensions.getPages
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfPage
+import com.itextpdf.kernel.pdf.annot.PdfAnnotation
+import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -165,6 +169,42 @@ class PdfManipulatorImplTest {
         for (i in 1..resultFile.numberOfPages) {
             assertThatPagesAreEqual(resultFile.getPage(i), originalFile.getPage(i))
         }
+    }
+
+    /**
+     * GIVEN pdf does not contain any text annotation
+     * WHEN users adds a text annotation
+     * THEN text annotation is stored in pdf
+     */
+    @Test
+    fun testAddTextAnnotation() {
+
+        val pdfDocument: PdfDocument = sut.getPdfDocumentInReadingMode()
+        val annotations: List<PdfAnnotation> = pdfDocument.getPages().flatMap { it.annotations }
+
+        // GIVEN
+        assertThat(annotations).isEmpty()
+
+        // WHEN
+        sut.addTextAnnotationToPdf(
+            title = "Lorem Ipsum Title",
+            text = "Lorem Ipsum Message",
+            pageNumber = 1,
+            x = 0f,
+            y = 0f,
+            bubbleSize = 1f,
+            bubbleColor = appContext.getColor(R.color.black)
+        )
+
+        val updatedAnnotations = sut.getPdfDocumentInReadingMode().getPages().flatMap { it.annotations }
+        val annotation: PdfTextAnnotation = updatedAnnotations.first() as PdfTextAnnotation
+
+        // THEN
+        assertThat(updatedAnnotations.size).isEqualTo(1)
+        assertThat(annotation.title.value).isEqualTo("Lorem Ipsum Title")
+        assertThat(annotation.contents.value).isEqualTo("Lorem Ipsum Message")
+
+
     }
 
     private fun assertThatPagesAreEqual(first: PdfPage, second: PdfPage) {
