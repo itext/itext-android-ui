@@ -25,10 +25,4 @@
         android:icon="@drawable/ic_split"
         android:title="@string/split_document"
         app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_save"
-        android:icon="@drawable/ic_send"
-        android:title="@string/save"
-        app:showAsAction="ifRoom" />
 </menu>
