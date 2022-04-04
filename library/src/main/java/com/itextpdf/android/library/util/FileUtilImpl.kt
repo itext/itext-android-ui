@@ -3,6 +3,7 @@ package com.itextpdf.android.library.util
 import android.content.Context
 import android.content.res.AssetManager
 import android.net.Uri
+import android.util.Log
 import java.io.*
 import java.nio.file.Files
 
@@ -56,7 +57,7 @@ class FileUtilImpl : FileUtil {
             outputStream = null
             true
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(LOG_TAG, null, e)
             false
         }
     }
@@ -107,5 +108,9 @@ class FileUtilImpl : FileUtil {
         }
 
         return file
+    }
+
+    companion object {
+        private const val LOG_TAG = "FileUtilImpl"
     }
 }

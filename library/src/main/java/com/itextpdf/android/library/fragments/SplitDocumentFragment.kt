@@ -103,8 +103,8 @@ open class SplitDocumentFragment : Fragment() {
                     totalPages = ceil(documentPageCount.toDouble() / PAGE_SIZE).toInt()
                 }
                 setupSplitSelectionList()
-            } catch (exception: Exception) {
-                exception.printStackTrace()
+            } catch (error: Exception) {
+                Log.e(LOG_TAG, null, error)
             }
         }
 
@@ -293,8 +293,8 @@ open class SplitDocumentFragment : Fragment() {
                         loading = false
                         binding.splitPdfLoadingIndicator.visibility = View.GONE
                     }
-                } catch (e: java.lang.Exception) {
-                    e.printStackTrace()
+                } catch (error: Throwable) {
+                    Log.e(LOG_TAG, null, error)
                 }
             }
         } ?: run {
@@ -328,9 +328,9 @@ open class SplitDocumentFragment : Fragment() {
             storageFolderPath
         )
         if (pdfUriList.isNotEmpty()) {
-            Log.i(TAG, getString(R.string.split_document_success))
+            Log.i(LOG_TAG, getString(R.string.split_document_success))
         } else {
-            Log.e(TAG, getString(R.string.split_document_error))
+            Log.e(LOG_TAG, getString(R.string.split_document_error))
         }
 
         val selected = pdfUriList.first()
@@ -347,7 +347,7 @@ open class SplitDocumentFragment : Fragment() {
     }
 
     companion object {
-        private const val TAG = "SplitDocumentFragment"
+        private const val LOG_TAG = "SplitDocumentFragment"
 
         internal const val EXTRA_PDF_CONFIG = "PDF_URI"
 
