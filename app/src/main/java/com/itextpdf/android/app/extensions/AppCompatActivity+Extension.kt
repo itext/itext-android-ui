@@ -1,4 +1,4 @@
-package com.itextpdf.android.library.extensions
+package com.itextpdf.android.app.extensions
 
 import android.app.Activity
 import android.content.Intent
@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.itextpdf.android.library.extensions.getFileName
 
 /**
  * An intent that can be used to select a pdf file with the phone's default file explorer.

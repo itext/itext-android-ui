@@ -15,8 +15,8 @@ import com.itextpdf.android.app.BuildConfig
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityMainBinding
 import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
-import com.itextpdf.android.library.extensions.registerPdfSelectionResult
-import com.itextpdf.android.library.extensions.selectPdfIntent
+import com.itextpdf.android.app.extensions.registerPdfSelectionResult
+import com.itextpdf.android.app.extensions.selectPdfIntent
 import com.itextpdf.android.library.util.FileUtil
 import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfThumbnailView

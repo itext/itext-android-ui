@@ -6,11 +6,11 @@ import com.github.barteksc.pdfviewer.PDFView
 import com.itextpdf.kernel.geom.Rectangle
 import com.shockwave.pdfium.util.SizeF
 
-fun PDFView.convertMotionEventPointToPdfPagePoint(e: MotionEvent): PointF? {
+internal fun PDFView.convertMotionEventPointToPdfPagePoint(e: MotionEvent): PointF? {
     return convertScreenPointToPdfPagePoint(e.x, e.y)
 }
 
-fun PDFView.convertScreenPointToPdfPagePoint(x: Float, y: Float): PointF? {
+internal fun PDFView.convertScreenPointToPdfPagePoint(x: Float, y: Float): PointF? {
     if (pdfFile == null) return null
     val mappedX = -currentXOffset + x
     val mappedY = -currentYOffset + y

@@ -10,7 +10,7 @@ import com.itextpdf.kernel.pdf.annot.PdfAnnotation
  * @param other the other annotation
  * @return  true if it's the same annotation
  */
-fun PdfAnnotation.isSameAs(other: PdfAnnotation): Boolean {
+internal fun PdfAnnotation.isSameAs(other: PdfAnnotation): Boolean {
     var sameRectangle = true
     for (obj in rectangle.iterator()) {
         if (!other.rectangle.contains(obj)) {
