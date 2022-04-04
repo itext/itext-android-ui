@@ -41,21 +41,23 @@ class PdfSplitActivity : AppCompatActivity() {
         }
 
         // listen for the fragment result from the SplitDocumentFragment to get a list pdfUris resulting from the split
-        supportFragmentManager.setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT, this) { _, bundle ->
-            val pdfUriList =
-                bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST)
-            if (pdfUriList != null) {
-                if (!pdfUriList.isNullOrEmpty()) {
-                    val file = pdfUriList.first().toFile()
-                    Toast.makeText(
-                        this,
-                        getString(R.string.split_document_success, "${file.parent}/"),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-            // close activity
-            finish()
+        supportFragmentManager.setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT, this) { requestKey, bundle ->
+
+            val pdfUriList: List<Uri> = bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST).orEmpty()
+            val first: Uri = pdfUriList.first()
+
+            Toast.makeText(
+                this,
+                getString(R.string.split_document_success, "${first.path}/"),
+                Toast.LENGTH_LONG
+            ).show()
+
+            supportFragmentManager.clearFragmentResult(requestKey)
+
+            ShareUtil.sharePdf(this, first)
+
+
+
         }
     }
 
@@ -75,10 +77,16 @@ class PdfSplitActivity : AppCompatActivity() {
          * @param pdfIndex  the index of the pdf file within the list
          */
         fun launch(context: Context, uri: Uri, fileName: String?) {
+            val intent = createIntent(context, uri, fileName)
+            context.startActivity(intent)
+        }
+
+        fun createIntent(context: Context, uri: Uri, fileName: String?): Intent {
             val intent = Intent(context, PdfSplitActivity::class.java)
             intent.putExtra(EXTRA_PDF_URI, uri.toString())
             intent.putExtra(EXTRA_PDF_TITLE, fileName)
-            context.startActivity(intent)
+
+            return intent
         }
     }
 }
