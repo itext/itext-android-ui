@@ -8,14 +8,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.itextpdf.android.library.R
-import com.itextpdf.android.library.helpers.RecyclerViewMatcher
-import com.itextpdf.android.library.helpers.waitForView
 import com.itextpdf.android.library.util.FileUtil
 import org.hamcrest.Matchers.allOf
 import org.junit.Test
