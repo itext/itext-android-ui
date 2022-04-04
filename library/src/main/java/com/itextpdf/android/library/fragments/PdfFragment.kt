@@ -131,11 +131,15 @@ open class PdfFragment : Fragment() {
     }
 
     private fun applyChanges() {
-        setFragmentResult(REQUEST_KEY, bundleOf(RESULT_FILE to pdfManipulator.workingCopy))
+        setFragmentResult(PdfResult.PdfEdited(pdfManipulator.workingCopy))
     }
 
     private fun discardChanges() {
-        setFragmentResult(REQUEST_KEY, bundleOf())
+        setFragmentResult(PdfResult.CancelledByUser)
+    }
+
+    private fun setFragmentResult(result: PdfResult) {
+        setFragmentResult(REQUEST_KEY, bundleOf(RESULT_FILE to result))
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -161,9 +165,16 @@ open class PdfFragment : Fragment() {
 
         // listen for the fragment result from the SplitDocumentFragment to get a list pdfUris resulting from the split
         setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT) { _, bundle ->
+
+            val splitResult: PdfResult? = bundle.getParcelable(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT)
+
+            if (splitResult is PdfResult.PdfSplit) {
+                setFragmentResult(splitResult)
+            }
+
             // get the uri from the pdf files created when splitting the document
             val pdfUriList =
-                bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST)
+                bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT)
             if (pdfUriList != null) {
                 if (!pdfUriList.isNullOrEmpty()) {
                     // show toast with storage location

@@ -7,11 +7,14 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityPdfViewerBinding
 import com.itextpdf.android.library.fragments.PdfConfig
 import com.itextpdf.android.library.fragments.PdfFragment
+import com.itextpdf.android.library.fragments.PdfResult
+import com.itextpdf.android.library.fragments.SplitDocumentFragment
 import java.io.File
 
 class PdfViewerActivity : AppCompatActivity() {
@@ -93,29 +96,26 @@ class PdfViewerActivity : AppCompatActivity() {
 
     private fun listenForPdfResults() {
 
-        val pdfRequestKey = PdfFragment.REQUEST_KEY
-
-        supportFragmentManager.setFragmentResultListener(pdfRequestKey, this) { requestKey, bundle ->
-
-            handlePdfResult(bundle)
+        supportFragmentManager.setFragmentResultListener(PdfFragment.REQUEST_KEY, this) { requestKey, bundle ->
+            val result: PdfResult? = bundle.getParcelable(PdfFragment.RESULT_FILE)
+            handlePdfResult(result)
             supportFragmentManager.clearFragmentResult(requestKey)
-
             finish()
         }
+
     }
 
-    private fun handlePdfResult(bundle: Bundle) {
-        val result: File? = bundle.getSerializable(PdfFragment.RESULT_FILE) as? File
+    private fun handlePdfResult(result: PdfResult?) {
 
-        if (result != null) {
-            ShareUtil.sharePdf(this, result.toUri())
-        } else {
-            Toast.makeText(this, R.string.cancelled_by_user, Toast.LENGTH_LONG).show()
+        when (result) {
+            PdfResult.CancelledByUser -> Toast.makeText(this, R.string.cancelled_by_user, Toast.LENGTH_LONG).show()
+            is PdfResult.PdfEdited -> ShareUtil.sharePdf(this, result.file.toUri())
+            is PdfResult.PdfSplit -> ShareUtil.sharePdf(this, result.fileContainingSelectedPages)
+            null -> Toast.makeText(this, R.string.no_result, Toast.LENGTH_LONG).show()
         }
 
-        supportFragmentManager.popBackStack()
     }
-
+    
     companion object {
 
         private const val LOG_TAG = "PdfViewActivity"

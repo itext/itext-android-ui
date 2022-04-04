@@ -7,4 +7,5 @@
     <string name="custom_help_title">Help: Splitting</string>
     <string name="custom_help_text">Custom help text.</string>
     <string name="cancelled_by_user">Cancelled by user</string>
+    <string name="no_result">No result available</string>
 </resources>

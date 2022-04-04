@@ -41,23 +41,16 @@ class PdfSplitActivity : AppCompatActivity() {
         }
 
         // listen for the fragment result from the SplitDocumentFragment to get a list pdfUris resulting from the split
-        supportFragmentManager.setFragmentResultListener(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT, this) { requestKey, bundle ->
+        supportFragmentManager.setFragmentResultListener("pdfSplit", this) { requestKey, bundle ->
 
-            val pdfUriList: List<Uri> = bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST).orEmpty()
+            val pdfUriList: List<Uri> = bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_DOCUMENT_RESULT).orEmpty()
             val first: Uri = pdfUriList.first()
 
-            Toast.makeText(
-                this,
-                getString(R.string.split_document_success, "${first.path}/"),
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(this, getString(R.string.split_document_success), Toast.LENGTH_LONG).show()
 
             supportFragmentManager.clearFragmentResult(requestKey)
 
             ShareUtil.sharePdf(this, first)
-
-
-
         }
     }
 

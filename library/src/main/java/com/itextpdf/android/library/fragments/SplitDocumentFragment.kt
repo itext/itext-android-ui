@@ -319,8 +319,7 @@ open class SplitDocumentFragment : Fragment() {
 
         val fileName = config.fileName
 
-        val storageFolderPath =
-            (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
+        val storageFolderPath = (requireContext().externalCacheDir ?: requireContext().cacheDir).absolutePath
         val name = if (!fileName.isNullOrEmpty()) fileName else UNNAMED_FILE
         val pdfUriList = pdfManipulator.splitPdfWithSelection(
             name,
@@ -329,12 +328,21 @@ open class SplitDocumentFragment : Fragment() {
         )
         if (pdfUriList.isNotEmpty()) {
             val file = pdfUriList.first().toFile()
-            Log.i(TAG, getString(R.string.split_document_success, "${file.parent}/"))
+            Log.i(TAG, getString(R.string.split_document_success))
         } else {
             Log.e(TAG, getString(R.string.split_document_error))
         }
+
+        val selected = pdfUriList.first()
+        val unselected = pdfUriList[1]
+
+        val result = PdfResult.PdfSplit(
+            fileContainingSelectedPages = selected,
+            fileContainingUnselectedPages = unselected
+        )
+
         // set the uris as fragmentResult for any class that is listening
-        setFragmentResult(SPLIT_DOCUMENT_RESULT, bundleOf(SPLIT_PDF_URI_LIST to pdfUriList))
+        setFragmentResult(SPLIT_DOCUMENT_RESULT, bundleOf(SPLIT_DOCUMENT_RESULT to result))
 
     }
 
@@ -351,7 +359,6 @@ open class SplitDocumentFragment : Fragment() {
         private const val UNNAMED_FILE = "unnamed.pdf"
 
         const val SPLIT_DOCUMENT_RESULT = "SPLIT_DOCUMENT_RESULT"
-        const val SPLIT_PDF_URI_LIST = "SPLIT_PDF_URI_LIST"
 
         /**
          * Static function to create a new instance of the SplitDocumentFragment with the given settings
