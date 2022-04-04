@@ -14,25 +14,26 @@
             android:id="@+id/tbSplitDocumentFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:menu="@menu/menu_split_document"
             app:title="Split Document"
             app:titleTextColor="@color/black" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSplitDocument"
-        android:layout_marginTop="?attr/actionBarSize"
-        android:paddingVertical="8dp"
-        android:clipToPadding="false"
-        android:layout_marginHorizontal="8dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:clipToPadding="false"
+        android:paddingVertical="8dp" />
 
     <ProgressBar
         android:id="@+id/splitPdfLoadingIndicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:indeterminateTint="@color/orange_700"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/orange_700" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabSplit"
@@ -40,11 +41,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:borderWidth="0dp"
-        app:backgroundTint="@color/orange_700"
-        app:tint="@color/white"
-        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Material3.FloatingActionButton"
         android:contentDescription="@string/split_document"
-        app:srcCompat="@drawable/ic_check"/>
+        app:backgroundTint="@color/orange_700"
+        app:borderWidth="0dp"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Material3.FloatingActionButton"
+        app:srcCompat="@drawable/ic_check"
+        app:tint="@color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -17,6 +17,7 @@ import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.lifecycleScope
@@ -171,9 +172,10 @@ open class SplitDocumentFragment : Fragment() {
 
     private fun setupToolbar() {
         setHasOptionsMenu(true)
-        (requireActivity() as? AppCompatActivity)?.setSupportActionBar(binding.tbSplitDocumentFragment)
 
         val toolbar = binding.tbSplitDocumentFragment
+
+        (requireActivity() as? AppCompatActivity)?.setSupportActionBar(toolbar)
 
         toolbar.setNavigationIcon(R.drawable.ic_close)
         toolbar.setNavigationContentDescription(R.string.close)
