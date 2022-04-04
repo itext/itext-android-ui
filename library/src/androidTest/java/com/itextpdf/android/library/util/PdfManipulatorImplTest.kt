@@ -207,6 +207,52 @@ class PdfManipulatorImplTest {
 
     }
 
+    /**
+     * GIVEN contains two annotations
+     * WHEN users removes one of those annotations
+     * THEN pdf only contains the other, remaining annotation
+     */
+    @Test
+    fun testRemoveAnnotation() {
+
+        sut.addTextAnnotationToPdf(
+            title = "Lorem Ipsum Title 1",
+            text = "Lorem Ipsum Message 2",
+            pageNumber = 1,
+            x = 0f,
+            y = 0f,
+            bubbleSize = 1f,
+            bubbleColor = appContext.getColor(R.color.black)
+        )
+
+        sut.addTextAnnotationToPdf(
+            title = "Lorem Ipsum Title 2",
+            text = "Lorem Ipsum Message 2",
+            pageNumber = 1,
+            x = 0f,
+            y = 0f,
+            bubbleSize = 1f,
+            bubbleColor = appContext.getColor(R.color.black)
+        )
+
+        val annotations: List<PdfAnnotation> = sut.getPdfDocumentInReadingMode().getPages().flatMap { it.annotations }
+        val annotationToRemove = annotations.first()
+
+        // GIVEN
+        assertThat(annotations).hasSize(2)
+
+        // WHEN
+        sut.removeAnnotationFromPdf(1, annotationToRemove)
+        val updatedAnnotations: List<PdfAnnotation> = sut.getPdfDocumentInReadingMode().getPages().flatMap { it.annotations }
+        val remainingAnnotation: PdfAnnotation = updatedAnnotations.first()
+
+        // THEN
+        assertThat(updatedAnnotations).hasSize(1)
+        assertThat(remainingAnnotation.title.value).isEqualTo("Lorem Ipsum Title 2")
+        assertThat(remainingAnnotation.contents.value).isEqualTo("Lorem Ipsum Message 2")
+
+    }
+
     private fun assertThatPagesAreEqual(first: PdfPage, second: PdfPage) {
         assertThat(first.contentBytes).isEqualTo(second.contentBytes)
     }
