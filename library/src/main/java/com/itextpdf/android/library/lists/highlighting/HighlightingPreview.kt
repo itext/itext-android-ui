@@ -17,7 +17,7 @@ class HighlightingPreview : View {
     private var points = mutableListOf<Point>()
 
     // the highlight color that should be used
-    var color = ColorUtils.setAlphaComponent(Color.parseColor(HANDLE_COLOR), RECT_COLOR_ALPHA)
+    var color = ColorUtils.setAlphaComponent(HANDLE_COLOR, RECT_COLOR_ALPHA)
 
     // the drawn rect
     private var rectF = RectF()
@@ -222,7 +222,7 @@ class HighlightingPreview : View {
     companion object {
         private const val HANDLE_BUFFER = 80
         private const val HANDLE_SIZE = 20
-        private const val HANDLE_COLOR = "#3C3C3C"
+        private val HANDLE_COLOR = Color.parseColor("#3C3C3C")
         private const val RECT_COLOR_ALPHA = 80 // value between 0 and 255
 
         private const val GROUP_NONE = -1

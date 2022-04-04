@@ -396,7 +396,7 @@ open class PdfFragment : Fragment() {
                 x = pdfPagePosition.x,
                 y = pdfPagePosition.y,
                 bubbleSize = ANNOTATION_SIZE,
-                bubbleColor = config.primaryColor
+                bubbleColor = config.getPrimaryColorInt()
             )
 
             setupPdfView()
@@ -702,7 +702,7 @@ open class PdfFragment : Fragment() {
             requireContext(),
             R.drawable.ic_annotation,
             size,
-            config.primaryColor
+            config.getPrimaryColorInt()
         )?.let { imageByteArray ->
             val bmp = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
             ivHighlightedAnnotation?.setImageBitmap(Bitmap.createScaledBitmap(bmp, size, size, false))

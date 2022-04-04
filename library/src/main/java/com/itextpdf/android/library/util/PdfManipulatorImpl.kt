@@ -2,6 +2,7 @@ package com.itextpdf.android.library.util
 
 import android.content.Context
 import android.net.Uri
+import androidx.annotation.ColorInt
 import androidx.core.net.toUri
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.isSameAs
@@ -186,7 +187,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
         x: Float,
         y: Float,
         bubbleSize: Float,
-        bubbleColor: String
+        @ColorInt bubbleColor: Int
     ): File {
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
         val resultingFile: File = getPdfDocumentInStampingMode(tempFile)
@@ -302,10 +303,10 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
         return commentXObj
     }
 
-    override fun getTextAnnotationAppearance(pdfDocument: PdfDocument, colorString: String, bubbleSize: Float): PdfFormXObject? {
+    override fun getTextAnnotationAppearance(pdfDocument: PdfDocument, @ColorInt color: Int, bubbleSize: Float): PdfFormXObject? {
         var commentXObj: PdfFormXObject? = null
         val imageSize = bubbleSize * 3
-        val imageByteArray = ImageUtil.getResourceAsByteArray(context, R.drawable.ic_annotation, imageSize.toInt(), colorString)
+        val imageByteArray = ImageUtil.getResourceAsByteArray(context, R.drawable.ic_annotation, imageSize.toInt(), color)
 
         if (imageByteArray != null) {
             val itextImageData = ImageDataFactory.createPng(imageByteArray)

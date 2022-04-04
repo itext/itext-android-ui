@@ -2,6 +2,7 @@ package com.itextpdf.android.library.util
 
 import android.content.Context
 import android.net.Uri
+import androidx.annotation.ColorInt
 import com.itextpdf.kernel.colors.Color
 import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.PdfDocument
@@ -47,7 +48,7 @@ interface PdfManipulator {
      */
     fun getPageRanges(selectedPagesNumbers: List<Int>, unselectedPageNumbers: List<Int>, numberOfPages: Int): List<PageRange>
 
-    fun addTextAnnotationToPdf(title: String?, text: String, pageNumber: Int, x: Float, y: Float, bubbleSize: Float, bubbleColor: String): File
+    fun addTextAnnotationToPdf(title: String?, text: String, pageNumber: Int, x: Float, y: Float, bubbleSize: Float, @ColorInt bubbleColor: Int): File
 
     fun addMarkupAnnotationToPdf(pageNumber: Int, rect: Rectangle, color: Color): File
 
@@ -57,7 +58,7 @@ interface PdfManipulator {
 
     fun getHighlightAppearance(pdfDocument: PdfDocument, rectangle: Rectangle, color: Color): PdfFormXObject
 
-    fun getTextAnnotationAppearance(pdfDocument: PdfDocument, colorString: String, bubbleSize: Float): PdfFormXObject?
+    fun getTextAnnotationAppearance(pdfDocument: PdfDocument, @ColorInt color: Int, bubbleSize: Float): PdfFormXObject?
 
 
     fun getPdfDocumentInReadingMode(): PdfDocument
@@ -68,7 +69,6 @@ interface PdfManipulator {
             return PdfManipulatorImpl(context, originalFileUri)
         }
     }
-
 
 
 }
