@@ -52,9 +52,9 @@ interface PdfManipulator {
 
     fun addMarkupAnnotationToPdf(pageNumber: Int, rect: Rectangle, color: Color): File
 
-    fun removeAnnotationFromPdf(pageNumber: Int, annotation: PdfAnnotation): File
+    fun removeAnnotationFromPdf(annotationToRemove: PdfAnnotation): File
 
-    fun editAnnotationFromPdf(pageNumber: Int, annotation: PdfAnnotation, title: String?, text: String): File
+    fun editAnnotationFromPdf(annotation: PdfAnnotation, title: String?, text: String): File
 
     fun getHighlightAppearance(pdfDocument: PdfDocument, rectangle: Rectangle, color: Color): PdfFormXObject
 

@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.annotation.ColorInt
 import androidx.core.net.toUri
 import com.itextpdf.android.library.R
+import com.itextpdf.android.library.extensions.getPageNumber
 import com.itextpdf.android.library.extensions.isSameAs
 import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.kernel.colors.Color
@@ -248,25 +249,32 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
         return fileUtil.overrideFile(resultingFile, workingCopyUri)
     }
 
-    override fun removeAnnotationFromPdf(pageNumber: Int, annotation: PdfAnnotation): File {
+    override fun removeAnnotationFromPdf(annotationToRemove: PdfAnnotation): File {
+
+        val pageNumber = annotationToRemove.page.getPageNumber()
+
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
-        val resultingFile: File =
-            getPdfDocumentInStampingMode(tempFile).use { pdfDocument ->
-                val page = pdfDocument.getPage(pageNumber)
-                for (ann in page.annotations) {
-                    if (annotation.isSameAs(ann)) {
-                        page.removeAnnotation(ann)
-                        break
-                    }
+        val resultingFile: File = getPdfDocumentInStampingMode(tempFile).use { pdfDocument ->
+
+            val page = pdfDocument.getPage(pageNumber)
+
+            for (ann in page.annotations) {
+                if (annotationToRemove.isSameAs(ann)) {
+                    page.removeAnnotation(ann)
+                    break
                 }
-                tempFile
             }
+            tempFile
+        }
 
         return fileUtil.overrideFile(resultingFile, workingCopyUri)
     }
 
-    override fun editAnnotationFromPdf(pageNumber: Int, annotation: PdfAnnotation, title: String?, text: String): File {
+    override fun editAnnotationFromPdf(annotation: PdfAnnotation, title: String?, text: String): File {
+
+        val pageNumber = annotation.page.getPageNumber()
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
+
         val resultingFile: File =
             getPdfDocumentInStampingMode(tempFile).use { pdfDocument ->
                 val page = pdfDocument.getPage(pageNumber)

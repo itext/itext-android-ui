@@ -1,5 +1,6 @@
 package com.itextpdf.android.library.extensions
 
+import android.graphics.Point
 import android.graphics.PointF
 import android.view.MotionEvent
 import com.github.barteksc.pdfviewer.PDFView
@@ -8,6 +9,16 @@ import com.shockwave.pdfium.util.SizeF
 
 internal fun PDFView.convertMotionEventPointToPdfPagePoint(e: MotionEvent): PointF? {
     return convertScreenPointToPdfPagePoint(e.x, e.y)
+}
+
+internal fun PDFView.getPageNumberForClickPosition(event: MotionEvent): Int? {
+
+    if (pdfFile == null) return null
+
+    val mappedX = -currentXOffset + event.x
+    val mappedY = -currentYOffset + event.y
+
+    return pdfFile.getPageAtOffset(if (isSwipeVertical) mappedY else mappedX, zoom)
 }
 
 internal fun PDFView.convertScreenPointToPdfPagePoint(x: Float, y: Float): PointF? {
@@ -50,4 +61,25 @@ fun PDFView.convertScreenRectToPdfPageRect(screenRect: Rectangle): Rectangle? {
     } else {
         null
     }
+}
+
+fun PDFView.convertPdfPagePointToScreenPoint(pagePoint: PointF): Point? {
+    val x = pagePoint.x
+    val y = pagePoint.y
+
+    if (pdfFile == null) return null
+
+    val page = pdfFile.getPageAtOffset(if (isSwipeVertical) y else x, zoom)
+    val pageSize = pdfFile.getScaledPageSize(page, zoom)
+
+    return pdfFile.mapPageCoordsToDevice(
+        page,
+        currentXOffset.toInt(),
+        currentYOffset.toInt(),
+        pageSize.width.toInt(),
+        pageSize.height.toInt(),
+        0, //TODO: use real rotation
+        x.toDouble(),
+        y.toDouble()
+    )
 }
