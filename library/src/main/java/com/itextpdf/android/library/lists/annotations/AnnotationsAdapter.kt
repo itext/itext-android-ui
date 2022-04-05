@@ -6,12 +6,14 @@ import android.view.ViewGroup
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
+import com.itextpdf.android.library.extensions.isSameAs
 import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.PdfRecyclerItem.Companion.TYPE_NAVIGATE
 import com.itextpdf.android.library.lists.PdfRecyclerItem.Companion.TYPE_SPLIT
 import com.itextpdf.android.library.lists.PdfViewHolder
 import com.itextpdf.android.library.lists.navigation.PdfNavigationViewHolder
 import com.itextpdf.android.library.lists.split.PdfSplitViewHolder
+import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 
 /**
  * Adapter class for the annotations
@@ -39,6 +41,17 @@ class AnnotationsAdapter(
         Color.parseColor(secondaryColorString)
     } else {
         null
+    }
+
+    fun getPositionForAnnotation(annotation: PdfAnnotation): Int? {
+        val index: Int = data.indexOfFirst { it.annotation.isSameAs(annotation) }
+
+        return if (index == -1) {
+            null
+        } else {
+            index
+        }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AnnotationsViewHolder {

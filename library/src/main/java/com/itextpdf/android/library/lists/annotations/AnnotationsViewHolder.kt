@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.lists.PdfRecyclerItem
 import com.itextpdf.android.library.lists.PdfViewHolder
+import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 
@@ -38,6 +39,7 @@ class AnnotationsViewHolder(view: View): RecyclerView.ViewHolder(view) {
  * @property action the action that should happen when the item is clicked
  */
 data class AnnotationRecyclerItem(
+    val annotation: PdfAnnotation,
     val title: String?,
     val text: String?,
     val action: (View) -> (Unit)

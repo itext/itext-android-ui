@@ -47,7 +47,6 @@ import com.itextpdf.android.library.util.ImageUtil
 import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.util.PositionMappingInfo
 import com.itextpdf.android.library.views.PdfViewScrollHandle
-import com.itextpdf.forms.xfdf.XfdfConstants
 import com.itextpdf.kernel.colors.DeviceRgb
 import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
@@ -88,8 +87,6 @@ open class PdfFragment : Fragment() {
     private var currentPageIndex = 0
 
     private var annotationActionMode: AnnotationAction? = null
-    private val annotations = mutableListOf<PdfAnnotation>()
-    private var editedAnnotationIndex = -1
     private var longPressPdfPagePosition: PositionMappingInfo? = null
     private var ivHighlightedAnnotation: ImageView? = null
 
@@ -177,16 +174,19 @@ open class PdfFragment : Fragment() {
         }
 
         binding.btnSaveAnnotation.setOnClickListener {
-            if (annotationActionMode == AnnotationAction.ADD) {
+
+            val currentMode = annotationActionMode
+
+            if (currentMode == AnnotationAction.ADD) {
                 longPressPdfPagePosition?.let { pdfPagePosition ->
                     val annotationText = binding.etTextAnnotation.text.toString()
                     addTextAnnotation(null, annotationText, pdfPagePosition)
                     setAnnotationTextViewVisibility(false)
                     binding.etTextAnnotation.text.clear()
                 }
-            } else if (annotationActionMode == AnnotationAction.EDIT) {
+            } else if (currentMode is AnnotationAction.EDIT) {
                 val annotationText = binding.etTextAnnotation.text.toString()
-                val editingAnnotation = annotations[editedAnnotationIndex]
+                val editingAnnotation = currentMode.annotation
                 editAnnotation(editingAnnotation, null, annotationText)
                 setAnnotationTextViewVisibility(false)
                 binding.etTextAnnotation.text.clear()
@@ -204,9 +204,7 @@ open class PdfFragment : Fragment() {
         popup.setOnMenuItemClickListener { item: MenuItem? ->
             when (item!!.itemId) {
                 R.id.optionEdit -> {
-                    annotationActionMode = AnnotationAction.EDIT
-                    // selected item is being edited
-                    editedAnnotationIndex = annotationAdapter.selectedPosition
+                    annotationActionMode = AnnotationAction.EDIT(annotation)
                     if (annotation.contents != null) binding.etTextAnnotation.setText(annotation.contents.toString())
                     setAnnotationTextViewVisibility(true)
                 }
@@ -423,17 +421,14 @@ open class PdfFragment : Fragment() {
     }
 
     private fun removeAnnotation(annotation: PdfAnnotation) {
-        pdfManipulator.removeAnnotationFromPdf(
-            pageNumber = currentPageIndex + 1,
-            annotation = annotation
-        )
+
+        pdfManipulator.removeAnnotationFromPdf(annotation)
         setupPdfView()
         annotationActionMode = null
     }
 
     private fun editAnnotation(annotation: PdfAnnotation, title: String?, text: String) {
         pdfManipulator.editAnnotationFromPdf(
-            pageNumber = currentPageIndex + 1,
             annotation = annotation,
             title = title,
             text = text
@@ -523,68 +518,54 @@ open class PdfFragment : Fragment() {
 
         setupAnnotationArrows()
 
-        // scroll to correct position
-        if (editedAnnotationIndex > 0) {
-            scrollAnnotationsViewTo(editedAnnotationIndex)
-            editedAnnotationIndex = -1
+        val currentMode = annotationActionMode
+
+        if (currentMode is AnnotationAction.EDIT) {
+            scrollAnnotationsViewTo(currentMode.annotation)
         }
 
         annotationViewSetupComplete = true
     }
 
     private fun createAnnotationListItems(): List<AnnotationRecyclerItem> {
-        val data = mutableListOf<AnnotationRecyclerItem>()
+
         val pdfDocument = pdfManipulator.getPdfDocumentInReadingMode()
-        annotations.clear()
+        val annotations = pdfDocument.getAnnotations().sortedWith(compareBy({ it.page.getPageNumber() }, { it.getCenterPoint().x }))
 
-        // go through all pdf pages
-        for (i in 1..pdfDocument.numberOfPages) {
-            // for every page, extract all the annotations and setup recycler items
-            val pageAnnotations = pdfDocument.getPage(i).annotations
-            for (annotation in pageAnnotations) {
-                if (annotation.subtype != null) {
-                    annotations.add(annotation)
-                    val title =
-                        if (annotation.title != null) annotation.title.value else null
-                    val text =
-                        if (annotation.subtype.value.lowercase() == XfdfConstants.TEXT && annotation.contents != null) annotation.contents.value else annotation.subtype.value
+        return annotations.map { annotation ->
 
-                    data.add(
-                        AnnotationRecyclerItem(
-                            title,
-                            text
-                        ) {
-                            showAnnotationContextMenu(
-                                it,
-                                R.menu.popup_menu_annotation,
-                                annotation
-                            )
-                        })
-                }
+            val title = annotation.title?.value
+            val text = annotation.contents?.value ?: annotation.subtype?.value
+
+            return@map AnnotationRecyclerItem(annotation, title, text) {
+                showAnnotationContextMenu(it, R.menu.popup_menu_annotation, annotation)
             }
         }
-        return data
+
     }
 
     private fun setupAnnotationArrows() {
         updateAnnotationArrowVisibility()
+
         binding.includedBottomSheetAnnotations.llLeftArrow.setOnClickListener {
-            if (annotationAdapter.selectedPosition > 0) {
-                scrollAnnotationsViewTo(annotationAdapter.selectedPosition - 1)
-            }
+            tryScrollToPreviousAnnotation()
         }
         binding.includedBottomSheetAnnotations.llRightArrow.setOnClickListener {
-            if (annotationAdapter.selectedPosition < annotations.size - 1) {
-                scrollAnnotationsViewTo(annotationAdapter.selectedPosition + 1)
-            }
+            tryScrollToNextAnnotation()
         }
     }
 
     private fun updateAnnotationArrowVisibility() {
-        binding.includedBottomSheetAnnotations.llLeftArrow.visibility =
-            if (annotationAdapter.selectedPosition > 0) VISIBLE else GONE
-        binding.includedBottomSheetAnnotations.llRightArrow.visibility =
-            if (annotationAdapter.selectedPosition < annotations.size - 1) VISIBLE else GONE
+
+        val selectedPosition = annotationAdapter.selectedPosition
+        val max = annotationAdapter.itemCount - 1
+
+        val arrowLeft = binding.includedBottomSheetAnnotations.llLeftArrow
+        val arrowRight = binding.includedBottomSheetAnnotations.llRightArrow
+
+        arrowLeft.visibility = if (selectedPosition > 0) VISIBLE else GONE
+        arrowRight.visibility = if (selectedPosition < max) VISIBLE else GONE
+
     }
 
     private fun setupPdfView() {
@@ -631,13 +612,16 @@ open class PdfFragment : Fragment() {
 
                 val pdfPagePosition = binding.pdfView.convertMotionEventPointToPdfPagePoint(it)
                 if (pdfPagePosition != null) {
-                    val annotationIndex = findAnnotationIndexAtPosition(pdfPagePosition)
-                    if (annotationIndex != null) {
-                        highlightAnnotation(annotations[annotationIndex])
-                        scrollAnnotationsViewTo(annotationIndex)
+
+                    val annotation = findAnnotationIndexAtPosition(pdfPagePosition)
+
+                    if (annotation != null) {
+                        highlightAnnotation(annotation)
+                        scrollAnnotationsViewTo(annotation)
                         setAnnotationsViewVisibility(true)
                     }
                 }
+
                 setAnnotationTextViewVisibility(false)
                 true
             }
@@ -715,13 +699,13 @@ open class PdfFragment : Fragment() {
         }
     }
 
-    private fun findAnnotationIndexAtPosition(position: PointF): Int? {
-        for ((index, annotation) in annotations.withIndex()) {
-            if (annotation.isAtPosition(position)) {
-                return index
+    private fun findAnnotationIndexAtPosition(position: PointF): PdfAnnotation? {
+
+        return pdfManipulator.getPdfDocumentInReadingMode().getAnnotations()
+            .firstOrNull { annotation ->
+                annotation.isAtPosition(position)
             }
-        }
-        return null
+
     }
 
     private fun showPdfLoadError(reason: String) {
@@ -920,12 +904,38 @@ open class PdfFragment : Fragment() {
      *
      * @param position  the index of the page this function should scroll to.
      */
-    open fun scrollAnnotationsViewTo(position: Int) {
-        annotationAdapter.selectedPosition = position
-        (binding.includedBottomSheetAnnotations.rvAnnotations.layoutManager as LinearLayoutManager).scrollToPosition(
-            position
-        )
+    open fun scrollAnnotationsViewTo(annotation: PdfAnnotation) {
+
+        val index = annotationAdapter.getPositionForAnnotation(annotation)
+
+        if (index != null) {
+            annotationAdapter.selectedPosition = index
+            binding.includedBottomSheetAnnotations.rvAnnotations.smoothScrollToPosition(index)
+        }
+
         updateAnnotationArrowVisibility()
+    }
+
+    private fun tryScrollToAnnotationWithIndex(position: Int) {
+
+        val recyclerView = binding.includedBottomSheetAnnotations.rvAnnotations
+
+        if (position >= 0 && position < annotationAdapter.itemCount) {
+            annotationAdapter.selectedPosition = position
+            recyclerView.scrollToPosition(position)
+        }
+
+        updateAnnotationArrowVisibility()
+    }
+
+    private fun tryScrollToPreviousAnnotation() {
+        val newPosition = annotationAdapter.selectedPosition - 1
+        tryScrollToAnnotationWithIndex(newPosition)
+    }
+
+    private fun tryScrollToNextAnnotation() {
+        val newPosition = annotationAdapter.selectedPosition + 1
+        tryScrollToAnnotationWithIndex(newPosition)
     }
 
     companion object {
