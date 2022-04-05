@@ -90,7 +90,7 @@ open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayou
      * @param pdfDocument   the pdfDocument from which a specific page should be rendered
      * @param pageIndex     the index of the page that should be used as a thumbnail.
      */
-    fun setMultiple(pdfiumCore: PdfiumCore, pdfDocument: PdfDocument, pageIndex: Int) {
+    fun setWithDocument(pdfiumCore: PdfiumCore, pdfDocument: PdfDocument, pageIndex: Int) {
         post {
             setImageViewWithPdfDocument(pdfiumCore, pdfDocument, pageIndex)
         }

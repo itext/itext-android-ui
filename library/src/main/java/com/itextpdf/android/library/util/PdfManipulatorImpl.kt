@@ -274,7 +274,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
                     if (annotation.isSameAs(ann)) {
                         ann.setContents(text)
                         if (title != null) {
-                            annotation.title = PdfString(title)
+                            ann.title = PdfString(title)
                         }
                     }
                 }

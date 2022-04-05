@@ -57,7 +57,6 @@ class PdfManipulatorImplTest {
         }
     }
 
-
     /**
      * GIVEN file exists
      * AND file is file
@@ -178,14 +177,14 @@ class PdfManipulatorImplTest {
 
     /**
      * GIVEN pdf does not contain any text annotation
-     * WHEN users adds a text annotation
+     * WHEN user adds a text annotation
      * THEN text annotation is stored in pdf
      */
     @Test
     fun testAddTextAnnotation() {
 
         val pdfDocument: PdfDocument = sut.getPdfDocumentInReadingMode()
-        val annotations: List<PdfAnnotation> = pdfDocument.getPages().flatMap { it.annotations }
+        val annotations: List<PdfAnnotation> = pdfDocument.getAnnotations()
 
         // GIVEN
         assertThat(annotations).isEmpty()
@@ -201,7 +200,7 @@ class PdfManipulatorImplTest {
             bubbleColor = appContext.getColor(R.color.black)
         )
 
-        val updatedAnnotations = sut.getPdfDocumentInReadingMode().getPages().flatMap { it.annotations }
+        val updatedAnnotations = sut.getPdfDocumentInReadingMode().getAnnotations()
         val annotation: PdfTextAnnotation = updatedAnnotations.first() as PdfTextAnnotation
 
         // THEN
@@ -240,7 +239,7 @@ class PdfManipulatorImplTest {
             bubbleColor = appContext.getColor(R.color.black)
         )
 
-        val annotations: List<PdfAnnotation> = sut.getPdfDocumentInReadingMode().getPages().flatMap { it.annotations }
+        val annotations: List<PdfAnnotation> = sut.getPdfDocumentInReadingMode().getAnnotations()
         val annotationToRemove = annotations.first()
 
         // GIVEN
@@ -248,7 +247,7 @@ class PdfManipulatorImplTest {
 
         // WHEN
         sut.removeAnnotationFromPdf(1, annotationToRemove)
-        val remaining: List<PdfAnnotation> = sut.getPdfDocumentInReadingMode().getPages().flatMap { it.annotations }
+        val remaining: List<PdfAnnotation> = sut.getPdfDocumentInReadingMode().getAnnotations()
         val remainingAnnotation: PdfAnnotation = remaining.first()
 
         // THEN
@@ -280,6 +279,34 @@ class PdfManipulatorImplTest {
 
         assertThat(annotations).hasSize(1)
         assertThat(annotation).isInstanceOf(PdfMarkupAnnotation::class.java)
+    }
+
+    /**
+     * GIVEN pdf contains exactly one text-annotation
+     * WHEN user changes title and text of that annotation
+     * THEN annotation is updated in pdf-file
+     * AND count of annotations remains 1
+     */
+    @Test
+    fun testEditAnnotationsFromPdf() {
+
+        // GIVEN
+        sut.addTextAnnotationToPdf("Title 1", "Message 1", 1, 0f, 0f, 1f, appContext.getColor(R.color.black))
+
+        val existingAnnotations = sut.getPdfDocumentInReadingMode().getAnnotations()
+        assertThat(existingAnnotations).hasSize(1)
+
+        // WHEN
+        sut.editAnnotationFromPdf(1, existingAnnotations.first(), "Title 2", "Message 2")
+
+        // THEN
+        val updatedAnnotations = sut.getPdfDocumentInReadingMode().getAnnotations()
+        val updated = updatedAnnotations.first() as PdfTextAnnotation
+
+        assertThat(updated.title.value).isEqualTo("Title 2")
+        assertThat(updated.contents.value).isEqualTo("Message 2")
+        assertThat(updatedAnnotations).hasSize(1)
+
     }
 
     private fun assertThatPagesAreEqual(first: PdfPage, second: PdfPage) {
