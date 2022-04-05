@@ -88,7 +88,7 @@ open class PdfFragment : Fragment() {
     private var currentPageIndex = 0
 
     private var annotationActionMode: AnnotationAction? = null
-    private var annotations = mutableListOf<PdfAnnotation>()
+    private val annotations = mutableListOf<PdfAnnotation>()
     private var editedAnnotationIndex = -1
     private var longPressPdfPagePosition: PositionMappingInfo? = null
     private var ivHighlightedAnnotation: ImageView? = null
@@ -251,10 +251,6 @@ open class PdfFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         showKeyboard(false)
-    }
-
-    private fun getPageNumberForClickPosition(event: MotionEvent): Int? {
-        return binding.pdfView.getPageNumberForClickPosition(event)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
