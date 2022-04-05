@@ -2,6 +2,7 @@ package com.itextpdf.android.library.extensions
 
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfPage
+import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 
 
 fun PdfDocument.getPages(): List<PdfPage> {
@@ -12,4 +13,8 @@ fun PdfDocument.getPages(): List<PdfPage> {
         }
     }
 
+}
+
+fun PdfDocument.getAnnotations(): List<PdfAnnotation> {
+    return getPages().flatMap { it.annotations }
 }

@@ -2,16 +2,21 @@ package com.itextpdf.android.library.util
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.ui.geometry.Rect
 import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.itextpdf.android.library.R
+import com.itextpdf.android.library.extensions.getAnnotations
 import com.itextpdf.android.library.extensions.getPages
+import com.itextpdf.kernel.colors.DeviceRgb
+import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfPage
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
+import com.itextpdf.kernel.pdf.annot.PdfMarkupAnnotation
 import com.itextpdf.kernel.pdf.annot.PdfTextAnnotation
 import org.junit.Before
 import org.junit.Test
@@ -251,6 +256,30 @@ class PdfManipulatorImplTest {
         assertThat(remainingAnnotation.title.value).isEqualTo("Lorem Ipsum Title 2")
         assertThat(remainingAnnotation.contents.value).isEqualTo("Lorem Ipsum Message 2")
 
+    }
+
+    /**
+     * GIVEN pdf contains no annotations
+     * WHEN users adds markup-annotation to pdf
+     * THEN markup-annotation is saved to pdf
+     * AND count of annotations in pdf is 1
+     */
+    @Test
+    fun testAddMarkupAnnotationToPdf() {
+
+        // GIVEN
+        val currentAnnotations = sut.getPdfDocumentInReadingMode().getAnnotations()
+        assertThat(currentAnnotations).hasSize(0)
+
+        // WHEN
+        sut.addMarkupAnnotationToPdf(1, Rectangle(10f, 10f), DeviceRgb.GREEN)
+
+        // THEN
+        val annotations = sut.getPdfDocumentInReadingMode().getAnnotations()
+        val annotation = annotations.first() as PdfMarkupAnnotation
+
+        assertThat(annotations).hasSize(1)
+        assertThat(annotation).isInstanceOf(PdfMarkupAnnotation::class.java)
     }
 
     private fun assertThatPagesAreEqual(first: PdfPage, second: PdfPage) {
