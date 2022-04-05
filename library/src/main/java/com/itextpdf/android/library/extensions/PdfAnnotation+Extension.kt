@@ -1,6 +1,7 @@
 package com.itextpdf.android.library.extensions
 
 import android.graphics.PointF
+import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 
 /**
@@ -11,14 +12,15 @@ import com.itextpdf.kernel.pdf.annot.PdfAnnotation
  * @return  true if it's the same annotation
  */
 internal fun PdfAnnotation.isSameAs(other: PdfAnnotation): Boolean {
-    var sameRectangle = true
-    for (obj in rectangle.iterator()) {
-        if (!other.rectangle.contains(obj)) {
-            sameRectangle = false
-            break
-        }
-    }
-    return title == other.title && contents == other.contents && sameRectangle
+
+    val sameRectangles: Boolean = rectangle.all { other.rectangle.contains(it) }
+//    val propertiesComparison: Int = compareValuesBy(this, other,
+//        { it.title.value },
+//        { it.contents.value })
+
+    val propertiesEqual = this.title == other.title && this.contents == other.contents
+
+    return propertiesEqual && sameRectangles
 }
 
 /**

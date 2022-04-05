@@ -3,6 +3,7 @@ package com.itextpdf.android.library.fragments
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -27,6 +28,12 @@ internal class SplitPdfActivityTest {
     fun testHelpDialog() {
         onView(withId(R.id.action_split_help))
             .perform(click())
+
+        onView(withText(R.string.help_dialog_title))
+            .check(matches(isDisplayed()))
+
+        onView(withText(R.string.help_dialog_text))
+            .check(matches(isDisplayed()))
     }
 
 }

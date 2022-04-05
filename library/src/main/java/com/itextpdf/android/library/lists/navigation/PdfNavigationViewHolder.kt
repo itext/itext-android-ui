@@ -18,7 +18,7 @@ class PdfNavigationViewHolder(view: View) : PdfViewHolder(view) {
         if (item is PdfNavigationRecyclerItem) {
             val pageNumber = item.pageIndex + 1
             tvPageNumber.text = "$pageNumber"
-            thumbnailView.setMultiple(item.pdfiumCore, item.pdfDocument, item.pageIndex)
+            thumbnailView.setWithDocument(item.pdfiumCore, item.pdfDocument, item.pageIndex)
 
             itemView.setOnClickListener {
                 item.action()
