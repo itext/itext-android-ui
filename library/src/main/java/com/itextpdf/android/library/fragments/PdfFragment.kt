@@ -45,6 +45,7 @@ import com.itextpdf.android.library.lists.highlighting.HighlightColorRecyclerIte
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.util.ImageUtil
 import com.itextpdf.android.library.util.PdfManipulator
+import com.itextpdf.android.library.util.PositionMappingInfo
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.itextpdf.forms.xfdf.XfdfConstants
 import com.itextpdf.kernel.colors.DeviceRgb
@@ -89,7 +90,7 @@ open class PdfFragment : Fragment() {
     private var annotationActionMode: AnnotationAction? = null
     private var annotations = mutableListOf<PdfAnnotation>()
     private var editedAnnotationIndex = -1
-    private var longPressPdfPagePosition: PointF? = null
+    private var longPressPdfPagePosition: PositionMappingInfo? = null
     private var ivHighlightedAnnotation: ImageView? = null
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
@@ -252,6 +253,10 @@ open class PdfFragment : Fragment() {
         showKeyboard(false)
     }
 
+    private fun getPageNumberForClickPosition(event: MotionEvent): Int? {
+        return binding.pdfView.getPageNumberForClickPosition(event)
+    }
+
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         setAnnotationTextViewVisibility(false)
@@ -385,14 +390,15 @@ open class PdfFragment : Fragment() {
         }
     }
 
-    private fun addTextAnnotation(title: String?, text: String, pdfPagePosition: PointF) {
+    private fun addTextAnnotation(title: String?, text: String, positionInfo: PositionMappingInfo) {
         try {
+
             pdfManipulator.addTextAnnotationToPdf(
                 title = title,
                 text = text,
-                pageNumber = currentPageIndex + 1,
-                x = pdfPagePosition.x,
-                y = pdfPagePosition.y,
+                pageNumber = positionInfo.pdfPageNumber + 1,
+                x = positionInfo.pdfCoordinates.x,
+                y = positionInfo.pdfCoordinates.y,
                 bubbleSize = ANNOTATION_SIZE,
                 bubbleColor = config.getPrimaryColorInt()
             )
@@ -641,7 +647,7 @@ open class PdfFragment : Fragment() {
             }
             .onLongPress { event ->
                 annotationActionMode = AnnotationAction.ADD
-                longPressPdfPagePosition = binding.pdfView.convertMotionEventPointToPdfPagePoint(event)
+                longPressPdfPagePosition = PositionMappingInfo.createOrNull(event, binding.pdfView)
                 setAnnotationTextViewVisibility(true)
             }
             .onLoad {

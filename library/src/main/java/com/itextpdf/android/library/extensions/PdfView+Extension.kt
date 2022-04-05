@@ -11,6 +11,16 @@ internal fun PDFView.convertMotionEventPointToPdfPagePoint(e: MotionEvent): Poin
     return convertScreenPointToPdfPagePoint(e.x, e.y)
 }
 
+internal fun PDFView.getPageNumberForClickPosition(event: MotionEvent): Int? {
+
+    if (pdfFile == null) return null
+
+    val mappedX = -currentXOffset + event.x
+    val mappedY = -currentYOffset + event.y
+
+    return pdfFile.getPageAtOffset(if (isSwipeVertical) mappedY else mappedX, zoom)
+}
+
 internal fun PDFView.convertScreenPointToPdfPagePoint(x: Float, y: Float): PointF? {
     if (pdfFile == null) return null
     val mappedX = -currentXOffset + x
