@@ -2,7 +2,6 @@ package com.itextpdf.android.library.fragments
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.res.TypedArray
 import android.graphics.*
 import android.net.Uri
@@ -26,7 +25,6 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.use
-import androidx.core.net.toFile
 import androidx.core.os.bundleOf
 import androidx.fragment.app.*
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -633,7 +631,7 @@ open class PdfFragment : Fragment() {
                 if (pdfPagePosition != null) {
                     val annotationIndex = findAnnotationIndexAtPosition(pdfPagePosition)
                     if (annotationIndex != null) {
-                        highlightAnnotation(it, annotations[annotationIndex])
+                        highlightAnnotation(annotations[annotationIndex])
                         scrollAnnotationsViewTo(annotationIndex)
                         setAnnotationsViewVisibility(true)
                     }
@@ -674,39 +672,44 @@ open class PdfFragment : Fragment() {
         ivHighlightedAnnotation = null
     }
 
-    private fun highlightAnnotation(event: MotionEvent, annotation: PdfAnnotation?) {
-        val size = (ANNOTATION_SIZE * 3 * binding.pdfView.zoom).toInt()
+    private fun highlightAnnotation(annotation: PdfAnnotation) {
+        val centerPdfPoint = annotation.getCenterPoint()
 
-        // android:layout_marginTop="?attr/actionBarSize" affects the click position, therefore take that into account when setting position
-        val tv = TypedValue()
-        var actionBarHeight = 0
-        if (requireActivity().theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
-            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
-        }
+        // convert the center point of the annotation on pdf page coordinates to screen coordinates
+        binding.pdfView.convertPdfPagePointToScreenPoint(centerPdfPoint)?.let { screenPosition ->
+            val size = (ANNOTATION_SIZE * 3 * binding.pdfView.zoom).toInt()
 
-        val x = event.x.toInt() - size / 2
-        val y = event.y.toInt() - size / 2 + actionBarHeight
+            // android:layout_marginTop="?attr/actionBarSize" affects the click position, therefore take that into account when setting position
+            val tv = TypedValue()
+            var actionBarHeight = 0
+            if (requireActivity().theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+                actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+            }
 
-        val lp = CoordinatorLayout.LayoutParams(
-            CoordinatorLayout.LayoutParams.WRAP_CONTENT,
-            CoordinatorLayout.LayoutParams.WRAP_CONTENT
-        )
-        ivHighlightedAnnotation = ImageView(requireContext())
-        ivHighlightedAnnotation?.imageAlpha = 200
+            val x = screenPosition.x - size / 2
+            val y = screenPosition.y - size / 2 + actionBarHeight
 
-        // set position
-        lp.setMargins(x, y, 0, 0)
-        ivHighlightedAnnotation?.layoutParams = lp
+            val lp = CoordinatorLayout.LayoutParams(
+                CoordinatorLayout.LayoutParams.WRAP_CONTENT,
+                CoordinatorLayout.LayoutParams.WRAP_CONTENT
+            )
+            ivHighlightedAnnotation = ImageView(requireContext())
+            ivHighlightedAnnotation?.imageAlpha = 200
 
-        ImageUtil.getResourceAsByteArray(
-            requireContext(),
-            R.drawable.ic_annotation,
-            size,
-            config.getPrimaryColorInt()
-        )?.let { imageByteArray ->
-            val bmp = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
-            ivHighlightedAnnotation?.setImageBitmap(Bitmap.createScaledBitmap(bmp, size, size, false))
-            (view as ViewGroup).addView(ivHighlightedAnnotation)
+            // set position
+            lp.setMargins(x, y, 0, 0)
+            ivHighlightedAnnotation?.layoutParams = lp
+
+            ImageUtil.getResourceAsByteArray(
+                requireContext(),
+                R.drawable.ic_annotation,
+                size,
+                config.getPrimaryColorInt()
+            )?.let { imageByteArray ->
+                val bmp = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
+                ivHighlightedAnnotation?.setImageBitmap(Bitmap.createScaledBitmap(bmp, size, size, false))
+                (view as ViewGroup).addView(ivHighlightedAnnotation)
+            }
         }
     }
 
