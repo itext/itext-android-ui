@@ -53,6 +53,7 @@ import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import java.lang.reflect.Method
+import java.util.Comparator
 
 
 /**
@@ -390,7 +391,7 @@ open class PdfFragment : Fragment() {
             pdfManipulator.addTextAnnotationToPdf(
                 title = title,
                 text = text,
-                pageNumber = positionInfo.pdfPageNumber + 1,
+                pageIndex = positionInfo.pdfPageIndex,
                 x = positionInfo.pdfCoordinates.x,
                 y = positionInfo.pdfCoordinates.y,
                 bubbleSize = ANNOTATION_SIZE,
@@ -441,15 +442,15 @@ open class PdfFragment : Fragment() {
     private fun setupThumbnailNavigationView() {
         pdfiumPdfDocument?.let {
             val data = mutableListOf<PdfRecyclerItem>()
-            for (i in 0 until binding.pdfView.pageCount) {
+            for (pageIndex in 0 until binding.pdfView.pageCount) {
                 data.add(PdfNavigationRecyclerItem(
                     pdfiumCore,
                     it,
-                    i
+                    pageIndex
                 ) {
                     navPageSelected = true
-                    scrollThumbnailNavigationViewToPage(i)
-                    scrollToPage(i)
+                    scrollThumbnailNavigationViewToPage(pageIndex)
+                    scrollToPage(pageIndex = pageIndex)
                     navPageSelected = false
                 })
             }
@@ -530,7 +531,10 @@ open class PdfFragment : Fragment() {
     private fun createAnnotationListItems(): List<AnnotationRecyclerItem> {
 
         val pdfDocument = pdfManipulator.getPdfDocumentInReadingMode()
-        val annotations = pdfDocument.getAnnotations().sortedWith(compareBy({ it.page.getPageNumber() }, { it.getCenterPoint().x }))
+
+        val comparator: Comparator<PdfAnnotation> = compareBy<PdfAnnotation> { it.page.getPageIndex() }
+            .thenByDescending { it.getCenterPoint().y }
+        val annotations = pdfDocument.getAnnotations().sortedWith(comparator)
 
         return annotations.map { annotation ->
 
@@ -598,27 +602,27 @@ open class PdfFragment : Fragment() {
                 if (!navPageSelected && navViewOpen) {
                     setThumbnailNavigationViewVisibility(false)
                 }
-                if (ivHighlightedAnnotation != null) {
-                    resetHighlightedAnnotation()
-                }
+
+                resetHighlightedAnnotation()
             }
             .onPageChange { page, _ ->
                 currentPageIndex = page
             }
-            .onTap {
-                if (ivHighlightedAnnotation != null) {
-                    resetHighlightedAnnotation()
-                }
+            .onTap { event: MotionEvent ->
 
-                val pdfPagePosition = binding.pdfView.convertMotionEventPointToPdfPagePoint(it)
-                if (pdfPagePosition != null) {
+                resetHighlightedAnnotation()
 
-                    val annotation = findAnnotationIndexAtPosition(pdfPagePosition)
+
+                val clickedPageIndex = binding.pdfView.getPageIndexForClickPosition(event)
+                val positionOnPdfPage = binding.pdfView.convertMotionEventPointToPdfPagePoint(event)
+
+                if (positionOnPdfPage != null && clickedPageIndex != null) {
+
+                    val annotation = findAnnotationIndexAtPosition(positionOnPdfPage, pageIndex = clickedPageIndex)
 
                     if (annotation != null) {
-                        highlightAnnotation(annotation)
-                        scrollAnnotationsViewTo(annotation)
                         setAnnotationsViewVisibility(true)
+                        scrollAnnotationsViewTo(annotation)
                     }
                 }
 
@@ -654,56 +658,62 @@ open class PdfFragment : Fragment() {
     }
 
     private fun resetHighlightedAnnotation() {
-        (view as ViewGroup).removeView(ivHighlightedAnnotation)
+
+        if (ivHighlightedAnnotation != null) {
+            (view as ViewGroup).removeView(ivHighlightedAnnotation)
+        }
+
         ivHighlightedAnnotation = null
     }
 
     private fun highlightAnnotation(annotation: PdfAnnotation) {
+
         val centerPdfPoint = annotation.getCenterPoint()
+        val screenPosition: Point = binding.pdfView.convertPdfPagePointToScreenPoint(centerPdfPoint) ?: return
 
         // convert the center point of the annotation on pdf page coordinates to screen coordinates
-        binding.pdfView.convertPdfPagePointToScreenPoint(centerPdfPoint)?.let { screenPosition ->
-            val size = (ANNOTATION_SIZE * 3 * binding.pdfView.zoom).toInt()
+        val size = (ANNOTATION_SIZE * 3 * binding.pdfView.zoom).toInt()
 
-            // android:layout_marginTop="?attr/actionBarSize" affects the click position, therefore take that into account when setting position
-            val tv = TypedValue()
-            var actionBarHeight = 0
-            if (requireActivity().theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
-                actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
-            }
-
-            val x = screenPosition.x - size / 2
-            val y = screenPosition.y - size / 2 + actionBarHeight
-
-            val lp = CoordinatorLayout.LayoutParams(
-                CoordinatorLayout.LayoutParams.WRAP_CONTENT,
-                CoordinatorLayout.LayoutParams.WRAP_CONTENT
-            )
-            ivHighlightedAnnotation = ImageView(requireContext())
-            ivHighlightedAnnotation?.imageAlpha = 200
-
-            // set position
-            lp.setMargins(x, y, 0, 0)
-            ivHighlightedAnnotation?.layoutParams = lp
-
-            ImageUtil.getResourceAsByteArray(
-                requireContext(),
-                R.drawable.ic_annotation,
-                size,
-                config.getPrimaryColorInt()
-            )?.let { imageByteArray ->
-                val bmp = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
-                ivHighlightedAnnotation?.setImageBitmap(Bitmap.createScaledBitmap(bmp, size, size, false))
-                (view as ViewGroup).addView(ivHighlightedAnnotation)
-            }
+        // android:layout_marginTop="?attr/actionBarSize" affects the click position, therefore take that into account when setting position
+        val tv = TypedValue()
+        var actionBarHeight = 0
+        if (requireActivity().theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
         }
+
+        val x = screenPosition.x - size / 2
+        val y = screenPosition.y - size / 2 + actionBarHeight
+
+        val lp = CoordinatorLayout.LayoutParams(
+            CoordinatorLayout.LayoutParams.WRAP_CONTENT,
+            CoordinatorLayout.LayoutParams.WRAP_CONTENT
+        )
+
+        ivHighlightedAnnotation = ImageView(requireContext())
+        ivHighlightedAnnotation?.imageAlpha = 200
+
+        // set position
+        lp.setMargins(x, y, 0, 0)
+        ivHighlightedAnnotation?.layoutParams = lp
+
+        ImageUtil.getResourceAsByteArray(
+            requireContext(),
+            R.drawable.ic_annotation,
+            size,
+            config.getPrimaryColorInt()
+        )?.let { imageByteArray ->
+            val bmp = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
+            ivHighlightedAnnotation?.setImageBitmap(Bitmap.createScaledBitmap(bmp, size, size, false))
+            (view as ViewGroup).addView(ivHighlightedAnnotation)
+        }
+
     }
 
-    private fun findAnnotationIndexAtPosition(position: PointF): PdfAnnotation? {
+    private fun findAnnotationIndexAtPosition(position: PointF, pageIndex: Int): PdfAnnotation? {
 
         return pdfManipulator.getPdfDocumentInReadingMode().getAnnotations()
             .firstOrNull { annotation ->
-                annotation.isAtPosition(position)
+                annotation.isAtPosition(position, pageIndex = pageIndex)
             }
 
     }
@@ -717,8 +727,7 @@ open class PdfFragment : Fragment() {
     }
 
     private fun showKeyboard(show: Boolean) {
-        val imm =
-            requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
         if (show) {
             imm?.showSoftInput(binding.etTextAnnotation, InputMethodManager.SHOW_FORCED)
         } else {
@@ -874,8 +883,8 @@ open class PdfFragment : Fragment() {
      * @param position  the index of the page this function should scroll to.
      * @param withAnimation boolean flag to define if scrolling should happen with or without animation.
      */
-    open fun scrollToPage(position: Int, withAnimation: Boolean = false) {
-        binding.pdfView.jumpTo(position, withAnimation)
+    open fun scrollToPage(pageIndex: Int, withAnimation: Boolean = false) {
+        binding.pdfView.jumpTo(pageIndex, withAnimation)
     }
 
     /**
@@ -909,24 +918,35 @@ open class PdfFragment : Fragment() {
         val index = annotationAdapter.getPositionForAnnotation(annotation)
 
         if (index != null) {
-            annotationAdapter.selectedPosition = index
-            binding.includedBottomSheetAnnotations.rvAnnotations.smoothScrollToPosition(index)
+            tryScrollToAnnotationWithIndex(index)
         }
 
-        updateAnnotationArrowVisibility()
     }
 
     private fun tryScrollToAnnotationWithIndex(position: Int) {
 
-        val recyclerView = binding.includedBottomSheetAnnotations.rvAnnotations
-
         if (position >= 0 && position < annotationAdapter.itemCount) {
+
             annotationAdapter.selectedPosition = position
-            recyclerView.scrollToPosition(position)
+            binding.includedBottomSheetAnnotations.rvAnnotations.scrollToPosition(position)
+
+            val annotation = annotationAdapter.getAnnotationForIndex(position)
+
+            if (annotation != null) {
+
+                // Update Pdf View
+                val pageIndexOfAnnotation: Int = annotation.page.getPageIndex()
+                scrollToPage(pageIndexOfAnnotation, withAnimation = false)
+
+                resetHighlightedAnnotation()
+                highlightAnnotation(annotation)
+            }
+
         }
 
         updateAnnotationArrowVisibility()
     }
+
 
     private fun tryScrollToPreviousAnnotation() {
         val newPosition = annotationAdapter.selectedPosition - 1

@@ -48,7 +48,7 @@ interface PdfManipulator {
      */
     fun getPageRanges(selectedPagesNumbers: List<Int>, unselectedPageNumbers: List<Int>, numberOfPages: Int): List<PageRange>
 
-    fun addTextAnnotationToPdf(title: String?, text: String, pageNumber: Int, x: Float, y: Float, bubbleSize: Float, @ColorInt bubbleColor: Int): File
+    fun addTextAnnotationToPdf(title: String?, text: String, pageIndex: Int, x: Float, y: Float, bubbleSize: Float, @ColorInt bubbleColor: Int): File
 
     fun addMarkupAnnotationToPdf(pageNumber: Int, rect: Rectangle, color: Color): File
 

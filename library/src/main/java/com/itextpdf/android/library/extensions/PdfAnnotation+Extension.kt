@@ -29,7 +29,12 @@ internal fun PdfAnnotation.isSameAs(other: PdfAnnotation): Boolean {
  * @param position
  * @return
  */
-fun PdfAnnotation.isAtPosition(position: PointF): Boolean {
+fun PdfAnnotation.isAtPosition(position: PointF, pageIndex: Int): Boolean {
+
+    if (this.page.getPageIndex() != pageIndex) {
+        return false
+    }
+
     // rectangle should have 4 entries: lower-left and upper-right x and y coordinates: [llx, lly, urx, ury]
     if (rectangle.size() < 4) return false
     val llx = rectangle.getAsNumber(0).floatValue()

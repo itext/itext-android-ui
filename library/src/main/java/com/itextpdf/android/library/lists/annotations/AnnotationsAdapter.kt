@@ -51,7 +51,10 @@ class AnnotationsAdapter(
         } else {
             index
         }
+    }
 
+    fun getAnnotationForIndex(index: Int): PdfAnnotation? {
+        return data.getOrNull(index)?.annotation
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AnnotationsViewHolder {

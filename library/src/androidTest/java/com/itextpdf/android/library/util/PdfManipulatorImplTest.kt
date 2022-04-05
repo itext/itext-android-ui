@@ -2,7 +2,6 @@ package com.itextpdf.android.library.util
 
 import android.content.Context
 import android.net.Uri
-import androidx.compose.ui.geometry.Rect
 import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -10,7 +9,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.getAnnotations
-import com.itextpdf.android.library.extensions.getPages
 import com.itextpdf.kernel.colors.DeviceRgb
 import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.PdfDocument
@@ -193,7 +191,7 @@ class PdfManipulatorImplTest {
         sut.addTextAnnotationToPdf(
             title = "Lorem Ipsum Title",
             text = "Lorem Ipsum Message",
-            pageNumber = 1,
+            pageIndex = 0,
             x = 0f,
             y = 0f,
             bubbleSize = 1f,
@@ -222,7 +220,7 @@ class PdfManipulatorImplTest {
         sut.addTextAnnotationToPdf(
             title = "Lorem Ipsum Title 1",
             text = "Lorem Ipsum Message 2",
-            pageNumber = 1,
+            pageIndex = 0,
             x = 0f,
             y = 0f,
             bubbleSize = 1f,
@@ -232,7 +230,7 @@ class PdfManipulatorImplTest {
         sut.addTextAnnotationToPdf(
             title = "Lorem Ipsum Title 2",
             text = "Lorem Ipsum Message 2",
-            pageNumber = 1,
+            pageIndex = 0,
             x = 0f,
             y = 0f,
             bubbleSize = 1f,
@@ -246,7 +244,7 @@ class PdfManipulatorImplTest {
         assertThat(annotations).hasSize(2)
 
         // WHEN
-        sut.removeAnnotationFromPdf(1, annotationToRemove)
+        sut.removeAnnotationFromPdf(annotationToRemove)
         val remaining: List<PdfAnnotation> = sut.getPdfDocumentInReadingMode().getAnnotations()
         val remainingAnnotation: PdfAnnotation = remaining.first()
 
@@ -291,13 +289,13 @@ class PdfManipulatorImplTest {
     fun testEditAnnotationsFromPdf() {
 
         // GIVEN
-        sut.addTextAnnotationToPdf("Title 1", "Message 1", 1, 0f, 0f, 1f, appContext.getColor(R.color.black))
+        sut.addTextAnnotationToPdf("Title 1", "Message 1", 0, 0f, 0f, 1f, appContext.getColor(R.color.black))
 
         val existingAnnotations = sut.getPdfDocumentInReadingMode().getAnnotations()
         assertThat(existingAnnotations).hasSize(1)
 
         // WHEN
-        sut.editAnnotationFromPdf(1, existingAnnotations.first(), "Title 2", "Message 2")
+        sut.editAnnotationFromPdf(existingAnnotations.first(), "Title 2", "Message 2")
 
         // THEN
         val updatedAnnotations = sut.getPdfDocumentInReadingMode().getAnnotations()

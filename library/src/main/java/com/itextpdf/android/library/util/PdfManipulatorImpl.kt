@@ -5,7 +5,7 @@ import android.net.Uri
 import androidx.annotation.ColorInt
 import androidx.core.net.toUri
 import com.itextpdf.android.library.R
-import com.itextpdf.android.library.extensions.getPageNumber
+import com.itextpdf.android.library.extensions.getPageIndex
 import com.itextpdf.android.library.extensions.isSameAs
 import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.kernel.colors.Color
@@ -184,7 +184,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
     override fun addTextAnnotationToPdf(
         title: String?,
         text: String,
-        pageNumber: Int,
+        pageIndex: Int,
         x: Float,
         y: Float,
         bubbleSize: Float,
@@ -204,7 +204,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
                     annotation.title = PdfString(title)
                 }
 
-                pdfDoc.getPage(pageNumber).addAnnotation(annotation)
+                pdfDoc.getPage(pageIndex + 1).addAnnotation(annotation)
                 pdfDoc.close()
 
                 tempFile
@@ -251,11 +251,11 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
 
     override fun removeAnnotationFromPdf(annotationToRemove: PdfAnnotation): File {
 
-        val pageNumber = annotationToRemove.page.getPageNumber()
 
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
         val resultingFile: File = getPdfDocumentInStampingMode(tempFile).use { pdfDocument ->
 
+            val pageNumber = annotationToRemove.page.getPageIndex() + 1
             val page = pdfDocument.getPage(pageNumber)
 
             for (ann in page.annotations) {
@@ -272,22 +272,23 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
 
     override fun editAnnotationFromPdf(annotation: PdfAnnotation, title: String?, text: String): File {
 
-        val pageNumber = annotation.page.getPageNumber()
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
 
-        val resultingFile: File =
-            getPdfDocumentInStampingMode(tempFile).use { pdfDocument ->
-                val page = pdfDocument.getPage(pageNumber)
-                for (ann in page.annotations) {
-                    if (annotation.isSameAs(ann)) {
-                        ann.setContents(text)
-                        if (title != null) {
-                            ann.title = PdfString(title)
-                        }
+        val resultingFile: File = getPdfDocumentInStampingMode(tempFile).use { pdfDocument ->
+
+            val pageNumber = annotation.page.getPageIndex() + 1
+            val page = pdfDocument.getPage(pageNumber)
+
+            for (ann in page.annotations) {
+                if (annotation.isSameAs(ann)) {
+                    ann.setContents(text)
+                    if (title != null) {
+                        ann.title = PdfString(title)
                     }
                 }
-                tempFile
             }
+            tempFile
+        }
 
         return fileUtil.overrideFile(resultingFile, workingCopyUri)
     }
