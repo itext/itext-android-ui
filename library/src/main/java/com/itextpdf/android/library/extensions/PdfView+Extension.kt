@@ -30,20 +30,20 @@ internal fun PDFView.convertScreenPointToPdfPagePoint(x: Float, y: Float): Point
     if (pdfFile == null) return null
     val mappedX = -currentXOffset + x
     val mappedY = -currentYOffset + y
-    val page =
+    val pageIndex =
         pdfFile.getPageAtOffset(if (isSwipeVertical) mappedY else mappedX, zoom)
-    val pageSize: SizeF = pdfFile.getScaledPageSize(page, zoom)
+    val pageSize: SizeF = pdfFile.getScaledPageSize(pageIndex, zoom)
     val pageX: Int
     val pageY: Int
     if (isSwipeVertical) {
-        pageX = pdfFile.getSecondaryPageOffset(page, zoom).toInt()
-        pageY = pdfFile.getPageOffset(page, zoom).toInt()
+        pageX = pdfFile.getSecondaryPageOffset(pageIndex, zoom).toInt()
+        pageY = pdfFile.getPageOffset(pageIndex, zoom).toInt()
     } else {
-        pageY = pdfFile.getSecondaryPageOffset(page, zoom).toInt()
-        pageX = pdfFile.getPageOffset(page, zoom).toInt()
+        pageY = pdfFile.getSecondaryPageOffset(pageIndex, zoom).toInt()
+        pageX = pdfFile.getPageOffset(pageIndex, zoom).toInt()
     }
     return pdfFile.mapDeviceCoordsToPage(
-        page,
+        pageIndex,
         pageX,
         pageY,
         pageSize.width.toInt(),
@@ -68,19 +68,29 @@ fun PDFView.convertScreenRectToPdfPageRect(screenRect: Rectangle): Rectangle? {
     }
 }
 
-fun PDFView.convertPdfPagePointToScreenPoint(pagePoint: PointF): Point? {
+fun PDFView.convertPdfPagePointToScreenPoint(pagePoint: PointF, pageIndex: Int): Point? {
     val x = pagePoint.x
     val y = pagePoint.y
 
     if (pdfFile == null) return null
 
-    val page: Int = pdfFile.getPageAtOffset(if (isSwipeVertical) y else x, zoom)
-    val pageSize = pdfFile.getScaledPageSize(page, zoom)
+    val pageSize = pdfFile.getScaledPageSize(pageIndex, zoom)
+    val pageSpacing = spacingPx * zoom
+
+    val startX: Int
+    val startY: Int
+    if (isSwipeVertical) {
+        startX = currentXOffset.toInt()
+        startY = (currentYOffset + (pageSize.height + pageSpacing) * pageIndex).toInt()
+    } else {
+        startY = currentYOffset.toInt()
+        startX = (currentXOffset + (pageSize.width + pageSpacing) * pageIndex).toInt()
+    }
 
     return pdfFile.mapPageCoordsToDevice(
-        page,
-        currentXOffset.toInt(),
-        currentYOffset.toInt(),
+        pageIndex,
+        startX,
+        startY,
         pageSize.width.toInt(),
         pageSize.height.toInt(),
         0, //TODO: use real rotation

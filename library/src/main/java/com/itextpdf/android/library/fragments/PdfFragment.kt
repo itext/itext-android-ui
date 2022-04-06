@@ -53,7 +53,6 @@ import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
 import java.lang.reflect.Method
-import java.util.Comparator
 
 
 /**
@@ -667,46 +666,48 @@ open class PdfFragment : Fragment() {
     }
 
     private fun highlightAnnotation(annotation: PdfAnnotation) {
+        try {
+            val centerPdfPoint = annotation.getCenterPoint()
+            val screenPosition: Point = binding.pdfView.convertPdfPagePointToScreenPoint(centerPdfPoint, annotation.page.getPageIndex()) ?: return
 
-        val centerPdfPoint = annotation.getCenterPoint()
-        val screenPosition: Point = binding.pdfView.convertPdfPagePointToScreenPoint(centerPdfPoint) ?: return
+            // convert the center point of the annotation on pdf page coordinates to screen coordinates
+            val size = (ANNOTATION_SIZE * 3 * binding.pdfView.zoom).toInt()
 
-        // convert the center point of the annotation on pdf page coordinates to screen coordinates
-        val size = (ANNOTATION_SIZE * 3 * binding.pdfView.zoom).toInt()
+            // android:layout_marginTop="?attr/actionBarSize" affects the click position, therefore take that into account when setting position
+            val tv = TypedValue()
+            var actionBarHeight = 0
+            if (requireActivity().theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+                actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+            }
 
-        // android:layout_marginTop="?attr/actionBarSize" affects the click position, therefore take that into account when setting position
-        val tv = TypedValue()
-        var actionBarHeight = 0
-        if (requireActivity().theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
-            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+            val x = screenPosition.x - size / 2
+            val y = screenPosition.y - size / 2 + actionBarHeight
+
+            val lp = CoordinatorLayout.LayoutParams(
+                CoordinatorLayout.LayoutParams.WRAP_CONTENT,
+                CoordinatorLayout.LayoutParams.WRAP_CONTENT
+            )
+
+            ivHighlightedAnnotation = ImageView(requireContext())
+            ivHighlightedAnnotation?.imageAlpha = 200
+
+            // set position
+            lp.setMargins(x, y, 0, 0)
+            ivHighlightedAnnotation?.layoutParams = lp
+
+            ImageUtil.getResourceAsByteArray(
+                requireContext(),
+                R.drawable.ic_annotation,
+                size,
+                config.getPrimaryColorInt()
+            )?.let { imageByteArray ->
+                val bmp = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
+                ivHighlightedAnnotation?.setImageBitmap(Bitmap.createScaledBitmap(bmp, size, size, false))
+                (view as ViewGroup).addView(ivHighlightedAnnotation)
+            }
+        } catch (error: Throwable) {
+            Log.w(LOG_TAG, "Error while highlighting annotation.", error)
         }
-
-        val x = screenPosition.x - size / 2
-        val y = screenPosition.y - size / 2 + actionBarHeight
-
-        val lp = CoordinatorLayout.LayoutParams(
-            CoordinatorLayout.LayoutParams.WRAP_CONTENT,
-            CoordinatorLayout.LayoutParams.WRAP_CONTENT
-        )
-
-        ivHighlightedAnnotation = ImageView(requireContext())
-        ivHighlightedAnnotation?.imageAlpha = 200
-
-        // set position
-        lp.setMargins(x, y, 0, 0)
-        ivHighlightedAnnotation?.layoutParams = lp
-
-        ImageUtil.getResourceAsByteArray(
-            requireContext(),
-            R.drawable.ic_annotation,
-            size,
-            config.getPrimaryColorInt()
-        )?.let { imageByteArray ->
-            val bmp = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
-            ivHighlightedAnnotation?.setImageBitmap(Bitmap.createScaledBitmap(bmp, size, size, false))
-            (view as ViewGroup).addView(ivHighlightedAnnotation)
-        }
-
     }
 
     private fun findAnnotationIndexAtPosition(position: PointF, pageIndex: Int): PdfAnnotation? {
@@ -934,14 +935,19 @@ open class PdfFragment : Fragment() {
 
             if (annotation != null) {
 
+                resetHighlightedAnnotation()
+
                 // Update Pdf View
                 val pageIndexOfAnnotation: Int = annotation.page.getPageIndex()
-                scrollToPage(pageIndexOfAnnotation, withAnimation = false)
-
-                resetHighlightedAnnotation()
-                highlightAnnotation(annotation)
+                if (currentPageIndex != pageIndexOfAnnotation) {
+                    scrollToPage(pageIndexOfAnnotation, withAnimation = false)
+                    view?.postDelayed({
+                        highlightAnnotation(annotation)
+                    }, HIGHLIGHT_ANNOTATION_SCROLL_DELAY)
+                } else {
+                    highlightAnnotation(annotation)
+                }
             }
-
         }
 
         updateAnnotationArrowVisibility()
@@ -967,6 +973,7 @@ open class PdfFragment : Fragment() {
 
         private const val LOG_TAG = "PdfFragment"
         private const val OPEN_BOTTOM_SHEET_DELAY_MS = 200L
+        private const val HIGHLIGHT_ANNOTATION_SCROLL_DELAY = 200L
         private const val ANNOTATION_SIZE = 30f
         private const val CURRENT_PAGE = "CURRENT_PAGE"
 
