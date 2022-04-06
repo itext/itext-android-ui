@@ -986,6 +986,7 @@ open class PdfFragment : Fragment() {
          * @param pdfConfig The configuration to be used.
          * @return A new instance of [PdfFragment] with the given settings
          */
+        @JvmStatic
         fun newInstance(pdfConfig: PdfConfig): PdfFragment {
             val fragment = PdfFragment()
             fragment.arguments = bundleOf(EXTRA_PDF_CONFIG to pdfConfig)

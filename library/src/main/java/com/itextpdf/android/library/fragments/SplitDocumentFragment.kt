@@ -355,6 +355,7 @@ open class SplitDocumentFragment : Fragment() {
          * @param config The configuration to be used.
          * @return  in instance of SplitDocumentFragment with the given settings
          */
+        @JvmStatic
         fun newInstance(config: PdfConfig): SplitDocumentFragment {
 
             val fragment = SplitDocumentFragment()

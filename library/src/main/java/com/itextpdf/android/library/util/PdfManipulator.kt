@@ -105,6 +105,7 @@ interface PdfManipulator {
          * @param context The context to be used for accessing resources etc.
          * @param pdfUri The uri pointing at the location where the PDF file is located.
          */
+        @JvmStatic
         fun create(context: Context, pdfUri: Uri): PdfManipulator {
             return PdfManipulatorImpl(context, pdfUri)
         }
