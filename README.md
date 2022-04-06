@@ -4,7 +4,9 @@
 2. [Using the SDK](#third-example)
    1. [Create PDFFragment via code](#create-pdffragment-via-code)
    2. [Inflate PDFFragment via XML](#inflate-pdffragment-via-xml)
-   3. [Receiving results](#receiving-pdf-results)
+   3. [Split PDF](#split-pdf)
+   4. [Manipulate PDF directly (without UI)](#manipulate-pdf-directly-without-ui)
+   5. [Receiving results](#receiving-pdf-results)
 
 # Setup
 
@@ -23,7 +25,7 @@ git clone ssh://git@git.itextsupport.com:7999/i7a/pdfiumandroid.git
 git clone ssh://git@git.itextsupport.com:7999/i7a/androidpdfviewer.git
 ```
 
-This will generate the following file structure on your machine:
+This will generate the following folder structure on your machine:
 
 ```
 your-folder
@@ -62,7 +64,7 @@ private fun showPdfFragment(pdfUri: Uri) {
     // Create PdfFragment
     val pdfFragment = PdfFragment.newInstance(pdfConfig)
 
-    showFragment(fragment)
+    // show fragment, e.g. via supportFragmentManager
 
 }
 ```
@@ -89,6 +91,32 @@ You can also inflate a PDF fragment via XML. In thise case, the fragment is cust
         app:page_spacing="400"
         app:primary_color="#217C12"
         app:secondary_color="#C6E6C1" />
+```
+
+## Split PDF via Fragment
+
+You can directly launch fragment to split PDF documents via...
+
+```kotlin
+private fun showSplitFragment(pdfUri: Uri) {
+
+    val config = PdfConfig(pdfUri = pdfUri, showScrollIndicator = true)
+    val splitFragment = SplitDocumentFragment.newInstance(config)
+    // show fragment, e.g. via supportFragmentManager
+}
+```
+
+## Manipulate PDF directly (without UI)
+
+You can directly manipulate PDF files without showing a Fragment-UI by using the PDFManipulator:
+
+```kotlin
+val manipulator = PdfManipulator.create(requireContext(), pdfUri)
+
+manipulator.addTextAnnotationToPdf(...)
+manipulator.splitPdfWithSelection(...) 
+manipulator.addMarkupAnnotationToPdf(...) 
+// etc...
 ```
 
 ## Receiving PDF results
