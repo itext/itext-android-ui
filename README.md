@@ -6,7 +6,7 @@
    2. [Inflate PDFFragment via XML](#inflate-pdffragment-via-xml)
    3. [Receiving results](#receiving-pdf-results)
 
-## Setup
+# Setup
 
 The SDK depends on forked versions of [PdfiumAndroid](https://github.com/barteksc/AndroidPdfViewer) and [AndroidPdfViewer](https://github.com/barteksc/PdfiumAndroid).
 Therefore you need to clone 3 repositories in order to setup your build environment.
@@ -35,21 +35,21 @@ your-folder
 Double-check that your folder structure looks this way, because it is needed by **settings.gradle** in order to resolve all modules correctly.
 If you want to use a different folder structure, make sure to update your settings.gradle accordingly.
 
-#### Troubleshooting
+## Troubleshooting
 
-##### No whitespaces in your paths
+### No whitespaces in your paths
 Do not use spaces in your local paths/directories, as it can lead to all sorts of errors related to Android NDK, ndk-build or cmake.
 
-##### NDK setup
+### NDK setup
 If you are having problems related to Android NKD, make sure to follow the correct setup procedure:
 https://developer.android.com/studio/projects/install-ndk
 
 
-## Using the SDK
+# Using the SDK
 
 The SDK provides different Fragments and classes to manipulate PDF files.
 
-### Create PDFFragment via code
+## Create PDFFragment via code
 
 You can create a new instance of PdfFragment via code:
 
@@ -67,7 +67,7 @@ private fun showPdfFragment(pdfUri: Uri) {
 }
 ```
 
-### Inflate PDFFragment via XML
+## Inflate PDFFragment via XML
 
 You can also inflate a PDF fragment via XML. In thise case, the fragment is customizable via different styleables, such as app:enable_split_view, etc.
 
@@ -91,7 +91,7 @@ You can also inflate a PDF fragment via XML. In thise case, the fragment is cust
         app:secondary_color="#C6E6C1" />
 ```
 
-### Receiving PDF results
+## Receiving PDF results
 
 You can receive fragment results by registering a fragment result listener to your fragmentManager.
 
