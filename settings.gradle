@@ -5,5 +5,5 @@ include ':android-pdf-viewer'
 include ':pdfium-android'
 
 
-project(":android-pdf-viewer").projectDir=new File("../AndroidPdfViewer/android-pdf-viewer",)
-project(":pdfium-android").projectDir=new File("../PdfiumAndroid")
+project(":android-pdf-viewer").projectDir=new File("../androidpdfviewer/android-pdf-viewer",)
+project(":pdfium-android").projectDir=new File("../pdfiumandroid")
