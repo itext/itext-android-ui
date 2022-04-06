@@ -5,6 +5,9 @@ import com.itextpdf.kernel.pdf.PdfPage
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 
 
+/**
+ * Returns all pages of the given pdf-document.
+ */
 fun PdfDocument.getPages(): List<PdfPage> {
 
     return buildList {
@@ -15,6 +18,9 @@ fun PdfDocument.getPages(): List<PdfPage> {
 
 }
 
+/**
+ * Returns all annotations of the pdf-document.
+ */
 fun PdfDocument.getAnnotations(): List<PdfAnnotation> {
     return getPages().flatMap { it.annotations }
 }

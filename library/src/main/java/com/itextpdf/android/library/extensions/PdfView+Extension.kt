@@ -54,7 +54,7 @@ internal fun PDFView.convertScreenPointToPdfPagePoint(x: Float, y: Float): Point
     )
 }
 
-fun PDFView.convertScreenRectToPdfPageRect(screenRect: Rectangle): Rectangle? {
+internal fun PDFView.convertScreenRectToPdfPageRect(screenRect: Rectangle): Rectangle? {
     // convert lowerLeft point of screenRect to pdfPoint -> Point(x, y+height)
     val convertedLowerLeft = convertScreenPointToPdfPagePoint(screenRect.x, screenRect.y + screenRect.height)
     // convert upperRight point of screenRect to pdfPoint -> Point (x+width, y)
@@ -68,7 +68,7 @@ fun PDFView.convertScreenRectToPdfPageRect(screenRect: Rectangle): Rectangle? {
     }
 }
 
-fun PDFView.convertPdfPagePointToScreenPoint(pagePoint: PointF, pageIndex: Int): Point? {
+internal fun PDFView.convertPdfPagePointToScreenPoint(pagePoint: PointF, pageIndex: Int): Point? {
     val x = pagePoint.x
     val y = pagePoint.y
 
