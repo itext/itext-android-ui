@@ -2,4 +2,8 @@ rootProject.name = "iTextPDF"
 include ':app'
 include ':library'
 include ':android-pdf-viewer'
-include ':android-pdfium'
+include ':pdfium-android'
+
+
+project(":android-pdf-viewer").projectDir=new File("../AndroidPdfViewer/android-pdf-viewer",)
+project(":pdfium-android").projectDir=new File("../PdfiumAndroid")
