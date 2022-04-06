@@ -53,7 +53,7 @@ import kotlin.math.min
  * as a fragmentResult. Therefore set a listener for the key SplitDocumentFragment.SPLIT_DOCUMENT_RESULT
  * to get the uris via: bundle.getParcelableArrayList<Uri>(SplitDocumentFragment.SPLIT_PDF_URI_LIST)
  */
-open class SplitDocumentFragment : Fragment() {
+class SplitDocumentFragment : Fragment() {
 
     private lateinit var config: PdfConfig
     private lateinit var pdfManipulator: PdfManipulator

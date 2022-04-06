@@ -59,7 +59,7 @@ import java.lang.reflect.Method
  * Fragment that can be used to display a pdf file. To pass the pdf file and other settings to the
  * fragment use the static newInstance() function or set them as attributes in (e.g.: app:file_uri).
  */
-open class PdfFragment : Fragment() {
+class PdfFragment : Fragment() {
 
     private lateinit var config: PdfConfig
     private lateinit var pdfManipulator: PdfManipulator

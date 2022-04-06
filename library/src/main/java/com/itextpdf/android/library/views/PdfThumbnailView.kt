@@ -22,7 +22,7 @@ import java.lang.Integer.min
  * @param context   the context
  * @param attrs     the attributes for the view
  */
-open class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
+class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
     /**
      * The image view that is used tho display the thumbnail of the pdf page.
