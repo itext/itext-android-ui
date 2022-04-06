@@ -293,7 +293,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
         return fileUtil.overrideFile(resultingFile, workingCopyUri)
     }
 
-    override fun getHighlightAppearance(
+    private fun getHighlightAppearance(
         pdfDocument: PdfDocument,
         rectangle: Rectangle,
         color: Color
@@ -312,7 +312,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
         return commentXObj
     }
 
-    override fun getTextAnnotationAppearance(pdfDocument: PdfDocument, @ColorInt color: Int, bubbleSize: Float): PdfFormXObject? {
+    private fun getTextAnnotationAppearance(pdfDocument: PdfDocument, @ColorInt color: Int, bubbleSize: Float): PdfFormXObject? {
         var commentXObj: PdfFormXObject? = null
         val imageSize = bubbleSize * 3
         val imageByteArray = ImageUtil.getResourceAsByteArray(context, R.drawable.ic_annotation, imageSize.toInt(), color)
