@@ -350,10 +350,7 @@ open class SplitDocumentFragment : Fragment() {
         const val SPLIT_DOCUMENT_RESULT = "SPLIT_DOCUMENT_RESULT"
 
         /**
-         * Static function to create a new instance of the SplitDocumentFragment with the given settings
-         *
-         * @param config The configuration to be used.
-         * @return  in instance of SplitDocumentFragment with the given settings
+         * Returns a new instance of [SplitDocumentFragment] for the given [config].
          */
         @JvmStatic
         fun newInstance(config: PdfConfig): SplitDocumentFragment {
