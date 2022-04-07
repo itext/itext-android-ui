@@ -12,10 +12,13 @@ import com.itextpdf.kernel.utils.PageRange
 import java.io.File
 
 /**
- * An a manipulator that provides several functions for manipulating PDF files, such as adding text-annotations and splitting pdf-documents.
+ * A manipulator provides several functions for manipulating PDF files, such as adding text-annotations and splitting pdf-documents.
  */
 interface PdfManipulator {
 
+    /**
+     * The working-copy of the currently edited PDF document.
+     */
     val workingCopy: File
 
     /**
@@ -97,6 +100,9 @@ interface PdfManipulator {
      */
     fun getPdfDocumentInStampingMode(destFile: File): PdfDocument
 
+    /**
+     * Factory for creating [PdfManipulator] instances.
+     */
     companion object Factory {
 
         /**

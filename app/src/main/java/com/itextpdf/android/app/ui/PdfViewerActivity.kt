@@ -42,7 +42,8 @@ class PdfViewerActivity : AppCompatActivity() {
                         when (pdfIndex) {
                             1 -> { // Sample 2
 
-                                val config = PdfConfig.build {
+                                val config = PdfConfig.
+                                build {
                                     this.pdfUri = pdfUri
                                     this.fileName = fileName
                                     displayFileName = true

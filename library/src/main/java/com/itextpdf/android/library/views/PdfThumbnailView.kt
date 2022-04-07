@@ -19,10 +19,12 @@ import java.lang.Integer.min
 /**
  * View that easily allows to display a thumbnail for a pdf file by setting it as file or uri.
  *
- * @param context   the context
- * @param attrs     the attributes for the view
+ * @constructor Constructor for creating a new [PdfThumbnailView] instance.
+ *
+ * @param context The context of the view.
+ * @param attrs The attributes of the view.
  */
-class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
+class PdfThumbnailView constructor(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
     /**
      * The image view that is used tho display the thumbnail of the pdf page.
@@ -146,7 +148,7 @@ class PdfThumbnailView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         pdfImageView.setImageBitmap(bitmap)
     }
 
-    companion object {
+    internal companion object {
         private const val LOG_TAG = "PdfThumbnailView"
     }
 }

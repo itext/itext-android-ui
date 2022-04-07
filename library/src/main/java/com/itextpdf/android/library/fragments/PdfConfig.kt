@@ -79,7 +79,10 @@ data class PdfConfig constructor(
 
     companion object {
 
-        inline fun build(block: Builder.() -> Unit) = Builder().apply(block).build()
+        /**
+         * Builds and returns a new [PdfConfig] with the specified options.
+         */
+        inline fun build(block: Builder.() -> Unit): PdfConfig = Builder().apply(block).build()
 
         private val FILE_NAME: String? = null
         private const val PAGE_SPACING = 10
@@ -101,6 +104,9 @@ data class PdfConfig constructor(
 
     }
 
+    /**
+     * Builder for creating instances of [PdfConfig].
+     */
     class Builder {
 
         var pdfUri: Uri? = null
