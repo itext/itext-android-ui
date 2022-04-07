@@ -88,10 +88,18 @@ internal fun PDFView.convertPdfPagePointToScreenPoint(pagePoint: PointF, pageInd
     val startX: Int
     val startY: Int
     if (isSwipeVertical) {
-        startX = currentXOffset.toInt()
+        // delta between pdfView width and page width -> has influence on where page actually starts
+        val widthDelta = (width * zoom) - pageSize.width
+        // use widthDelta/2 as page is centered and therefore first half of delta is before page, second half after
+        val widthXOffset = widthDelta / 2
+        startX = (currentXOffset + widthXOffset).toInt()
         startY = (currentYOffset + (pageSize.height + pageSpacing) * pageIndex).toInt()
     } else {
-        startY = currentYOffset.toInt()
+        // delta between pdfView height and page height -> has influence on where page actually starts
+        val heightDelta = (height * zoom) - pageSize.height
+        // use heightDelta/2 as page is centered and therefore first half of delta is before page, second half after
+        val heightYOffset = heightDelta / 2
+        startY = (currentYOffset + heightYOffset).toInt()
         startX = (currentXOffset + (pageSize.width + pageSpacing) * pageIndex).toInt()
     }
 
