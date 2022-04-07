@@ -213,7 +213,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
         return fileUtil.overrideFile(resultingFile, workingCopyUri)
     }
 
-    override fun addMarkupAnnotationToPdf(pageNumber: Int, rect: Rectangle, color: Color): File {
+    override fun addMarkupAnnotationToPdf(pageIndex: Int, rect: Rectangle, color: Color): File {
 
         val tempFile = fileUtil.createTempCopy(context, workingCopy)
         val resultingFile: File = getPdfDocumentInStampingMode(tempFile)
@@ -240,7 +240,7 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
                     .setColor(color)
                     .setNormalAppearance(appearance.pdfObject)
 
-                pdfDoc.getPage(pageNumber).addAnnotation(markupAnnotation)
+                pdfDoc.getPage(pageIndex + 1).addAnnotation(markupAnnotation)
                 pdfDoc.close()
 
                 tempFile

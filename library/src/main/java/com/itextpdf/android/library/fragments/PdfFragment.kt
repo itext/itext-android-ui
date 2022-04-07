@@ -45,10 +45,10 @@ import com.itextpdf.android.library.lists.highlighting.HighlightColorRecyclerIte
 import com.itextpdf.android.library.lists.navigation.PdfNavigationRecyclerItem
 import com.itextpdf.android.library.util.ImageUtil
 import com.itextpdf.android.library.util.PdfManipulator
-import com.itextpdf.android.library.util.PositionMappingInfo
+import com.itextpdf.android.library.util.PointPositionMappingInfo
+import com.itextpdf.android.library.util.RectanglePositionMappingInfo
 import com.itextpdf.android.library.views.PdfViewScrollHandle
 import com.itextpdf.kernel.colors.DeviceRgb
-import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
 import com.shockwave.pdfium.PdfDocument
 import com.shockwave.pdfium.PdfiumCore
@@ -87,7 +87,7 @@ class PdfFragment : Fragment() {
     private var currentPageIndex = 0
 
     private var annotationActionMode: AnnotationAction? = null
-    private var longPressPdfPagePosition: PositionMappingInfo? = null
+    private var longPressPdfPagePosition: PointPositionMappingInfo? = null
     private var ivHighlightedAnnotation: ImageView? = null
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
@@ -373,9 +373,9 @@ class PdfFragment : Fragment() {
         R.id.action_confirm -> {
             if (annotationActionMode == AnnotationAction.HIGHLIGHT) {
                 val screenRect = binding.highlightPreview.getSelectionRectangle()
-                val pdfRect = binding.pdfView.convertScreenRectToPdfPageRect(screenRect)
-                if (pdfRect != null)
-                    addMarkupAnnotation(pdfRect)
+                val positionInfo = RectanglePositionMappingInfo.createOrNull(screenRect, binding.pdfView)
+                if (positionInfo != null)
+                    addMarkupAnnotation(positionInfo)
             }
             true
         }
@@ -384,7 +384,7 @@ class PdfFragment : Fragment() {
         }
     }
 
-    private fun addTextAnnotation(title: String?, text: String, positionInfo: PositionMappingInfo) {
+    private fun addTextAnnotation(title: String?, text: String, positionInfo: PointPositionMappingInfo) {
         try {
 
             pdfManipulator.addTextAnnotationToPdf(
@@ -410,10 +410,10 @@ class PdfFragment : Fragment() {
         Toast.makeText(requireContext(), "$message: ${error.javaClass.simpleName}", Toast.LENGTH_LONG).show()
     }
 
-    private fun addMarkupAnnotation(rect: Rectangle) {
+    private fun addMarkupAnnotation(positionInfo: RectanglePositionMappingInfo) {
         pdfManipulator.addMarkupAnnotationToPdf(
-            pageNumber = currentPageIndex + 1,
-            rect = rect,
+            pageIndex = positionInfo.pdfPageIndex,
+            rect = positionInfo.pdfRectangle,
             color = highlightColors[highlightColorAdapter.selectedPosition]
         )
         setupPdfView()
@@ -630,7 +630,7 @@ class PdfFragment : Fragment() {
             }
             .onLongPress { event ->
                 annotationActionMode = AnnotationAction.ADD
-                longPressPdfPagePosition = PositionMappingInfo.createOrNull(event, binding.pdfView)
+                longPressPdfPagePosition = PointPositionMappingInfo.createOrNull(event, binding.pdfView)
                 setAnnotationTextViewVisibility(true)
             }
             .onLoad {

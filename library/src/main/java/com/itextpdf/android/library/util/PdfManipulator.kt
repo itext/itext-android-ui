@@ -7,7 +7,6 @@ import com.itextpdf.kernel.colors.Color
 import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.annot.PdfAnnotation
-import com.itextpdf.kernel.pdf.xobject.PdfFormXObject
 import com.itextpdf.kernel.utils.PageRange
 import java.io.File
 
@@ -68,9 +67,9 @@ interface PdfManipulator {
     fun addTextAnnotationToPdf(title: String?, text: String, pageIndex: Int, x: Float, y: Float, bubbleSize: Float, @ColorInt bubbleColor: Int): File
 
     /**
-     * Ads a markup annotation with [rect] and [color] on the given [pageNumber].
+     * Ads a markup annotation with [rect] and [color] on the given [pageIndex].
      */
-    fun addMarkupAnnotationToPdf(pageNumber: Int, rect: Rectangle, color: Color): File
+    fun addMarkupAnnotationToPdf(pageIndex: Int, rect: Rectangle, color: Color): File
 
     /**
      * Remove the given [annotationToRemove] from the PDF file.

@@ -269,7 +269,7 @@ class PdfManipulatorImplTest {
         assertThat(currentAnnotations).hasSize(0)
 
         // WHEN
-        sut.addMarkupAnnotationToPdf(1, Rectangle(10f, 10f), DeviceRgb.GREEN)
+        sut.addMarkupAnnotationToPdf(0, Rectangle(10f, 10f), DeviceRgb.GREEN)
 
         // THEN
         val annotations = sut.getPdfDocumentInReadingMode().getAnnotations()

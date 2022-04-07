@@ -10,7 +10,7 @@ import com.itextpdf.android.library.extensions.getPageIndexForClickPosition
  * Class that contains mapping-information regarding the initiating [motionEvent] (in device-coordinates) and the corresponding [pdfCoordinates] and [pdfPageIndex].
  *
  */
-internal data class PositionMappingInfo(
+internal data class PointPositionMappingInfo(
 
     /**
      * The pdf-coordinates of the related [motionEvent]
@@ -29,13 +29,12 @@ internal data class PositionMappingInfo(
 ) {
 
     companion object Factory {
-        fun createOrNull(event: MotionEvent, pdfView: PDFView): PositionMappingInfo? {
+        fun createOrNull(event: MotionEvent, pdfView: PDFView): PointPositionMappingInfo? {
 
             val pdfCoordinates: PointF = pdfView.convertMotionEventPointToPdfPagePoint(event) ?: return null
             val pdfPageIndex: Int = pdfView.getPageIndexForClickPosition(event) ?: return null
 
-            return PositionMappingInfo(pdfCoordinates = pdfCoordinates, motionEvent = event, pdfPageIndex = pdfPageIndex)
+            return PointPositionMappingInfo(pdfCoordinates = pdfCoordinates, motionEvent = event, pdfPageIndex = pdfPageIndex)
         }
     }
-
 }
