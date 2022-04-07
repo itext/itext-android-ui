@@ -1,7 +1,6 @@
 package com.itextpdf.android.library
 
-object Constants {
-    const val LOG_TAG = "iTextPdf-Android"
+internal object Constants {
     const val CONTENT_PREFIX = "content://"
     const val FILE_PREFIX = "file://"
 }

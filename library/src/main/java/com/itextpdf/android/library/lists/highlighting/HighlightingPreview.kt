@@ -13,7 +13,7 @@ import com.itextpdf.kernel.geom.Rectangle
 import kotlin.math.sqrt
 
 
-class HighlightingPreview : View {
+internal class HighlightingPreview : View {
     private var points = mutableListOf<Point>()
 
     // the highlight color that should be used

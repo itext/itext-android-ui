@@ -18,7 +18,7 @@ import com.itextpdf.android.library.lists.split.PdfSplitViewHolder
  * @param primaryColorString    the primary color that is used for highlighting selected elements. optional
  * @param secondaryColorString  the secondary color that is used for highlighting selected elements. optional
  */
-class PdfAdapter(
+internal class PdfAdapter(
     private val data: List<PdfRecyclerItem>,
     private val allowMultiSelection: Boolean,
     primaryColorString: String?,

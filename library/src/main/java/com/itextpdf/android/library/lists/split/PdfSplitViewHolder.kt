@@ -11,7 +11,7 @@ import com.itextpdf.android.library.lists.PdfViewHolder
  *
  * @param view  the view
  */
-class PdfSplitViewHolder(view: View) : PdfViewHolder(view) {
+internal class PdfSplitViewHolder(view: View) : PdfViewHolder(view) {
 
     override fun bind(item: PdfRecyclerItem) {
         if (item is PdfSplitRecyclerItem) {
@@ -32,7 +32,7 @@ class PdfSplitViewHolder(view: View) : PdfViewHolder(view) {
  * @property pageIndex  the index of the page within the pdfDocument
  * @property action the action that should happen when the item is clicked
  */
-data class PdfSplitRecyclerItem(
+internal data class PdfSplitRecyclerItem(
     var bitmap: Bitmap,
     val pageIndex: Int,
     val action: () -> Unit

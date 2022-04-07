@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.*
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,18 +15,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.itextpdf.android.app.BuildConfig
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivityMainBinding
-import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
 import com.itextpdf.android.app.extensions.registerPdfSelectionResult
 import com.itextpdf.android.app.extensions.selectPdfIntent
-import com.itextpdf.android.library.util.FileUtil
+import com.itextpdf.android.app.ui.MainActivity.PdfRecyclerItem.Companion.TYPE_PDF
 import com.itextpdf.android.library.util.PdfManipulator
 import com.itextpdf.android.library.views.PdfThumbnailView
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val fileUtil = FileUtil.getInstance()
 
     /**
      * An ActivityResultLauncher<Intent> object that is used to launch the selectPdfIntent to select a
@@ -48,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         // prepare pre-defined pdf files from the assets folder to display them in a recyclerView
         val data = mutableListOf<PdfRecyclerItem>()
         pdfFileNames.forEachIndexed { i, fileName ->
-            val file = fileUtil.loadFileFromAssets(this, fileName)
+            val file = loadFileFromAssets(fileName)
             val uri = Uri.fromFile(file)
 
             data.add(PdfItem(pdfTitles[i], fileName, pdfDescriptions[i], uri) {
@@ -73,6 +75,18 @@ class MainActivity : AppCompatActivity() {
         val adapter = PdfAdapter(data)
         binding.rvPdfList.adapter = adapter
         binding.rvPdfList.layoutManager = LinearLayoutManager(this)
+    }
+
+    private fun loadFileFromAssets(fileName: String): File {
+
+        val cacheDir: File = ContextCompat.getExternalCacheDirs(this).first()
+        val tempFile = File(cacheDir, "${fileName}_copy")
+
+        assets.open(fileName).use { inputStream ->
+            Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        }
+
+        return tempFile
     }
 
     /**
@@ -121,7 +135,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val shareIntent = Intent(Intent.ACTION_SEND_MULTIPLE)
-        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, shareableUriList);
+        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, shareableUriList)
         shareIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         shareIntent.type = "application/pdf"
         startActivity(Intent.createChooser(shareIntent, getString(R.string.share_pdf_title)))

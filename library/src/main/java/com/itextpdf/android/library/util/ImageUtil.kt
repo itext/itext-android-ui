@@ -10,7 +10,7 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.toBitmap
 import java.io.ByteArrayOutputStream
 
-object ImageUtil {
+internal object ImageUtil {
 
     fun getResourceAsBitmap(context: Context, @DrawableRes resId: Int, imageSize: Int, @ColorInt tintColor: Int): Bitmap? {
         val d = AppCompatResources.getDrawable(

@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import java.io.File
 
-interface FileUtil {
+internal interface FileUtil {
 
     fun createTempCopy(context: Context, originalFile: File): File
     fun createTempCopyIfNotExists(context: Context, originalFileUri: Uri): File

@@ -10,7 +10,7 @@ import com.itextpdf.android.library.extensions.getPageIndexForClickPosition
  * Class that contains mapping-information regarding the initiating [motionEvent] (in device-coordinates) and the corresponding [pdfCoordinates] and [pdfPageIndex].
  *
  */
-data class PositionMappingInfo(
+internal data class PositionMappingInfo(
 
     /**
      * The pdf-coordinates of the related [motionEvent]

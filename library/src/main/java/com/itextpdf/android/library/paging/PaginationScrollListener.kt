@@ -3,7 +3,7 @@ package com.itextpdf.android.library.paging
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class PaginationScrollListener(
+internal abstract class PaginationScrollListener(
     private val layoutManager: LinearLayoutManager,
     /**
      * If there are only x more items before the end of the recycler, load more.

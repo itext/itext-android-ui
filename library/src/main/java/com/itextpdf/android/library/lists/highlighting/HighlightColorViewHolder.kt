@@ -15,7 +15,7 @@ import com.itextpdf.kernel.colors.DeviceRgb
  *
  * @param view  the view
  */
-class HighlightColorViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+internal class HighlightColorViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
     private val circleView: View = view.findViewById(R.id.colorCircle)
     private val strokeWidth: Int = DisplayUtil.dpToPx(STROKE_WIDTH_IN_DP, itemView.context)
@@ -49,7 +49,7 @@ class HighlightColorViewHolder(view: View) : RecyclerView.ViewHolder(view) {
  *
  * @property action the action that should happen when the item is clicked
  */
-data class HighlightColorRecyclerItem(
+internal data class HighlightColorRecyclerItem(
     val color: DeviceRgb,
     val action: (DeviceRgb) -> (Unit)
 )

@@ -5,7 +5,7 @@ import android.util.TypedValue
 import kotlin.math.roundToInt
 
 
-object DisplayUtil {
+internal object DisplayUtil {
     /**
      * Converts dp to pixels.
      *

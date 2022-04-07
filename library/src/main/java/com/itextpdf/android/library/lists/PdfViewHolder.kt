@@ -17,7 +17,7 @@ import com.itextpdf.android.library.views.PdfThumbnailView
  *
  * @param view  the view
  */
-abstract class PdfViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+internal abstract class PdfViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
     protected val tvPageNumber: TextView = view.findViewById(R.id.tvPageNumber)
     protected val thumbnailView: PdfThumbnailView = view.findViewById(R.id.pageThumbnail)
@@ -60,7 +60,7 @@ abstract class PdfViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     }
 }
 
-interface PdfRecyclerItem {
+internal interface PdfRecyclerItem {
     val type: Int
 
     companion object {

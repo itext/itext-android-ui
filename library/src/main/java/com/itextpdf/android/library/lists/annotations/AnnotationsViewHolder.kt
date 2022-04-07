@@ -17,7 +17,7 @@ import com.shockwave.pdfium.PdfiumCore
  *
  * @param view  the view
  */
-class AnnotationsViewHolder(view: View): RecyclerView.ViewHolder(view) {
+internal class AnnotationsViewHolder(view: View): RecyclerView.ViewHolder(view) {
 
     private val tvTitle: TextView = view.findViewById(R.id.tvTitle)
     private val tvText: TextView = view.findViewById(R.id.tvText)
@@ -38,7 +38,7 @@ class AnnotationsViewHolder(view: View): RecyclerView.ViewHolder(view) {
  *
  * @property action the action that should happen when the item is clicked
  */
-data class AnnotationRecyclerItem(
+internal data class AnnotationRecyclerItem(
     val annotation: PdfAnnotation,
     val title: String?,
     val text: String?,

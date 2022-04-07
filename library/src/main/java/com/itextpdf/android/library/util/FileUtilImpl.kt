@@ -7,7 +7,7 @@ import android.util.Log
 import java.io.*
 import java.nio.file.Files
 
-class FileUtilImpl : FileUtil {
+internal class FileUtilImpl : FileUtil {
 
     /**
      * Loads a file with the given fileName from the assets folder to a location the app can access and

@@ -12,7 +12,7 @@ import com.shockwave.pdfium.PdfiumCore
  *
  * @param view  the view
  */
-class PdfNavigationViewHolder(view: View) : PdfViewHolder(view) {
+internal class PdfNavigationViewHolder(view: View) : PdfViewHolder(view) {
 
     override fun bind(item: PdfRecyclerItem) {
         if (item is PdfNavigationRecyclerItem) {
@@ -35,7 +35,7 @@ class PdfNavigationViewHolder(view: View) : PdfViewHolder(view) {
  * @property pageIndex  the index of the page within the pdfDocument
  * @property action the action that should happen when the item is clicked
  */
-data class PdfNavigationRecyclerItem(
+internal data class PdfNavigationRecyclerItem(
     val pdfiumCore: PdfiumCore,
     val pdfDocument: PdfDocument,
     val pageIndex: Int,

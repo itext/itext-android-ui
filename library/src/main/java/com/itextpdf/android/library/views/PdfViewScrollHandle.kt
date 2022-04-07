@@ -23,7 +23,7 @@ import com.github.barteksc.pdfviewer.scroll.ScrollHandle
 import com.itextpdf.android.library.R
 
 
-class PdfViewScrollHandle(
+internal class PdfViewScrollHandle(
     context: Context,
     primaryColor: String? = null,
     secondaryColor: String? = null,

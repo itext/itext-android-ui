@@ -11,7 +11,7 @@ import com.itextpdf.android.library.R
  *
  * @property data   a list of highlight color items
  */
-class HighlightColorAdapter(
+internal class HighlightColorAdapter(
     private val data: List<HighlightColorRecyclerItem>,
     primaryColorString: String?
 ) :

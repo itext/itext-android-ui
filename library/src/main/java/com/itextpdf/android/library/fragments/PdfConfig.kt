@@ -7,6 +7,8 @@ import androidx.annotation.ColorInt
 import kotlinx.parcelize.Parcelize
 
 /**
+ * The config to be used when manipulating the PDF file.
+ *
  * @param pdfUri The uri of the pdf that should be displayed. This is the only required param
  * @param fileName The name of the file that should be displayed
  * @param displayFileName A boolean flag that defines if the given file name should be displayed in the toolbar. Default: false
@@ -25,7 +27,7 @@ import kotlinx.parcelize.Parcelize
  * @param helpDialogText The text of the help dialog on the split view. If this is null but help dialog is displayed, a default text is used.
  */
 @Parcelize
-data class PdfConfig(
+data class PdfConfig constructor(
     val pdfUri: Uri,
     val fileName: String? = FILE_NAME,
     val displayFileName: Boolean = DISPLAY_FILE_NAME,
@@ -67,6 +69,9 @@ data class PdfConfig(
         enableAnnotationView = builder.enableAnnotationView
     )
 
+    /**
+     * Returns the corresponding color-int of [primaryColor].
+     */
     @ColorInt
     fun getPrimaryColorInt(): Int {
         return Color.parseColor(primaryColor)

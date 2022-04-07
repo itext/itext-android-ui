@@ -23,7 +23,7 @@ import com.itextpdf.kernel.pdf.annot.PdfAnnotation
  * @param primaryColorString    the primary color that is used for highlighting selected elements. optional
  * @param secondaryColorString  the secondary color that is used for highlighting selected elements. optional
  */
-class AnnotationsAdapter(
+internal class AnnotationsAdapter(
     private val data: List<AnnotationRecyclerItem>,
     primaryColorString: String?,
     secondaryColorString: String?
