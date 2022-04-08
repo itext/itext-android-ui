@@ -180,7 +180,7 @@ class SplitDocumentFragment : Fragment() {
         toolbar.setNavigationIcon(R.drawable.ic_close)
         toolbar.setNavigationContentDescription(R.string.close)
         toolbar.setNavigationOnClickListener {
-            setFragmentResult(SPLIT_DOCUMENT_REQUEST_KEY, bundleOf(SPLIT_DOCUMENT_RESULT to PdfResult.CancelledByUser))
+            setFragmentResult(SPLIT_DOCUMENT_REQUEST_KEY, bundleOf(SPLIT_DOCUMENT_RESULT to PdfResult.CancelledByUser(pdfManipulator.workingCopy)))
         }
     }
 

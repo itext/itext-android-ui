@@ -42,8 +42,7 @@ class PdfViewerActivity : AppCompatActivity() {
                         when (pdfIndex) {
                             1 -> { // Sample 2
 
-                                val config = PdfConfig.
-                                build {
+                                val config = PdfConfig.build {
                                     this.pdfUri = pdfUri
                                     this.fileName = fileName
                                     displayFileName = true
@@ -105,9 +104,13 @@ class PdfViewerActivity : AppCompatActivity() {
     private fun handlePdfResult(result: PdfResult?) {
 
         when (result) {
-            PdfResult.CancelledByUser -> Toast.makeText(this, R.string.cancelled_by_user, Toast.LENGTH_LONG).show()
+            is PdfResult.CancelledByUser -> {
+                result.file.deleteRecursively()
+                Toast.makeText(this, R.string.cancelled_by_user, Toast.LENGTH_LONG).show()
+            }
             is PdfResult.PdfEdited -> ShareUtil.sharePdf(this, result.file.toUri())
             is PdfResult.PdfSplit -> ShareUtil.sharePdf(this, result.fileContainingSelectedPages)
+            is PdfResult.NoChanges -> {} // do nothing
             null -> Toast.makeText(this, R.string.no_result, Toast.LENGTH_LONG).show()
         }
 

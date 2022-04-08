@@ -90,12 +90,17 @@ class PdfFragment : Fragment() {
     private var longPressPdfPagePosition: PointPositionMappingInfo? = null
     private var ivHighlightedAnnotation: ImageView? = null
 
+    private var pdfFileChanged = false
+
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
 
         override fun handleOnBackPressed() {
-            showSaveConfirmationDialog()
+            if (pdfFileChanged) {
+                showSaveConfirmationDialog()
+            } else {
+                setFragmentResult(PdfResult.NoChanges)
+            }
         }
-
     }
 
     private var highlightColors = arrayOf(
@@ -130,7 +135,7 @@ class PdfFragment : Fragment() {
     }
 
     private fun discardChanges() {
-        setFragmentResult(PdfResult.CancelledByUser)
+        setFragmentResult(PdfResult.CancelledByUser(pdfManipulator.workingCopy))
     }
 
     private fun setFragmentResult(result: PdfResult) {
@@ -394,6 +399,7 @@ class PdfFragment : Fragment() {
                 bubbleColor = config.getPrimaryColorInt()
             )
             setupPdfView()
+            pdfFileChanged = true
         } catch (error: Throwable) {
             Log.e(LOG_TAG, "Error while adding text annotation.", error)
             showError(error, R.string.text_annotation_error)
@@ -415,6 +421,7 @@ class PdfFragment : Fragment() {
                 color = highlightColors[highlightColorAdapter.selectedPosition]
             )
             setupPdfView()
+            pdfFileChanged = true
         } catch (error: Throwable) {
             Log.e(LOG_TAG, "Error while markup annotation.", error)
             showError(error, R.string.markup_annotation_error)
@@ -427,6 +434,7 @@ class PdfFragment : Fragment() {
         try {
             pdfManipulator.removeAnnotationFromPdf(annotation)
             setupPdfView()
+            pdfFileChanged = true
         } catch (error: Throwable) {
             Log.e(LOG_TAG, "Error while removing annotation.", error)
             showError(error, R.string.remove_annotation_error)
@@ -443,6 +451,7 @@ class PdfFragment : Fragment() {
                 text = text
             )
             setupPdfView()
+            pdfFileChanged = true
         } catch (error: Throwable) {
             Log.e(LOG_TAG, "Error while editing annotation.", error)
             showError(error, R.string.edit_annotation_error)

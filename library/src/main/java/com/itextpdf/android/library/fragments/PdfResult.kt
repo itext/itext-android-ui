@@ -11,10 +11,18 @@ import java.io.File
 sealed class PdfResult : Parcelable {
 
     /**
-     * Determines that the action has been cancelled by the user.
+     * Determines that there are no changes.
      */
     @Parcelize
-    object CancelledByUser : PdfResult()
+    object NoChanges : PdfResult()
+
+    /**
+     * Determines that the user has cancelled the action and the working copy [file] that should be discarded.
+     *
+     * @property file The working copy with the current changes that should be discarded.
+     */
+    @Parcelize
+    class CancelledByUser(val file: File) : PdfResult()
 
     /**
      * Determines that the user has edited the PDF file and the result is stored in the given [file].

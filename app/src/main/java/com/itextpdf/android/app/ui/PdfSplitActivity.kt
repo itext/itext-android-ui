@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.itextpdf.android.app.R
 import com.itextpdf.android.app.databinding.ActivitySplitPdfBinding
@@ -55,11 +54,15 @@ class PdfSplitActivity : AppCompatActivity() {
     }
 
     private fun handlePdfResult(result: PdfResult?) {
-        
+
         when (result) {
-            PdfResult.CancelledByUser -> Toast.makeText(this, R.string.cancelled_by_user, Toast.LENGTH_LONG).show()
+            is PdfResult.CancelledByUser -> {
+                result.file.deleteRecursively()
+                Toast.makeText(this, R.string.cancelled_by_user, Toast.LENGTH_LONG).show()
+            }
             is PdfResult.PdfEdited -> ShareUtil.sharePdf(this, result.file.toUri())
             is PdfResult.PdfSplit -> ShareUtil.sharePdf(this, result.fileContainingSelectedPages)
+            is PdfResult.NoChanges -> {} // do nothing
             null -> Toast.makeText(this, R.string.no_result, Toast.LENGTH_LONG).show()
         }
 
