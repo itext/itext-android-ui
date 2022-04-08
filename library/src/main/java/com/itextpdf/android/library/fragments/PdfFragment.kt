@@ -386,7 +386,6 @@ class PdfFragment : Fragment() {
 
     private fun addTextAnnotation(title: String?, text: String, positionInfo: PointPositionMappingInfo) {
         try {
-
             pdfManipulator.addTextAnnotationToPdf(
                 title = title,
                 text = text,
@@ -396,12 +395,12 @@ class PdfFragment : Fragment() {
                 bubbleSize = ANNOTATION_SIZE,
                 bubbleColor = config.getPrimaryColorInt()
             )
-
             setupPdfView()
-            annotationActionMode = null
         } catch (error: Throwable) {
             Log.e(LOG_TAG, "Error while adding text annotation.", error)
             showError(error, R.string.text_annotation_error)
+        } finally {
+            annotationActionMode = null
         }
     }
 
@@ -411,31 +410,48 @@ class PdfFragment : Fragment() {
     }
 
     private fun addMarkupAnnotation(positionInfo: RectanglePositionMappingInfo) {
-        pdfManipulator.addMarkupAnnotationToPdf(
-            pageIndex = positionInfo.pdfPageIndex,
-            rect = positionInfo.pdfRectangle,
-            color = highlightColors[highlightColorAdapter.selectedPosition]
-        )
-        setupPdfView()
-        setHighlightingViewVisibility(false)
+        try {
+            pdfManipulator.addMarkupAnnotationToPdf(
+                pageIndex = positionInfo.pdfPageIndex,
+                rect = positionInfo.pdfRectangle,
+                color = highlightColors[highlightColorAdapter.selectedPosition]
+            )
+            setupPdfView()
+        } catch (error: Throwable) {
+            Log.e(LOG_TAG, "Error while markup annotation.", error)
+            showError(error, R.string.markup_annotation_error)
+        } finally {
+            setHighlightingViewVisibility(false)
+        }
     }
 
     private fun removeAnnotation(annotation: PdfAnnotation) {
-
-        pdfManipulator.removeAnnotationFromPdf(annotation)
-        setupPdfView()
-        annotationActionMode = null
+        try {
+            pdfManipulator.removeAnnotationFromPdf(annotation)
+            setupPdfView()
+        } catch (error: Throwable) {
+            Log.e(LOG_TAG, "Error while removing annotation.", error)
+            showError(error, R.string.remove_annotation_error)
+        } finally {
+            annotationActionMode = null
+        }
     }
 
     private fun editAnnotation(annotation: PdfAnnotation, title: String?, text: String) {
-        pdfManipulator.editAnnotationFromPdf(
-            annotation = annotation,
-            title = title,
-            text = text
-        )
-        setupPdfView()
-        annotationActionMode = null
-        setAnnotationsViewVisibility(true)
+        try {
+            pdfManipulator.editAnnotationFromPdf(
+                annotation = annotation,
+                title = title,
+                text = text
+            )
+            setupPdfView()
+        } catch (error: Throwable) {
+            Log.e(LOG_TAG, "Error while editing annotation.", error)
+            showError(error, R.string.edit_annotation_error)
+        } finally {
+            annotationActionMode = null
+            setAnnotationsViewVisibility(true)
+        }
     }
 
     private fun setupThumbnailNavigationView() {
