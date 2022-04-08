@@ -713,7 +713,6 @@ class PdfFragment : Fragment() {
             )
 
             ivHighlightedAnnotation = ImageView(requireContext())
-            ivHighlightedAnnotation?.imageAlpha = 200
 
             // set position
             lp.setMargins(x, y, 0, 0)
@@ -721,7 +720,7 @@ class PdfFragment : Fragment() {
 
             ImageUtil.getResourceAsByteArray(
                 requireContext(),
-                R.drawable.ic_annotation,
+                R.drawable.ic_speech_bubble,
                 size,
                 config.getPrimaryColorInt()
             )?.let { imageByteArray ->
@@ -998,7 +997,7 @@ class PdfFragment : Fragment() {
         private const val LOG_TAG = "PdfFragment"
         private const val OPEN_BOTTOM_SHEET_DELAY_MS = 200L
         private const val HIGHLIGHT_ANNOTATION_SCROLL_DELAY = 200L
-        private const val ANNOTATION_SIZE = 30f
+        private const val ANNOTATION_SIZE = 25f
         private const val CURRENT_PAGE = "CURRENT_PAGE"
 
         private const val SPLIT_FRAGMENT_TAG = "splitFragment"

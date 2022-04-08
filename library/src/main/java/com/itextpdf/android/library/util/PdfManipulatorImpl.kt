@@ -314,8 +314,9 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
 
     private fun getTextAnnotationAppearance(pdfDocument: PdfDocument, @ColorInt color: Int, bubbleSize: Float): PdfFormXObject? {
         var commentXObj: PdfFormXObject? = null
-        val imageSize = bubbleSize * 3
-        val imageByteArray = ImageUtil.getResourceAsByteArray(context, R.drawable.ic_annotation, imageSize.toInt(), color)
+        // set imageSize larger to increase quality
+        val imageSize = bubbleSize * 10
+        val imageByteArray = ImageUtil.getResourceAsByteArray(context, R.drawable.ic_speech_bubble, imageSize.toInt(), color)
 
         if (imageByteArray != null) {
             val itextImageData = ImageDataFactory.createPng(imageByteArray)

@@ -141,3 +141,6 @@ private fun listenForPdfFragmentResult(fragmentManager: FragmentManager) {
     }
 }
 ```
+
+## Attribution
+[Message icons created by Becris - Flaticon] (https://www.flaticon.com/free-icons/message)
