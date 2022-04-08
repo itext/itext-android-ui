@@ -80,7 +80,6 @@ android {
 
 dependencies {
     // PDF
-    //TODO: for some reason v7.2.0 not working with android
     // https://mvnrepository.com/artifact/com.itextpdf/kernel
     api("com.itextpdf:kernel:7.2.2-SNAPSHOT")
     // https://mvnrepository.com/artifact/com.itextpdf/layout
@@ -88,10 +87,6 @@ dependencies {
     api("com.itextpdf:io:7.2.2-SNAPSHOT")
     api("com.itextpdf:forms:7.2.2-SNAPSHOT")
 
-//    implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
-//    implementation 'com.github.Lucasq95:AndroidPdfViewer:4.9.12'
-//    implementation 'com.github.ahoikapptn-dev:AndroidPdfViewer:master-SNAPSHOT'
-//    implementation 'com.github.barteksc:AndroidPdfViewer:master-SNAPSHOT'
     implementation project(path: ':android-pdf-viewer')
 
     // Android X
@@ -104,7 +99,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.5.0'
     androidTestImplementation 'com.google.android.material:material:1.5.0'
 
-    implementation 'androidx.compose.material3:material3:1.0.0-alpha06'
+    implementation 'androidx.compose.material3:material3:1.0.0-alpha08'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0'
     implementation('org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0')
