@@ -113,7 +113,6 @@ class PdfFragment : Fragment() {
 
         setParamsFromBundle(savedInstanceState ?: arguments)
         pdfManipulator = PdfManipulator.create(requireContext(), config.pdfUri)
-
     }
 
     private fun showSaveConfirmationDialog() {
@@ -124,7 +123,6 @@ class PdfFragment : Fragment() {
             .setNegativeButton(R.string.save_confirmation_discard) { _, _ -> discardChanges() }
             .setNeutralButton(R.string.save_confirmation_keep_editing, null)
             .show()
-
     }
 
     private fun applyChanges() {

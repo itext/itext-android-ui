@@ -80,7 +80,15 @@ class MainActivity : AppCompatActivity() {
     private fun loadFileFromAssets(fileName: String): File {
 
         val cacheDir: File = ContextCompat.getExternalCacheDirs(this).first()
-        val tempFile = File(cacheDir, "${fileName}_copy")
+
+        // remove .pdf suffix
+        val tempFileNameSB = StringBuilder(fileName.removeSuffix(".pdf"))
+        // add _copy text
+        tempFileNameSB.append("_copy")
+        // add .pdf again
+        tempFileNameSB.append(".pdf")
+
+        val tempFile = File(cacheDir, tempFileNameSB.toString())
 
         assets.open(fileName).use { inputStream ->
             Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING)

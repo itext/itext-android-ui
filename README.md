@@ -84,7 +84,7 @@ You can also inflate a PDF fragment via XML. In thise case, the fragment is cust
         app:background_color="#F4EFBB"
         app:display_file_name="true"
         app:file_name="sample_1.pdf"
-        app:file_uri="file:///data/user/0/com.itextpdf.android.app/cache/sample_1.pdf"
+        app:file_uri="file:///storage/emulated/0/Android/data/com.itextpdf.android.app/cache/sample_1_copy.pdf"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:enable_split_view="false"
