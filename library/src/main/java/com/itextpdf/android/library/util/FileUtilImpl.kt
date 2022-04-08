@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.AssetManager
 import android.net.Uri
 import android.util.Log
+import com.itextpdf.android.library.extensions.getFileName
 import java.io.*
 import java.nio.file.Files
 
@@ -95,8 +96,7 @@ internal class FileUtilImpl : FileUtil {
 
     override fun createTempCopyIfNotExists(context: Context, originalFileUri: Uri): File {
 
-        val originalFile = File(originalFileUri.path)
-        val originalFileName = originalFile.name
+        val originalFileName = context.getFileName(originalFileUri)
 
         val storageFolderPath = (context.externalCacheDir ?: context.cacheDir).absolutePath
         val file = File("$storageFolderPath/temp_${originalFileName}")
