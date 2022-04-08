@@ -668,6 +668,7 @@ class PdfFragment : Fragment() {
             .load()
 
         binding.pdfView.setBackgroundColor(Color.parseColor(config.backgroundColor))
+        binding.pdfView.maxZoom = 10f
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             binding.pdfLoadingIndicator.indeterminateDrawable.colorFilter =
                 BlendModeColorFilter(Color.parseColor(config.primaryColor), BlendMode.SRC_ATOP)
