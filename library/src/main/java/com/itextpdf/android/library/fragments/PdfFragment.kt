@@ -645,6 +645,8 @@ class PdfFragment : Fragment() {
                     if (annotation != null) {
                         setAnnotationsViewVisibility(true)
                         scrollAnnotationsViewTo(annotation)
+                    } else {
+                        setAnnotationsViewVisibility(false)
                     }
                 }
 
@@ -687,6 +689,13 @@ class PdfFragment : Fragment() {
         }
 
         ivHighlightedAnnotation = null
+    }
+
+    private fun highlightCurrentAnnotation() {
+        val annotation = annotationAdapter.getAnnotationForIndex(annotationAdapter.selectedPosition)
+        if (annotation != null) {
+            highlightAnnotation(annotation)
+        }
     }
 
     private fun highlightAnnotation(annotation: PdfAnnotation) {
@@ -877,6 +886,9 @@ class PdfFragment : Fragment() {
             setThumbnailNavigationViewVisibility(false)
             setAnnotationTextViewVisibility(false)
             setHighlightingViewVisibility(false)
+            highlightCurrentAnnotation()
+        } else {
+            resetHighlightedAnnotation()
         }
         view?.postDelayed({
             val updatedState =
