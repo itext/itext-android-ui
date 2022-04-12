@@ -2,7 +2,6 @@ package com.itextpdf.android.library
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.itextpdf.android.library.R
 import com.itextpdf.android.library.util.FileUtil
 
 

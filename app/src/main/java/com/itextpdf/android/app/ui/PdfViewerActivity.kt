@@ -47,7 +47,6 @@ class PdfViewerActivity : AppCompatActivity() {
                                     this.fileName = fileName
                                     displayFileName = true
                                     pageSpacing = 100
-                                    enableAnnotationRendering = false
                                     enableDoubleTapZoom = false
                                     primaryColor = "#295819"
                                     secondaryColor = "#950178"
