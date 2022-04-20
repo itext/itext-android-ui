@@ -8,7 +8,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.2'
+        classpath 'com.android.tools.build:gradle:7.1.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // Required by AndroidPdfViewer
@@ -24,7 +24,7 @@ allprojects {
         mavenCentral()
 
         maven {
-            url "https://repo.itextsupport.com/snapshot"
+            url "https://repo.itextsupport.com/releases"
         }
     }
 }

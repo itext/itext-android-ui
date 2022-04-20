@@ -18,6 +18,4 @@ internal class PdfActivity : AppCompatActivity() {
     private fun copyFileFromAssets() {
         fileUtil.loadFileFromAssets(this, "sample_1.pdf")
     }
-
-
 }

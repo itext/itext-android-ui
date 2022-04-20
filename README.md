@@ -20,9 +20,9 @@ Therefore you need to clone 3 repositories in order to setup your build environm
 Run the following commands at a folder of your choice:
 
 ```
-git clone ssh://git@git.itextsupport.com:7999/i7a/itext7-android.git
-git clone ssh://git@git.itextsupport.com:7999/i7a/pdfiumandroid.git
-git clone ssh://git@git.itextsupport.com:7999/i7a/androidpdfviewer.git
+git clone ssh://git@github.com:itext/PdfiumAndroid.git
+git clone ssh://git@github.com:itext/AndroidPdfViewer.git
+git clone ssh://git@github.com:itext/itext7-android-ui.git
 ```
 
 This will generate the following folder structure on your machine:
@@ -43,7 +43,7 @@ If you want to use a different folder structure, make sure to update your settin
 Do not use spaces in your local paths/directories, as it can lead to all sorts of errors related to Android NDK, ndk-build or cmake.
 
 ### NDK setup
-If you are having problems related to Android NKD, make sure to follow the correct setup procedure:
+If you are having problems related to Android NDK, make sure to follow the correct setup procedure:
 https://developer.android.com/studio/projects/install-ndk
 
 

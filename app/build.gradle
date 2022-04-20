@@ -24,7 +24,6 @@ android {
         // "pm clear" command after each test invocation. This command ensures
         // that the app's state is completely cleared between tests.
         testInstrumentationRunnerArguments clearPackageData: 'true'
-
     }
 
     buildFeatures {
@@ -34,7 +33,6 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             testCoverageEnabled = true
@@ -75,7 +73,7 @@ dependencies {
     androidTestImplementation "androidx.test.ext:truth:1.4.0"
 
     // Espresso
-    def espresso_version = "3.5.0-alpha04"
+    def espresso_version = "3.5.0-alpha05"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$espresso_version"
 

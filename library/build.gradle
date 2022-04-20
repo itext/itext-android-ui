@@ -23,8 +23,6 @@ android {
         // "pm clear" command after each test invocation. This command ensures
         // that the app's state is completely cleared between tests.
         testInstrumentationRunnerArguments = ['clearPackageData': 'true', 'useTestStorageService': 'true']
-
-        consumerProguardFiles "consumer-rules.pro"
     }
 
     sourceSets {
@@ -47,7 +45,6 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             testCoverageEnabled = true
@@ -68,7 +65,7 @@ android {
 
         // Enable/Disable android-x test-orchestrator
         // The orchestrator is used to ensure empty/clean app-data for each instrumented-test
-//        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
 
         animationsDisabled = true
 
@@ -80,12 +77,10 @@ android {
 
 dependencies {
     // PDF
-    // https://mvnrepository.com/artifact/com.itextpdf/kernel
-    api("com.itextpdf:kernel:7.2.2-SNAPSHOT")
-    // https://mvnrepository.com/artifact/com.itextpdf/layout
-    api("com.itextpdf:layout:7.2.2-SNAPSHOT")
-    api("com.itextpdf:io:7.2.2-SNAPSHOT")
-    api("com.itextpdf:forms:7.2.2-SNAPSHOT")
+    api("com.itextpdf:kernel:7.2.2")
+    api("com.itextpdf:layout:7.2.2")
+    api("com.itextpdf:io:7.2.2")
+    api("com.itextpdf:forms:7.2.2")
 
     implementation project(path: ':android-pdf-viewer')
 
@@ -99,7 +94,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.5.0'
     androidTestImplementation 'com.google.android.material:material:1.5.0'
 
-    implementation 'androidx.compose.material3:material3:1.0.0-alpha08'
+    implementation 'androidx.compose.material3:material3:1.0.0-alpha09'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0'
     implementation('org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0')
