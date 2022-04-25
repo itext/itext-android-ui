@@ -59,7 +59,7 @@ class PdfManipulatorImplTest {
      * GIVEN file exists
      * AND file is file
      * WHEN file is opened in reading mode
-     * THEN pdf-document has 10 pages
+     * THEN pdf-document has 6 pages
      */
     @Test
     fun testOpenDocumentInReadingMode() {
@@ -72,16 +72,16 @@ class PdfManipulatorImplTest {
         val pdfFile: PdfDocument = sut.getPdfDocumentInReadingMode()
 
         // THEN
-        assertThat(pdfFile.numberOfPages).isEqualTo(10)
+        assertThat(pdfFile.numberOfPages).isEqualTo(6)
 
     }
 
     /**
-     * GIVEN user has selected pages 0, 1 and 5.
+     * GIVEN user has selected pages 0 and 5.
      * WHEN user split's PDF
      * THEN result contains list with exactly 2 uris
-     * AND the first result-uri is PDF with 3 pages
-     * AND the second result-uri is PDF with 7 pages
+     * AND the first result-uri is PDF with 2 pages
+     * AND the second result-uri is PDF with 4 pages
      * AND the pages of the first document are equal to the selected pages of the original document
      * AND the pages of the second document are equal to the unselected pages of the original document
      */
@@ -89,7 +89,7 @@ class PdfManipulatorImplTest {
     fun testSplitDocument() {
 
         // GIVEN
-        val selectedPageIndices = listOf(0, 1, 5)
+        val selectedPageIndices = listOf(0, 5)
         val originalPdf = sut.getPdfDocumentInReadingMode()
 
         // WHEN
@@ -99,22 +99,18 @@ class PdfManipulatorImplTest {
 
         // THEN
         assertThat(result).hasSize(2)
-        assertThat(documentOfSelectedPages.numberOfPages).isEqualTo(3)
-        assertThat(documentOfUnselectedPages.numberOfPages).isEqualTo(7)
+        assertThat(documentOfSelectedPages.numberOfPages).isEqualTo(2)
+        assertThat(documentOfUnselectedPages.numberOfPages).isEqualTo(4)
 
         // Compare pages of document that contains the selected pages
         assertThatPagesAreEqual(documentOfSelectedPages.getPage(1), originalPdf.getPage(1))
-        assertThatPagesAreEqual(documentOfSelectedPages.getPage(2), originalPdf.getPage(2))
-        assertThatPagesAreEqual(documentOfSelectedPages.getPage(3), originalPdf.getPage(6))
+        assertThatPagesAreEqual(documentOfSelectedPages.getPage(2), originalPdf.getPage(6))
 
         // Compare pages of document that contains the unselected  pages
-        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(1), originalPdf.getPage(3))
-        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(2), originalPdf.getPage(4))
-        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(3), originalPdf.getPage(5))
-        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(4), originalPdf.getPage(7))
-        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(5), originalPdf.getPage(8))
-        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(6), originalPdf.getPage(9))
-        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(7), originalPdf.getPage(10))
+        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(1), originalPdf.getPage(2))
+        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(2), originalPdf.getPage(3))
+        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(3), originalPdf.getPage(4))
+        assertThatPagesAreEqual(documentOfUnselectedPages.getPage(4), originalPdf.getPage(5))
 
     }
 
@@ -157,7 +153,7 @@ class PdfManipulatorImplTest {
     fun testAllPagesSelected() {
 
         // GIVEN
-        val selectedPageIndices = listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+        val selectedPageIndices = listOf(0, 1, 2, 3, 4, 5)
         val originalFile = sut.getPdfDocumentInReadingMode()
 
         // WHEN
@@ -205,7 +201,6 @@ class PdfManipulatorImplTest {
         assertThat(updatedAnnotations.size).isEqualTo(1)
         assertThat(annotation.title.value).isEqualTo("Lorem Ipsum Title")
         assertThat(annotation.contents.value).isEqualTo("Lorem Ipsum Message")
-
 
     }
 
