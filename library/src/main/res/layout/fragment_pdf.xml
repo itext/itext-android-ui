@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/abPdfFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/tbPdfFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:title="Pdf Reader"
+            app:titleTextColor="@color/black" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <com.github.barteksc.pdfviewer.PDFView
+        android:id="@+id/pdfView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:background="@color/light_grey" />
+
+    <com.itextpdf.android.library.lists.highlighting.HighlightingPreview
+        android:id="@+id/highlightPreview"
+        android:visibility="gone"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ProgressBar
+        android:id="@+id/pdfLoadingIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/orange_700" />
+
+    <include
+        android:id="@+id/includedBottomSheetNavigate"
+        layout="@layout/bottom_sheet_navigate" />
+
+    <include
+        android:id="@+id/includedBottomSheetHighlighting"
+        layout="@layout/bottom_sheet_highlight" />
+
+    <include
+        android:id="@+id/includedBottomSheetAnnotations"
+        layout="@layout/bottom_sheet_annotations" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clAnnotationInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone"
+        android:paddingBottom="2dp"
+        android:layout_gravity="bottom">
+
+        <View
+            android:id="@+id/topSeparator"
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="@color/medium_grey" />
+
+        <EditText
+            android:id="@+id/etTextAnnotation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/annotation_hint"
+            android:importantForAutofill="no"
+            android:inputType="textMultiLine"
+            android:layout_marginTop="2dp"
+            android:layout_marginStart="8dp"
+            android:scrollbars="vertical"
+            android:maxLines="8"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnSaveAnnotation"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSaveAnnotation"
+            style="@style/Widget.App.Button.OutlinedButton.IconOnly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_send"
+            app:iconTint="@color/navigation_item_color"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/etTextAnnotation"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

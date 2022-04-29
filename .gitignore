@@ -1,3 +1,18 @@
+
+#mac
+.DS_Store
+
+# android stuio
+*.apk
+*.aab
+output-metadata.json
+/captures
+.externalNativeBuild
+.cxx
+
+# keystores
+*.jks
+
 # Created by https://www.gitignore.io
 
 ### Java ###
@@ -66,7 +81,8 @@ local.properties
 # User-specific stuff:
 # .idea/workspace.xml
 # .idea/tasks.xml
-# .idea/dictionaries
+# .idea/dictionaries	
+# .idea/misc.xml
 
 # Sensitive or high-churn files:
 # .idea/dataSources.ids
@@ -168,4 +184,4 @@ gradle-app.setting
 
 ### Gradle Patch ###
 **/build/
-
+gradlew.bat

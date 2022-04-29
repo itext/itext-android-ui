@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_navigate_pdf"
+        android:icon="@drawable/ic_navigate"
+        android:title="@string/navigate_pdf"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_highlight"
+        android:icon="@drawable/ic_highlight"
+        android:title="@string/highlight"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_annotations"
+        android:icon="@drawable/ic_annotation"
+        android:title="@string/annotations"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_split_pdf"
+        android:icon="@drawable/ic_split"
+        android:title="@string/split_document"
+        app:showAsAction="ifRoom" />
+</menu>

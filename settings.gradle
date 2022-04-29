@@ -1,0 +1,9 @@
+rootProject.name = "itext7-android-ui"
+include ':app'
+include ':library'
+include ':android-pdf-viewer'
+include ':pdfium-android'
+
+
+project(":android-pdf-viewer").projectDir=new File("../androidpdfviewer/android-pdf-viewer",)
+project(":pdfium-android").projectDir=new File("../pdfiumandroid")

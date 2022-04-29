@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="navigate_pdf">Navigate pdf</string>
+    <string name="split_document">Split document</string>
+    <string name="split_document_success">Successfully split document</string>
+    <string name="split_document_error">There was an error splitting the document.</string>
+    <string name="split_help">Help</string>
+    <string name="help_dialog_title">Help</string>
+    <string name="help_dialog_text">To split a document, select the pages you would like to extract from the pdf file. The selected pages will be highlighted.\n\nWhen you are done selecting, press the split button at the bottom right to initiated the splitting process.\n\nAfter the process is complete, the split view will be closed and the result is two pdf files. One with all the selected pages and another one with the not selected pages. The original pdf file stays unchanged.</string>
+    <string name="annotations">Annotations</string>
+    <string name="save">Save</string>
+    <string name="annotation_hint">Add a note</string>
+    <string name="no_annotations_title">This file doesn\'t have any annotations.</string>
+    <string name="no_annotations_description">You can add one by long-pressing the pdf document at the location where you want to add the annotation to.</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="confirm">Confirm</string>
+    <string name="highlight">Highlight</string>
+    <string name="close">Close</string>
+
+    <string name="save_confirmation_title">Unsaved changes</string>
+    <string name="save_confirmation_message">Are you done editing and want to keep your changes?</string>
+    <string name="save_confirmation_accept">Yes, accept changes</string>
+    <string name="save_confirmation_discard">Discard changes</string>
+    <string name="save_confirmation_keep_editing">Keep editing</string>
+    <string name="text_annotation_error">Error while adding text annotation.</string>
+    <string name="markup_annotation_error">Error while adding markup annotation.</string>
+    <string name="edit_annotation_error">Error while editing annotation.</string>
+    <string name="remove_annotation_error">Error while removing annotation.</string>
+
+</resources>
