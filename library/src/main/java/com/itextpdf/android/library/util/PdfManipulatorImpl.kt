@@ -7,7 +7,6 @@ import androidx.core.net.toUri
 import com.itextpdf.android.library.R
 import com.itextpdf.android.library.extensions.getPageIndex
 import com.itextpdf.android.library.extensions.isSameAs
-import com.itextpdf.android.library.xmlparser.BareXmlParserFactory
 import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.kernel.colors.Color
 import com.itextpdf.kernel.geom.Rectangle
@@ -20,7 +19,6 @@ import com.itextpdf.kernel.pdf.extgstate.PdfExtGState
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject
 import com.itextpdf.kernel.utils.PageRange
 import com.itextpdf.kernel.utils.PdfSplitter
-import com.itextpdf.kernel.utils.XmlProcessorCreator
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -32,11 +30,6 @@ internal class PdfManipulatorImpl constructor(private val context: Context, orig
 
     override val workingCopy: File = fileUtil.createTempCopyIfNotExists(context, originalFileUri = originalFileUri)
     private val workingCopyUri: Uri = workingCopy.toUri()
-
-    init {
-        // Workaround to fix the error: java.lang.UnsupportedOperationException: This parser does not support specification "Unknown" version "0.0"
-        XmlProcessorCreator.setXmlParserFactory(BareXmlParserFactory())
-    }
 
     /**
      * Splits the pdf file at the given uri and creates a new document with the selected page indices and another one for the unselected indices.
