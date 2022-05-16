@@ -77,10 +77,10 @@ android {
 
 dependencies {
     // PDF
-    api("com.itextpdf:kernel:7.2.2")
-    api("com.itextpdf:layout:7.2.2")
-    api("com.itextpdf:io:7.2.2")
-    api("com.itextpdf:forms:7.2.2")
+    api("com.itextpdf.android:kernel-android:7.2.2")
+    api("com.itextpdf.android:layout-android:7.2.2")
+    api("com.itextpdf.android:io-android:7.2.2")
+    api("com.itextpdf.android:forms-android:7.2.2")
 
     implementation project(path: ':android-pdf-viewer')
 

@@ -24,7 +24,7 @@ allprojects {
         mavenCentral()
 
         maven {
-            url "https://repo.itextsupport.com/releases"
+            url "https://repo.itextsupport.com/android"
         }
     }
 }
