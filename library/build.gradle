@@ -83,6 +83,7 @@ dependencies {
     api("com.itextpdf.android:forms-android:7.2.2")
 
     implementation 'com.itextpdf.android.pdfviewer:android-pdf-viewer:3.2.0-beta.1'
+    implementation 'com.itextpdf.android.pdfium:pdfium-android:1.9.0'
 
     // Android X
     implementation 'androidx.core:core-ktx:1.7.0'
