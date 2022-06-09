@@ -10,32 +10,13 @@
 
 # Setup
 
-The SDK depends on forked versions of [PdfiumAndroid](https://github.com/barteksc/AndroidPdfViewer) and [AndroidPdfViewer](https://github.com/barteksc/PdfiumAndroid).
-Therefore you need to clone 3 repositories in order to setup your build environment.
+The SDK depends on forked versions of [PdfiumAndroid](https://github.com/itext/PdfiumAndroid) and 
+[AndroidPdfViewer](https://github.com/itext/AndroidPdfViewer) whose artifacts are stored on 
+[iText Artifactory](https://repo.itextsupport.com/ui/repos/tree/General/android/com/itextpdf/android). Artifacts will
+be loaded during the SDK build by gradle.
 
-- This repository
-- Specific fork of PdfiumAndroid
-- Specific fork of AndroidPdfViewer
-
-Run the following commands at a folder of your choice:
-
-```
-git clone ssh://git@github.com:itext/PdfiumAndroid.git
-git clone ssh://git@github.com:itext/AndroidPdfViewer.git
-git clone ssh://git@github.com:itext/itext7-android-ui.git
-```
-
-This will generate the following folder structure on your machine:
-
-```
-your-folder
-    └── itext7-android
-    └── pdfiumandroid
-    └── androidpdfviewer
-```
-
-Double-check that your folder structure looks this way, because it is needed by **settings.gradle** in order to resolve all modules correctly.
-If you want to use a different folder structure, make sure to update your settings.gradle accordingly.
+If you want to build SDK with custom version of PdfiumAndroid or\and AndroidPdfViewer you need to clone repositories, 
+make necessary changes and then publish them to local maven storage. So SDK will use custom local artifacts as dependencies.
 
 ## Troubleshooting
 
